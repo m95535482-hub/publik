@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CatRoll — NFT & Gifts</title>
-    <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -13,6 +12,7 @@
             --accent-color: #ffffff;
             --border-color: #26262e;
             --text-secondary: #8a8a9e;
+            --gold: #f39c12;
         }
 
         * {
@@ -25,33 +25,73 @@
         body {
             background-color: var(--bg-color);
             color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: space-between;
             min-height: 100vh;
-            padding: 20px;
+            padding: 16px;
+            padding-bottom: 80px;
         }
 
+        /* Шапка с балансом */
         .header {
-            text-align: center;
-            margin-top: 10px;
+            width: 100%;
+            max-width: 360px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
         }
 
-        .header h1 {
-            font-size: 28px;
+        .logo {
+            font-size: 20px;
             font-weight: 800;
-            letter-spacing: -0.5px;
         }
 
-        .header p {
-            color: var(--text-secondary);
+        .balance-pill {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 20px;
             font-size: 14px;
-            margin-top: 4px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        /* Рулетка / Кейс */
+        /* Выбор кейсов */
+        .cases-selector {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            max-width: 360px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .case-tab {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: 0.2s;
+        }
+
+        .case-tab.active {
+            background: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
+        }
+
+        /* Рулетка */
         .case-container {
             width: 100%;
             max-width: 360px;
@@ -62,12 +102,13 @@
             position: relative;
             overflow: hidden;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin-bottom: 16px;
         }
 
         .roulette-wrapper {
             position: relative;
             width: 100%;
-            height: 120px;
+            height: 110px;
             overflow: hidden;
             border-radius: 16px;
             background: #0d0d10;
@@ -79,11 +120,10 @@
             top: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 4px;
+            width: 3px;
             height: 100%;
             background: #ff3b30;
             z-index: 10;
-            box-shadow: 0 0 10px #ff3b30;
         }
 
         .roulette-track {
@@ -93,14 +133,13 @@
             left: 0;
             top: 0;
             height: 100%;
-            will-change: transform;
             transition: transform 5s cubic-bezier(0.1, 1, 0.1, 1);
         }
 
         .item-card {
-            min-width: 90px;
-            height: 90px;
-            margin: 0 6px;
+            min-width: 85px;
+            height: 85px;
+            margin: 0 5px;
             background: #1c1c22;
             border-radius: 12px;
             display: flex;
@@ -110,45 +149,42 @@
             border: 1px solid var(--border-color);
         }
 
-        .item-card .icon { font-size: 32px; }
-        .item-card .name { font-size: 11px; color: var(--text-secondary); margin-top: 6px; font-weight: 600; }
+        .item-card .icon { font-size: 28px; }
+        .item-card .name { font-size: 10px; color: var(--text-secondary); margin-top: 4px; font-weight: 600; }
 
-        /* Пул возможных призов */
-        .pool-title {
-            align-self: flex-start;
-            font-size: 13px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin: 20px 0 10px 10px;
-            font-weight: 700;
-        }
-
-        .prizes-grid {
+        /* Дополнительные кнопки навигации */
+        .menu-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
             width: 100%;
             max-width: 360px;
+            margin-bottom: 20px;
         }
 
-        .prize-item {
+        .menu-btn {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 12px;
+            border-radius: 14px;
+            padding: 12px 8px;
             text-align: center;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
         }
 
-        .prize-item .icon { font-size: 28px; }
-        .prize-item .title { font-size: 12px; margin-top: 6px; font-weight: 600; }
-        .prize-item .rarity { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+        .menu-btn:active { background: #22222a; }
+        .menu-btn span { display: block; font-size: 18px; margin-bottom: 4px; }
 
-        /* Кнопка */
+        /* Нижняя панель действия */
         .actions {
             width: 100%;
             max-width: 360px;
-            margin-bottom: 10px;
+            position: fixed;
+            bottom: 16px;
+            padding: 0 16px;
         }
 
         .spin-btn {
@@ -156,34 +192,36 @@
             background: var(--accent-color);
             color: #000;
             border: none;
-            padding: 18px;
-            border-radius: 18px;
-            font-size: 17px;
+            padding: 16px;
+            border-radius: 16px;
+            font-size: 16px;
             font-weight: 700;
             cursor: pointer;
-            transition: transform 0.1s, opacity 0.2s;
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
         }
 
-        .spin-btn:active {
-            transform: scale(0.98);
-            opacity: 0.9;
-        }
-
-        .spin-btn:disabled {
-            background: #333;
-            color: #666;
-            cursor: not-allowed;
-        }
+        .spin-btn:active { transform: scale(0.98); }
+        .spin-btn:disabled { background: #333; color: #666; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
+    <!-- Шапка -->
     <div class="header">
-        <h1>🐱 CatRoll</h1>
-        <p>Win Telegram Collectible Gifts & NFTs</p>
+        <div class="logo">🐱 CatRoll</div>
+        <div class="balance-pill" id="balanceBlock">
+            ⭐ <span id="balance">250</span>
+        </div>
     </div>
 
-    <!-- Блок с рулеткой -->
+    <!-- Выбор кейсов -->
+    <div class="cases-selector">
+        <div class="case-tab active" onclick="switchCase('standard', 50)">Standard (50⭐)</div>
+        <div class="case-tab" onclick="switchCase('epic', 150)">Epic (150⭐)</div>
+        <div class="case-tab" onclick="switchCase('legendary', 500)">Legendary (500⭐)</div>
+    </div>
+
+    <!-- Рулетка -->
     <div class="case-container">
         <div class="roulette-wrapper">
             <div class="pointer"></div>
@@ -191,29 +229,20 @@
         </div>
     </div>
 
-    <!-- Возможные выигрыши -->
-    <div style="width: 100%; max-width: 360px;">
-        <div class="pool-title">Possible Rewards</div>
-        <div class="prizes-grid">
-            <div class="prize-item">
-                <div class="icon">🎁</div>
-                <div class="title">Gift Box</div>
-                <div class="rarity">Common</div>
-            </div>
-            <div class="prize-item">
-                <div class="icon">🏆</div>
-                <div class="title">Gold Trophy</div>
-                <div class="rarity">Rare</div>
-            </div>
-            <div class="prize-item">
-                <div class="icon">💎</div>
-                <div class="title">Star NFT</div>
-                <div class="rarity">Legendary</div>
-            </div>
+    <!-- Дополнительные интерактивные кнопки -->
+    <div class="menu-grid">
+        <div class="menu-btn" onclick="openModal('inventory')">
+            <span>🎒</span>Inventory
+        </div>
+        <div class="menu-btn" onclick="openModal('deposit')">
+            <span>💳</span>Top Up
+        </div>
+        <div class="menu-btn" onclick="openModal('refs')">
+            <span>👥</span>Friends
         </div>
     </div>
 
-    <!-- Кнопка действия -->
+    <!-- Кнопка крутки -->
     <div class="actions">
         <button class="spin-btn" id="spinBtn" onclick="startSpin()">Spin Case (50 ⭐)</button>
     </div>
@@ -221,6 +250,9 @@
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
+
+        let currentPrice = 50;
+        let userBalance = 250;
 
         const items = [
             { icon: '🎁', name: 'Gift Box' },
@@ -232,8 +264,8 @@
 
         const track = document.getElementById('track');
         const spinBtn = document.getElementById('spinBtn');
+        const balanceEl = document.getElementById('balance');
 
-        // Заполнение ленты предметами для красивого скролла
         function initTrack() {
             track.innerHTML = '';
             for (let i = 0; i < 40; i++) {
@@ -248,35 +280,55 @@
             }
         }
 
-        function startSpin() {
-            spinBtn.disabled = true;
+        function switchCase(type, price) {
+            currentPrice = price;
+            spinBtn.innerText = `Spin Case (${price} ⭐)`;
             
-            // Сброс положения track
+            // Переключение стилей вкладок
+            document.querySelectorAll('.case-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            initTrack();
+        }
+
+        function openModal(type) {
+            if (type === 'inventory') {
+                tg.showAlert("Your inventory is empty. Win items in cases!");
+            } else if (type === 'deposit') {
+                tg.showAlert("Opening Telegram Stars invoice...");
+            } else if (type === 'refs') {
+                tg.showAlert("Invite friends and earn 10% from their spins!");
+            }
+        }
+
+        function startSpin() {
+            if (userBalance < currentPrice) {
+                tg.showAlert("Not enough Telegram Stars on balance!");
+                return;
+            }
+
+            spinBtn.disabled = true;
+            userBalance -= currentPrice;
+            balanceEl.innerText = userBalance;
+            
             track.style.transition = 'none';
             track.style.transform = 'translateX(0px)';
             
             setTimeout(() => {
-                // Вращение анимации (смещение влево)
-                const itemWidth = 102; // ширина карточки + margin
-                const winnerIndex = 28; // карточка, которая остановится под указателем
+                const itemWidth = 95;
+                const winnerIndex = 28;
                 const offset = -(winnerIndex * itemWidth - (track.parentElement.clientWidth / 2) + (itemWidth / 2));
                 
                 track.style.transition = 'transform 5s cubic-bezier(0.1, 1, 0.1, 1)';
                 track.style.transform = `translateX(${offset}px)`;
 
-                // По окончании анимации отправляем сигнал боту
                 setTimeout(() => {
                     spinBtn.disabled = false;
-                    
-                    // Вызываем виброотклик Telegram
-                    if (tg.HapticFeedback) {
-                        tg.HapticFeedback.notificationOccurred('success');
-                    }
+                    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
 
-                    // Отправляем данные в телеграм-бота для списывания звезд и выдачи подарка
                     tg.sendData(JSON.stringify({
-                        action: "request_spin",
-                        cost: 50
+                        action: "spin",
+                        price: currentPrice
                     }));
                 }, 5200);
             }, 50);
