@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CatRoll</title>
+    <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
@@ -41,6 +42,7 @@
             font-weight: 600;
             cursor: pointer;
             width: 100%;
+            transition: opacity 0.2s;
         }
         .btn:active { opacity: 0.8; }
     </style>
@@ -48,14 +50,14 @@
 <body>
     <div class="card">
         <h1>🐱 CatRoll</h1>
-        <p>Крути кейсы, выигрывай NFT и подарки</p>
-        <button class="btn" onclick="spin()">Крутить кейс</button>
+        <p>Spin cases, win Telegram Gifts & NFTs</p>
+        <button class="btn" onclick="spin()">Spin Case</button>
     </div>
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
         function spin() {
-            tg.showAlert("Рулетка запущена! Скоро здесь появится интерфейс круток.");
+            tg.showAlert("Roulette launched! The main spinner UI will be available soon.");
         }
     </script>
 </body>
