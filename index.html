@@ -1,0 +1,64 @@
+<<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CatRoll</title>
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            background-color: #0b0b0b;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .card {
+            background: #161616;
+            border: 1px solid #222;
+            border-radius: 20px;
+            padding: 28px;
+            max-width: 320px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+        h1 { font-size: 26px; margin-bottom: 8px; color: #fff; }
+        p { font-size: 14px; color: #888; margin-bottom: 24px; }
+        .btn {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+        .btn:active { opacity: 0.8; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🐱 CatRoll</h1>
+        <p>Spin cases, win Telegram Gifts & NFTs</p>
+        <button class="btn" onclick="spin()">Spin Case</button>
+    </div>
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        function spin() {
+            tg.showAlert("Roulette launched! The main spinner UI will be available soon.");
+        }
+    </script>
+</body>
+</html>
