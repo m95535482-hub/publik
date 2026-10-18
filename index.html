@@ -14,6 +14,7 @@
             --text-secondary: #8a8a9e;
             --gold: #f39c12;
             --green: #2ecc71;
+            --red: #e74c3c;
         }
 
         * {
@@ -48,6 +49,23 @@
         .logo {
             font-size: 20px;
             font-weight: 800;
+            cursor: pointer;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .inventory-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
             cursor: pointer;
         }
 
@@ -294,6 +312,48 @@
             border-color: #ffffff;
         }
 
+        /* Инвентарь */
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .inventory-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .inventory-card .icon { font-size: 40px; margin-bottom: 6px; }
+        .inventory-card .name { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+        .inventory-card .price { font-size: 12px; color: var(--gold); font-weight: 600; margin-bottom: 10px; }
+        .inventory-card .sell-btn {
+            background: #22222a;
+            border: 1px solid var(--border-color);
+            color: var(--green);
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .empty-inv {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-top: 30px;
+            text-align: center;
+        }
+
         /* Нижняя кнопка */
         .actions {
             width: 100%;
@@ -397,8 +457,11 @@
     <!-- Шапка с балансом -->
     <div class="header">
         <div class="logo" onclick="showScreen('menuScreen')">🐱 CatRoll</div>
-        <div class="balance-pill">
-            ⭐ <span id="balance">200000</span>
+        <div class="header-actions">
+            <button class="inventory-btn" onclick="showScreen('inventoryScreen')">🎒 Инвентарь</button>
+            <div class="balance-pill">
+                ⭐ <span id="balance">200000</span>
+            </div>
         </div>
     </div>
 
@@ -459,6 +522,14 @@
         </div>
     </div>
 
+    <!-- ЭКРАН 4: ИНВЕНТАРЬ -->
+    <div class="screen" id="inventoryScreen">
+        <button class="back-btn" onclick="showScreen('menuScreen')">← Назад в меню</button>
+        <div class="menu-title">Ваш Инвентарь</div>
+        <div class="inventory-grid" id="inventoryGrid"></div>
+        <div class="empty-inv" id="emptyInv" style="display: none;">Инвентарь пуст. Крутите кейсы, чтобы выбить предметы!</div>
+    </div>
+
     <!-- КНОПКА КРУТКИ -->
     <div class="actions" id="actionBox" style="display: none;">
         <button class="spin-btn" id="spinBtn" onclick="triggerSpin()">Крутить (50 ⭐)</button>
@@ -472,8 +543,8 @@
             <div class="win-price" id="winPrice">Стоимость: 500 ⭐</div>
 
             <div class="modal-btns">
-                <button class="btn-sell" id="sellBtn" onclick="sellItem()">Продать за 500 ⭐</button>
-                <button class="btn-keep" onclick="keepItem()">Забрать подарок</button>
+                <button class="btn-sell" id="sellBtn" onclick="sellModalItem()">Продать за 500 ⭐</button>
+                <button class="btn-keep" id="keepBtn" onclick="keepModalItem()">Забрать в инвентарь</button>
             </div>
         </div>
     </div>
@@ -487,16 +558,16 @@
         let activeMode = null;
         let currentRotation = 0;
         let currentWinItem = null;
+        let userInventory = []; // Массив предметов в инвентаре
 
-        // Обновленный пул предметов с ценами
         const items = [
-            { icon: '🎅', name: 'Santa Hat NFT', price: 500, weight: 30 },
-            { icon: '🐍', name: 'Snake NFT', price: 500, weight: 30 },
-            { icon: '🎁', name: 'New Year Gift NFT', price: 500, weight: 30 },
-            { icon: '🧸', name: 'Мишка', price: 15, weight: 100 },
-            { icon: '💖', name: 'Сердце', price: 15, weight: 100 },
-            { icon: '🏆', name: 'Кубок', price: 100, weight: 60 },
-            { icon: '💎', name: 'Бриллиант', price: 100, weight: 60 }
+            { id: 1, icon: '🎅', name: 'Santa Hat NFT', price: 500, weight: 30 },
+            { id: 2, icon: '🐍', name: 'Snake NFT', price: 500, weight: 30 },
+            { id: 3, icon: '🎁', name: 'New Year Gift NFT', price: 500, weight: 30 },
+            { id: 4, icon: '🧸', name: 'Мишка', price: 15, weight: 100 },
+            { id: 5, icon: '💖', name: 'Сердце', price: 15, weight: 100 },
+            { id: 6, icon: '🏆', name: 'Кубок', price: 100, weight: 60 },
+            { id: 7, icon: '💎', name: 'Бриллиант', price: 100, weight: 60 }
         ];
 
         const track = document.getElementById('track');
@@ -519,10 +590,14 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
             
-            if (screenId === 'menuScreen') {
+            if (screenId === 'menuScreen' || screenId === 'inventoryScreen') {
                 actionBox.style.display = 'none';
             } else {
                 actionBox.style.display = 'block';
+            }
+
+            if (screenId === 'inventoryScreen') {
+                renderInventory();
             }
         }
 
@@ -584,7 +659,6 @@
                 const itemWidth = 100;
                 const winnerIndex = 28;
 
-                // Вставляем выигранный предмет строго под указатель
                 const cards = track.children;
                 if (cards[winnerIndex]) {
                     cards[winnerIndex].innerHTML = `
@@ -621,6 +695,10 @@
         }
 
         function showWinModal(item) {
+            // Разблокируем кнопки при открытии окна
+            document.getElementById('sellBtn').disabled = false;
+            document.getElementById('keepBtn').disabled = false;
+
             document.getElementById('winIcon').innerText = item.icon;
             document.getElementById('winTitle').innerText = item.name;
             document.getElementById('winPrice').innerText = `Стоимость: ${item.price} ⭐`;
@@ -628,23 +706,75 @@
             document.getElementById('winModal').style.display = 'flex';
         }
 
-        function sellItem() {
+        function sellModalItem() {
+            // Блокируем кнопки, чтобы исключить дюп
+            document.getElementById('sellBtn').disabled = true;
+            document.getElementById('keepBtn').disabled = true;
+
             if (currentWinItem) {
                 userBalance += currentWinItem.price;
                 balanceEl.innerText = userBalance;
-                tg.showAlert(`Вы успешно продали "${currentWinItem.name}" и получили +${currentWinItem.price} ⭐ на баланс!`);
+                tg.showAlert(`Вы успешно продали "${currentWinItem.name}" и получили +${currentWinItem.price} ⭐!`);
+                currentWinItem = null;
             }
             document.getElementById('winModal').style.display = 'none';
         }
 
-        function keepItem() {
-            tg.showAlert(`Подарок "${currentWinItem.name}" отправлен в ваш инвентарь!`);
+        function keepModalItem() {
+            // Блокируем кнопки, чтобы исключить дюп
+            document.getElementById('sellBtn').disabled = true;
+            document.getElementById('keepBtn').disabled = true;
+
+            if (currentWinItem) {
+                userInventory.push({...currentWinItem, invId: Date.now() + Math.random()});
+                tg.showAlert(`Предмет "${currentWinItem.name}" сохранен в инвентарь!`);
+                
+                tg.sendData(JSON.stringify({
+                    action: "keep_item",
+                    item_name: currentWinItem.name,
+                    item_price: currentWinItem.price
+                }));
+
+                currentWinItem = null;
+            }
             document.getElementById('winModal').style.display = 'none';
-            tg.sendData(JSON.stringify({
-                action: "keep_item",
-                item_name: currentWinItem.name,
-                item_price: currentWinItem.price
-            }));
+        }
+
+        // Отрисовка рабочего инвентаря
+        function renderInventory() {
+            const grid = document.getElementById('inventoryGrid');
+            const emptyMsg = document.getElementById('emptyInv');
+            grid.innerHTML = '';
+
+            if (userInventory.length === 0) {
+                emptyMsg.style.display = 'block';
+                return;
+            }
+
+            emptyMsg.style.display = 'none';
+            userInventory.forEach((item) => {
+                const card = document.createElement('div');
+                card.className = 'inventory-card';
+                card.innerHTML = `
+                    <div class="icon">${item.icon}</div>
+                    <div class="name">${item.name}</div>
+                    <div class="price">+${item.price} ⭐</div>
+                    <button class="sell-btn" onclick="sellFromInventory('${item.invId}')">Продать</button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function sellFromInventory(invId) {
+            const index = userInventory.findIndex(i => i.invId.toString() === invId.toString());
+            if (index !== -1) {
+                const item = userInventory[index];
+                userBalance += item.price;
+                balanceEl.innerText = userBalance;
+                userInventory.splice(index, 1);
+                renderInventory();
+                tg.showAlert(`Предмет "${item.name}" продан за +${item.price} ⭐!`);
+            }
         }
     </script>
 </body>
