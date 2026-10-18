@@ -152,7 +152,7 @@
         .item-card .icon { font-size: 28px; }
         .item-card .name { font-size: 10px; color: var(--text-secondary); margin-top: 4px; font-weight: 600; }
 
-        /* Дополнительные кнопки навигации */
+        /* Кнопки меню */
         .menu-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -178,7 +178,7 @@
         .menu-btn:active { background: #22222a; }
         .menu-btn span { display: block; font-size: 18px; margin-bottom: 4px; }
 
-        /* Нижняя панель действия */
+        /* Нижняя панель */
         .actions {
             width: 100%;
             max-width: 360px;
@@ -206,11 +206,11 @@
 </head>
 <body>
 
-    <!-- Шапка -->
+    <!-- Шапка с новым балансом -->
     <div class="header">
         <div class="logo">🐱 CatRoll</div>
         <div class="balance-pill" id="balanceBlock">
-            ⭐ <span id="balance">250</span>
+            ⭐ <span id="balance">200000</span>
         </div>
     </div>
 
@@ -229,7 +229,7 @@
         </div>
     </div>
 
-    <!-- Дополнительные интерактивные кнопки -->
+    <!-- Дополнительные кнопки -->
     <div class="menu-grid">
         <div class="menu-btn" onclick="openModal('inventory')">
             <span>🎒</span>Inventory
@@ -252,24 +252,35 @@
         tg.expand();
 
         let currentPrice = 50;
-        let userBalance = 250;
+        let userBalance = 200000; // Баланс 200,000 звезд
 
+        // Список предметов с повешенными шансами (weight) для NFT
         const items = [
-            { icon: '🎁', name: 'Gift Box' },
-            { icon: '🏆', name: 'Trophy' },
-            { icon: '💎', name: 'Star NFT' },
-            { icon: '👑', name: 'Crown' },
-            { icon: '⚡', name: 'Energy' }
+            { icon: '💎', name: 'Star NFT', weight: 30 },  /* Повышенный шанс (+1.5%) */
+            { icon: '👑', name: 'Crown NFT', weight: 25 },
+            { icon: '🏆', name: 'Trophy', weight: 40 },
+            { icon: '🎁', name: 'Gift Box', weight: 80 },
+            { icon: '⚡', name: 'Energy', weight: 100 }
         ];
 
         const track = document.getElementById('track');
         const spinBtn = document.getElementById('spinBtn');
         const balanceEl = document.getElementById('balance');
 
+        function getRandomItem() {
+            const totalWeight = items.reduce((acc, item) => acc + item.weight, 0);
+            let random = Math.random() * totalWeight;
+            for (let item of items) {
+                if (random < item.weight) return item;
+                random -= item.weight;
+            }
+            return items[0];
+        }
+
         function initTrack() {
             track.innerHTML = '';
             for (let i = 0; i < 40; i++) {
-                const randomItem = items[Math.floor(Math.random() * items.length)];
+                const randomItem = getRandomItem();
                 const card = document.createElement('div');
                 card.className = 'item-card';
                 card.innerHTML = `
@@ -284,7 +295,6 @@
             currentPrice = price;
             spinBtn.innerText = `Spin Case (${price} ⭐)`;
             
-            // Переключение стилей вкладок
             document.querySelectorAll('.case-tab').forEach(tab => tab.classList.remove('active'));
             event.target.classList.add('active');
             
