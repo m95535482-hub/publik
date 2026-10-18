@@ -58,7 +58,7 @@
             gap: 8px;
         }
 
-        .inventory-btn {
+        .inventory-btn-top {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             color: #fff;
@@ -125,6 +125,11 @@
         .mode-card:active {
             transform: scale(0.98);
             border-color: #ffffff;
+        }
+
+        .mode-card.inventory-main-card {
+            border-color: #333344;
+            background: #121217;
         }
 
         .mode-icon {
@@ -458,7 +463,7 @@
     <div class="header">
         <div class="logo" onclick="showScreen('menuScreen')">🐱 CatRoll</div>
         <div class="header-actions">
-            <button class="inventory-btn" onclick="showScreen('inventoryScreen')">🎒 Инвентарь</button>
+            <button class="inventory-btn-top" onclick="showScreen('inventoryScreen')">🎒 Инвентарь</button>
             <div class="balance-pill">
                 ⭐ <span id="balance">200000</span>
             </div>
@@ -468,7 +473,7 @@
     <!-- ЭКРАН 1: ГЛАВНОЕ МЕНЮ ВЫБОРА РУЛЕТОК -->
     <div class="screen active" id="menuScreen">
         <div class="menu-title">Выберите режим</div>
-        <div class="menu-subtitle">Выберите стиль рулетки для крутки призов</div>
+        <div class="menu-subtitle">Выберите стиль рулетки или откройте свой инвентарь</div>
 
         <div class="mode-card" onclick="openGameMode('classic')">
             <div class="mode-icon">🎰</div>
@@ -483,6 +488,15 @@
             <div class="mode-info">
                 <h3>Колесо Фортуны</h3>
                 <p>Круговое вращающееся колесо с призами</p>
+            </div>
+        </div>
+
+        <!-- КНОПКА ИНВЕНТАРЯ НА ГЛАВНОМ ЭКРАНЕ -->
+        <div class="mode-card inventory-main-card" onclick="showScreen('inventoryScreen')">
+            <div class="mode-icon">🎒</div>
+            <div class="mode-info">
+                <h3>Мой Инвентарь</h3>
+                <p>Просмотр и продажа ваших предметов</p>
             </div>
         </div>
     </div>
@@ -558,7 +572,7 @@
         let activeMode = null;
         let currentRotation = 0;
         let currentWinItem = null;
-        let userInventory = []; // Массив предметов в инвентаре
+        let userInventory = [];
 
         const items = [
             { id: 1, icon: '🎅', name: 'Santa Hat NFT', price: 500, weight: 30 },
@@ -695,7 +709,7 @@
         }
 
         function showWinModal(item) {
-            // Разблокируем кнопки при открытии окна
+            // Включаем кнопки модалки
             document.getElementById('sellBtn').disabled = false;
             document.getElementById('keepBtn').disabled = false;
 
@@ -706,41 +720,49 @@
             document.getElementById('winModal').style.display = 'flex';
         }
 
+        function closeWinModal() {
+            document.getElementById('winModal').style.display = 'none';
+        }
+
         function sellModalItem() {
-            // Блокируем кнопки, чтобы исключить дюп
+            if (!currentWinItem) return;
+
+            // Мгновенно блокируем кнопки и закрываем окно для защиты от дюпа
             document.getElementById('sellBtn').disabled = true;
             document.getElementById('keepBtn').disabled = true;
+            closeWinModal();
 
-            if (currentWinItem) {
-                userBalance += currentWinItem.price;
-                balanceEl.innerText = userBalance;
-                tg.showAlert(`Вы успешно продали "${currentWinItem.name}" и получили +${currentWinItem.price} ⭐!`);
-                currentWinItem = null;
-            }
-            document.getElementById('winModal').style.display = 'none';
+            const priceToAdd = currentWinItem.price;
+            const itemName = currentWinItem.name;
+            currentWinItem = null; // Обнуляем выигранный элемент
+
+            userBalance += priceToAdd;
+            balanceEl.innerText = userBalance;
+            tg.showAlert(`Вы успешно продали "${itemName}" и получили +${priceToAdd} ⭐!`);
         }
 
         function keepModalItem() {
-            // Блокируем кнопки, чтобы исключить дюп
+            if (!currentWinItem) return;
+
+            // Мгновенно блокируем кнопки и закрываем окно для защиты от дюпа
             document.getElementById('sellBtn').disabled = true;
             document.getElementById('keepBtn').disabled = true;
+            closeWinModal();
 
-            if (currentWinItem) {
-                userInventory.push({...currentWinItem, invId: Date.now() + Math.random()});
-                tg.showAlert(`Предмет "${currentWinItem.name}" сохранен в инвентарь!`);
-                
-                tg.sendData(JSON.stringify({
-                    action: "keep_item",
-                    item_name: currentWinItem.name,
-                    item_price: currentWinItem.price
-                }));
+            const itemToKeep = {...currentWinItem, invId: Date.now() + Math.random()};
+            currentWinItem = null; // Обнуляем выигранный элемент
 
-                currentWinItem = null;
-            }
-            document.getElementById('winModal').style.display = 'none';
+            userInventory.push(itemToKeep);
+            tg.showAlert(`Предмет "${itemToKeep.name}" сохранен в ваш инвентарь!`);
+            
+            tg.sendData(JSON.stringify({
+                action: "keep_item",
+                item_name: itemToKeep.name,
+                item_price: itemToKeep.price
+            }));
         }
 
-        // Отрисовка рабочего инвентаря
+        // Отрисовка инвентаря
         function renderInventory() {
             const grid = document.getElementById('inventoryGrid');
             const emptyMsg = document.getElementById('emptyInv');
