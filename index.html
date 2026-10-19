@@ -101,8 +101,32 @@
         .wheel-box { position: relative; width: 280px; height: 280px; margin: 10px 0 22px 0; display: flex; align-items: center; justify-content: center; }
         .wheel-pointer { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 24px solid #ff3b30; z-index: 20; filter: drop-shadow(0 4px 14px rgba(255,59,48,0.95)); }
         .wheel { width: 100%; height: 100%; border-radius: 50%; border: 7px solid #1a1a26; position: relative; overflow: hidden; transition: transform 5s cubic-bezier(0.1, 1, 0.1, 1); box-shadow: 0 0 40px rgba(0,0,0,0.9); }
-        .wheel-slice { position: absolute; width: 50%; height: 50%; top: 0; left: 50%; transform-origin: 0% 100%; pointer-events: none; display: flex; justify-content: center; }
-        .wheel-slice-content { position: absolute; left: 50%; top: 32%; transform: translate(-50%, -50%) rotate(calc(var(--item-angle) * 1deg)); display: flex; flex-direction: column; align-items: center; width: 70px; text-align: center; }
+        
+        .wheel-slice { 
+            position: absolute; 
+            width: 50%; 
+            height: 50%; 
+            top: 0; 
+            left: 50%; 
+            transform-origin: 0% 100%; 
+            pointer-events: none; 
+            display: flex; 
+            justify-content: center;
+            align-items: flex-end;
+        }
+        
+        .wheel-slice-content { 
+            position: absolute; 
+            left: 50%; 
+            top: 45px; 
+            transform: translateX(-50%) rotate(calc(var(--item-angle) * 1deg)); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            text-align: center; 
+            width: 50px;
+        }
+
         .wheel-center-cap { position: absolute; width: 48px; height: 48px; background: linear-gradient(135deg, #2c2c3d, #121218); border: 3px solid var(--purple-accent); border-radius: 50%; z-index: 15; display: flex; align-items: center; justify-content: center; color: #fff; }
 
         .action-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--purple-accent), var(--purple-bright)); border: none; border-radius: 18px; color: #fff; font-weight: 900; font-size: 16px; cursor: pointer; box-shadow: 0 8px 25px var(--accent-glow); }
@@ -464,29 +488,30 @@
             }, 5050);
         }
 
-        // Колесо фортуны с 3 чётко чередующимися цветами и отображением подарков/NFT
         function buildWheel() {
             const wheel = document.getElementById('wheelTrack');
             wheel.innerHTML = '';
             const count = itemsPool.length;
             const sliceAngle = 360 / count;
-            
-            // 3 цвета, которые гарантированно не будут повторяться подряд благодаря циклу
             const threeColors = ['#1d1d2c', '#2e274a', '#182436'];
 
             itemsPool.forEach((item, index) => {
                 const slice = document.createElement('div');
                 slice.className = 'wheel-slice';
-                slice.style.transform = `rotate(${index * sliceAngle}deg)`;
-                // Чередуем цвета по индексу (0, 1, 2, 0, 1, 2...), поэтому одинаковые цвета никогда не соприкасаются
+                const rotation = index * sliceAngle;
+                
+                slice.style.transform = `rotate(${rotation}deg) skewY(${90 - sliceAngle}deg)`;
                 slice.style.backgroundColor = threeColors[index % 3];
                 
-                slice.innerHTML = `
-                    <div class="wheel-slice-content" style="--item-angle:${sliceAngle/2}deg">
-                        <span style="font-size:20px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));">${item.icon}</span>
-                        <span style="font-size:8px; color:#fff; font-weight:700; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:65px;">${item.name}</span>
-                    </div>
+                const content = document.createElement('div');
+                content.className = 'wheel-slice-content';
+                content.style.setProperty('--item-angle', sliceAngle / 2);
+                content.innerHTML = `
+                    <span style="font-size: 20px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));">${item.icon}</span>
+                    <span style="font-size: 8px; color: #fff; font-weight: 700; margin-top: 2px; text-shadow: 0 1px 2px rgba(0,0,0,0.9);">${item.name}</span>
                 `;
+                
+                slice.appendChild(content);
                 wheel.appendChild(slice);
             });
         }
