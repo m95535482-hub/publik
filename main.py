@@ -6,25 +6,24 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import telebot
 
-# Bot Token
+# Токен вашего бота
 TOKEN = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN")
 
-# Your personal Telegram ID to receive withdrawal requests
+# Ваш личный Telegram ID для получения заявок на вывод
 ADMIN_ID = 1218168630
 
 bot = telebot.TeleBot(TOKEN)
 app = FastAPI()
 
-# Mount frontend static files
+# Подключение статических файлов (фронтенд Mini App)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-
-# Initialize SQLite Database
+# Инициализация базы данных SQLite
 def init_db():
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
     
-    # Gifts table
+    # Таблица подарков
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS gifts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,7 +34,7 @@ def init_db():
         )
     """)
     
-    # User inventory table
+    # Таблица инвентаря игроков
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS inventory (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,29 +46,32 @@ def init_db():
         )
     """)
     
-    # Auto-populate basic gifts on first launch
+    # Автоматическое добавление базовых подарков при первом запуске
     cursor.execute("SELECT COUNT(*) FROM gifts")
     if cursor.fetchone()[0] == 0:
         base_gifts = [
-            ("Telegram Heart", "https://via.placeholder.com/150/FF0000", "https://via.placeholder.com/150/FF0000", 15),
-            ("Teddy Bear", "https://via.placeholder.com/150/0000FF", "https://via.placeholder.com/150/0000FF", 25),
-            ("Star Rocket", "https://via.placeholder.com/150/00FF00", "https://via.placeholder.com/150/00FF00", 50),
-            ("Golden Crown", "https://via.placeholder.com/150/FFFF00", "https://via.placeholder.com/150/FFFF00", 100)
+            ("Star Pouch", "⭐", "⭐", 30),
+            ("Gift Box", "🎁", "🎁", 60),
+            ("Rubber Duck", "🦆", "🦆", 120),
+            ("Telegram Gem", "💎", "💎", 250),
+            ("Rocket Gift", "🚀", "🚀", 450),
+            ("Golden Crown", "👑", "👑", 800),
+            ("Cyber Cat NFT", "🐱", "🐱", 1500),
+            ("Diamond", "💠", "💠", 2500)
         ]
         cursor.executemany(
             "INSERT INTO gifts (name, image_url, anim_url, price) VALUES (?, ?, ?, ?)", 
             base_gifts
         )
-        print("✅ Basic gifts successfully loaded into the database!")
+        print("✅ Базовые подарки успешно загружены в базу данных!")
         
     conn.commit()
     conn.close()
 
 init_db()
 
-
 def give_random_gift(user_id: int):
-    """Select a random gift and add it to the user's inventory"""
+    """Выбор случайного подарка из базы и добавление в инвентарь игрока"""
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
     
@@ -93,9 +95,7 @@ def give_random_gift(user_id: int):
     return gift_name
 
 
-# ==========================================
-# TELEGRAM BOT COMMANDS
-# ==========================================
+# --- Команды Telegram Бота ---
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
@@ -118,13 +118,13 @@ def handle_buy_free(message):
         bot.send_message(
             message.chat.id, 
             f"🎉 Congratulations! You received: **{gift_name}**!\n\n"
-            f"The item has been added to your inventory in the Mini App. Open the app to request a withdrawal.",
+            f"The item has been added to your inventory in the Mini App.",
             parse_mode="Markdown"
         )
 
 @bot.message_handler(commands=['add'])
 def handle_add_gift(message):
-    """Add a gift manually via bot command (admin only)"""
+    """Добавление подарка вручную (только для администратора)"""
     if message.from_user.id != ADMIN_ID:
         bot.reply_to(message, "⛔ You do not have permissions to execute this command.")
         return
@@ -134,7 +134,7 @@ def handle_add_gift(message):
         parts = [p.strip() for p in text.split('|')]
         
         if len(parts) != 4:
-            bot.reply_to(message, "⚠️ Format: `/add Name | Image_URL | Animation_URL | Price`")
+            bot.reply_to(message, "⚠️ Format: `/add Name | Image | Animation | Price`")
             return
             
         name, image_url, anim_url, price = parts[0], parts[1], parts[2], int(parts[3])
@@ -153,9 +153,7 @@ def handle_add_gift(message):
         bot.reply_to(message, f"❌ Error adding gift: {e}")
 
 
-# ==========================================
-# MINI APP API ENDPOINTS
-# ==========================================
+# --- API Эндпоинты для Mini App ---
 
 @app.get("/")
 def read_root():
@@ -187,6 +185,13 @@ def get_inventory(user_id: int):
         for r in rows
     ]
 
+@app.post("/api/roll/{user_id}")
+def api_roll(user_id: int):
+    gift_name = give_random_gift(user_id)
+    if not gift_name:
+        raise HTTPException(status_code=400, detail="No gifts available")
+    return {"gift_name": gift_name}
+
 @app.post("/api/withdraw/{item_id}")
 def withdraw_item(item_id: int):
     conn = sqlite3.connect("database.db")
@@ -203,7 +208,7 @@ def withdraw_item(item_id: int):
     
     if status == 'withdraw_requested':
         conn.close()
-        return {"message": "Withdrawal request for this item has already been submitted!"}
+        return {"message": "Withdrawal request already submitted!"}
         
     cursor.execute("UPDATE inventory SET status = 'withdraw_requested' WHERE id = ?", (item_id,))
     conn.commit()
