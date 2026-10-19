@@ -76,7 +76,11 @@ def init_user(data: UserRequest):
 def claim_bonus(data: UserRequest):
     uid = data.user_id
     if uid not in users_db:
-        raise HTTPException(status_code=404, detail="User not found")
+        users_db[uid] = {
+            "balance": 200000,
+            "inventory": [],
+            "last_bonus": 0,
+        }
 
     now = time.time() * 1000
     cooldown = 24 * 60 * 60 * 1000
@@ -101,18 +105,15 @@ def claim_bonus(data: UserRequest):
 def spin_case(data: SpinRequest):
     uid = data.user_id
     if uid not in users_db:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    costs = {"starter": 50, "rare": 250, "legend": 1000}
-    cost = costs.get(data.case_type, 50)
-
-    if not data.is_demo:
-        if users_db[uid]["balance"] < cost:
-            raise HTTPException(status_code=400, detail="Not enough stars")
-        users_db[uid]["balance"] -= cost
+        users_db[uid] = {
+            "balance": 200000,
+            "inventory": [],
+            "last_bonus": 0,
+        }
 
     if not ITEMS_POOL:
         raise HTTPException(status_code=500, detail="Items pool is empty")
+    
     winning_item = random.choice(ITEMS_POOL)
     save_db()
     return {"balance": users_db[uid]["balance"], "item": winning_item}
@@ -121,16 +122,15 @@ def spin_case(data: SpinRequest):
 def spin_wheel(data: SpinRequest):
     uid = data.user_id
     if uid not in users_db:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    cost = 100
-    if not data.is_demo:
-        if users_db[uid]["balance"] < cost:
-            raise HTTPException(status_code=400, detail="Not enough stars")
-        users_db[uid]["balance"] -= cost
+        users_db[uid] = {
+            "balance": 200000,
+            "inventory": [],
+            "last_bonus": 0,
+        }
 
     if not ITEMS_POOL:
         raise HTTPException(status_code=500, detail="Items pool is empty")
+    
     winning_item = random.choice(ITEMS_POOL)
     save_db()
     return {"balance": users_db[uid]["balance"], "item": winning_item}
@@ -139,7 +139,11 @@ def spin_wheel(data: SpinRequest):
 def inventory_action(data: InventoryAction):
     uid = data.user_id
     if uid not in users_db:
-        raise HTTPException(status_code=404, detail="User not found")
+        users_db[uid] = {
+            "balance": 200000,
+            "inventory": [],
+            "last_bonus": 0,
+        }
     
     user = users_db[uid]
     if data.action == "claim":
@@ -154,7 +158,11 @@ def inventory_action(data: InventoryAction):
 def sell_inventory_item(data: SellItemRequest):
     uid = data.user_id
     if uid not in users_db:
-        raise HTTPException(status_code=404, detail="User not found")
+        users_db[uid] = {
+            "balance": 200000,
+            "inventory": [],
+            "last_bonus": 0,
+        }
     
     user = users_db[uid]
     idx = next((i for i, item in enumerate(user["inventory"]) if item["uid"] == data.uid), -1)
@@ -167,4 +175,4 @@ def sell_inventory_item(data: SellItemRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)ё
