@@ -271,9 +271,9 @@
         
         let localItemsPool = [
             {"id": 1, "name": "Star Pouch", "icon": "⭐", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f31f.png", "animation": "", "price": 30},
-            {"id": 2, "name": "Animated Gift Box", "icon": "🎁", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f381.png", "animation": "https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-screens-and-numbers-31958-large.mp4", "price": 150},
+            {"id": 2, "name": "Animated Gift Box", "icon": "🎁", "image": "https://images.emojiterra.com/google/android-11/512px/1f381.png", "animation": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3ZtOGlnczJmMXZmbWNkM3E1c296NmcxYmpxbW1ubGRyYjNtdXhzaSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/L1R16I0SVbipNMCxyP/giphy.gif", "price": 150},
             {"id": 3, "name": "Rubber Duck", "icon": "🦆", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f986.png", "animation": "", "price": 120},
-            {"id": 4, "name": "Cyber Neon", "icon": "🚀", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f680.png", "animation": "https://assets.mixkit.co/videos/preview/mixkit-looped-animation-of-a-futuristic-tunnel-41566-large.mp4", "price": 500},
+            {"id": 4, "name": "Cyber Neon", "icon": "🚀", "image": "https://images.emojiterra.com/google/android-11/512px/1f680.png", "animation": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2F3OXFvNHZ3NnlvOHo5bWhhbXg5eWoxcTN4NTRuam55anE5b2V6byZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xT9IgzoKnwFNmISR8I/giphy.gif", "price": 500},
             {"id": 5, "name": "Telegram Gem", "icon": "💎", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f48e.png", "animation": "", "price": 250},
             {"id": 6, "name": "Golden Crown", "icon": "👑", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f451.png", "animation": "", "price": 800}
         ];
@@ -296,8 +296,9 @@
         }
 
         function renderMedia(item) {
-            if (item.animation && (item.animation.endsWith('.mp4') || item.animation.includes('mixkit.co'))) {
-                return `<video src="${item.animation}" autoplay loop muted playsinline></video>`;
+            // Если есть анимация (гифка), показываем её, иначе обычную картинку
+            if (item.animation) {
+                return `<img src="${item.animation}" alt="${item.name}" style="object-fit: contain;">`;
             }
             return `<img src="${item.image || ''}" alt="${item.name}" onerror="this.style.display='none'">`;
         }
@@ -452,7 +453,7 @@
             list.innerHTML = inventory.map(item => `
                 <div class="item-card">
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        ${item.animation && (item.animation.endsWith('.mp4') || item.animation.includes('mixkit.co')) ? `<video src="${item.animation}" width="36" height="36" autoplay loop muted playsinline style="object-fit:contain; border-radius:4px;"></video>` : `<img src="${item.image || ''}" width="36" height="36" style="object-fit: contain; border-radius:4px;" onerror="this.style.display='none'">`}
+                        <img src="${item.animation || item.image || ''}" width="36" height="36" style="object-fit: contain; border-radius:4px;" onerror="this.style.display='none'">
                         <div><b>${item.name}</b><br><small style="color: var(--gold);">+${item.price} ⭐</small></div>
                     </div>
                     <button class="btn" style="width: auto; padding: 6px 14px; margin: 0; font-size: 13px;" onclick="sellItem(${item.uid})">Продать</button>
