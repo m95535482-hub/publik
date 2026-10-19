@@ -4,19 +4,20 @@ import os
 import random
 import time
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-from aiogram import Bot, Dispatcher, types
+from aiogram import Bot, Dispatcher, F, types
 from aiogram.filters import Command
+from aiogram.types import LabeledPrice
 
 # --- НАСТРОЙКИ БОТА И АДМИНКИ ---
-TOKEN = "8643024766:AAFkb8a0NzGGz6DJ2ksE2aqDwWsQbhTAybI"
+TOKEN = "8643024766:AAFkb8a0NzGGz6DJ2ksE2aqDwWsQbhTAybI"[cite: 3]
 ADMIN_SECRET = "super_secret_key_123"
-ADMIN_ID = 0  # Сюда можно вписать ваш Telegram ID, чтобы только вы могли добавлять подарки (или оставить 0 для теста)
+ADMIN_ID = 0  # Укажите ваш Telegram ID для доступа к админ-командам (или 0 для отключения проверки)
 
-bot = Bot(token=TOKEN)
+bot = Bot(token=TOKEN)[cite: 3]
 dp = Dispatcher()
 
 # --- ПУЛ ПРЕДМЕТОВ И БАЗА ДАННЫХ ---
@@ -80,7 +81,6 @@ def save_db():
 # --- LIFESPAN (Запуск бота при старте FastAPI) ---
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Запускаем телеграм-бота в фоновом режиме
     asyncio.create_task(dp.start_polling(bot))
     yield
 
@@ -133,11 +133,7 @@ def serve_frontend():
 def init_user(data: UserRequest):
     uid = data.user_id
     if uid not in users_db:
-        users_db[uid] = {
-            "balance": 200000,
-            "inventory": [],
-            "last_bonus": 0,
-        }
+        users_db[uid] = {"balance": 200000, "inventory": [], "last_bonus": 0}
         save_db()
     return users_db[uid]
 
@@ -218,21 +214,20 @@ def api_add_item(data: NewItemRequest):
     return {"status": "success", "added_item": item, "total_items": len(ITEMS_POOL)}
 
 
-# --- ЛОГИКА TELEGRAM БОТА ---
+# --- ЛОГИКА TELEGRAM БОТА И ОПЛАТЫ STARS ---
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
     await message.answer(
         "👋 Привет! Это панель управления CatRoll.\n\n"
-        "Чтобы добавить новый подарок в игру, отправьте команду:\n"
+        "🛠 <b>Добавить предмет в рулетку:</b>\n"
         "<code>/add Название | Ссылка_картинка | Ссылка_анимация_mp4 | Цена</code>\n\n"
-        "Пример:\n"
-        "<code>/add New Gift | https://img.com/pic.png | https://img.com/anim.mp4 | 300</code>",
+        "⭐ <b>Купить звездный подарок (15 звёзд):</b>\n"
+        "/buy",
         parse_mode="HTML"
     )
 
 @dp.message(Command("add"))
 async def cmd_add_item(message: types.Message):
-    # Если указан ADMIN_ID, проверяем его (если ADMIN_ID = 0, проверка отключена для удобства теста)
     if ADMIN_ID != 0 and message.from_user.id != ADMIN_ID:
         await message.answer("❌ У вас нет прав для добавления предметов.")
         return
@@ -256,7 +251,6 @@ async def cmd_add_item(message: types.Message):
         await message.answer("⚠️ Цена должна быть целым числом!")
         return
 
-    # Сохраняем локально через функцию сервера
     try:
         item = add_new_item_to_pool(name, image, animation, price)
         await message.answer(
@@ -268,3 +262,31 @@ async def cmd_add_item(message: types.Message):
         )
     except Exception as e:
         await message.answer(f"❌ Ошибка при добавлении: {e}")
+
+@dp.message(Command("buy"))
+async def cmd_buy(message: types.Message):
+    prices = [LabeledPrice(label="Подарок в CatRoll", amount=15)]
+    await message.bot.send_invoice(
+        chat_id=message.chat.id,
+        title="Покупка подарка",
+        description="Случайный подарок в рулетке CatRoll за Telegram Stars",
+        payload="gift_case_15",
+        currency="XTR",  # Валюта Telegram Stars
+        prices=prices
+    )
+
+@dp.pre_checkout_query()
+async def process_pre_checkout_query(pre_checkout_query: types.PreCheckoutQuery):
+    await pre_checkout_query.bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True)
+
+@dp.message(F.successful_payment)
+async def success_payment(message: types.Message):
+    uid = str(message.from_user.id)
+    if uid not in users_db:
+        users_db[uid] = {"balance": 200000, "inventory": [], "last_bonus": 0}
+    
+    # Начисляем баланс или выдаем случайный предмет за покупку
+    users_db[uid]["balance"] += 200  # Добавляем 200 звезд на баланс за покупку
+    save_db()
+    
+    await message.answer("🎉 Оплата прошла успешно! Вам начислено +200 ⭐ на баланс в игре.")
