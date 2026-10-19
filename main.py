@@ -4,7 +4,7 @@ import os
 import random
 import time
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
@@ -13,11 +13,11 @@ from aiogram.filters import Command
 from aiogram.types import LabeledPrice
 
 # --- НАСТРОЙКИ БОТА И АДМИНКИ ---
-TOKEN = "8643024766:AAFkb8a0NzGGz6DJ2ksE2aqDwWsQbhTAybI"[cite: 3]
+TOKEN = "8643024766:AAFkb8a0NzGGz6DJ2ksE2aqDwWsQbhTAybI"
 ADMIN_SECRET = "super_secret_key_123"
-ADMIN_ID = 0  # Укажите ваш Telegram ID для доступа к админ-командам (или 0 для отключения проверки)
+ADMIN_ID = 0  # Укажите ваш Telegram ID для ограничений или 0 для открытого доступа
 
-bot = Bot(token=TOKEN)[cite: 3]
+bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
 # --- ПУЛ ПРЕДМЕТОВ И БАЗА ДАННЫХ ---
@@ -28,7 +28,7 @@ DEFAULT_ITEMS = [
     {"id": 1, "name": "Star Pouch", "icon": "⭐", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f31f.png", "animation": "", "price": 30},
     {"id": 2, "name": "Animated Gift Box", "icon": "🎁", "image": "https://images.emojiterra.com/google/android-11/512px/1f381.png", "animation": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3ZtOGlnczJmMXZmbWNkM3E1c296NmcxYmpxbW1ubGRyYjNtdXhzaSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/L1R16I0SVbipNMCxyP/giphy.gif", "price": 150},
     {"id": 3, "name": "Rubber Duck", "icon": "🦆", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f986.png", "animation": "", "price": 120},
-    {"id": 4, "name": "Cyber Neon", "icon": "🚀", "image": "https://images.emojiterra.com/google/android-11/512px/1f680.png", "animation": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2F3OXFvNHZ3NnlvOHo5bWhhbXg5eWoxcTN4NTRuam55anE5b2V6byZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xT9IgzoKnwFNmISR8I/giphy.gif", "price": 500},
+    {"id": 4, "name": "Cyber Neon", "icon": "🚀", "image": "https://images.emojiterra.com/google/android-11/512px/1f680.png", "animation": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3F3OXFvNHZ3NnlvOHo5bWhhbXg5eWoxcTN4NTRuam55anE5b2V6byZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xT9IgzoKnwFNmISR8I/giphy.gif", "price": 500},
     {"id": 5, "name": "Telegram Gem", "icon": "💎", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f48e.png", "animation": "", "price": 250},
     {"id": 6, "name": "Golden Crown", "icon": "👑", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f451.png", "animation": "", "price": 800}
 ]
@@ -78,7 +78,7 @@ def save_db():
     with open(DB_FILE, "w", encoding="utf-8") as f:
         json.dump(users_db, f, ensure_ascii=False, indent=4)
 
-# --- LIFESPAN (Запуск бота при старте FastAPI) ---
+# --- LIFESPAN (Автоматический запуск бота при старте FastAPI) ---
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     asyncio.create_task(dp.start_polling(bot))
@@ -118,13 +118,13 @@ def get_weighted_random_item(items):
     regular_items = [item for item in items if not item.get("animation")]
 
     if animated_items and regular_items:
-        if random.random() < 0.7:  # 70% шанс на анимированный подарок для тестов
+        if random.random() < 0.7:  # 70% шанс для теста
             return random.choice(animated_items)
         else:
             return random.choice(regular_items)
     return random.choice(items)
 
-# --- API МАРШРУТЫ ---
+# --- API МАРШРУТЫ ДЛЯ МИНИ-ПРИЛОЖЕНИЯ ---
 @app.get("/")
 def serve_frontend():
     return FileResponse("index.html")
@@ -145,7 +145,7 @@ def spin_case(data: SpinRequest):
 
     cost = 100
     if not data.is_demo and users_db[uid]["balance"] < cost:
-        raise HTTPException(status_code=400, detail="Недостаточно звезд для прокрутки!")
+        raise HTTPException(status_code=400, detail="Недостаточно звезд!")
 
     if not data.is_demo:
         users_db[uid]["balance"] -= cost
@@ -165,7 +165,7 @@ def spin_wheel(data: SpinRequest):
 
     cost = 50
     if not data.is_demo and users_db[uid]["balance"] < cost:
-        raise HTTPException(status_code=400, detail="Недостаточно звезд для прокрутки!")
+        raise HTTPException(status_code=400, detail="Недостаточно звезд!")
 
     if not data.is_demo:
         users_db[uid]["balance"] -= cost
@@ -208,13 +208,13 @@ def sell_inventory_item(data: SellItemRequest):
 @app.post("/api/add-item")
 def api_add_item(data: NewItemRequest):
     if data.admin_secret != ADMIN_SECRET:
-        raise HTTPException(status_code=403, detail="Неверный секретный ключ админа!")
+        raise HTTPException(status_code=403, detail="Неверный секретный ключ!")
     
     item = add_new_item_to_pool(data.name, data.image, data.animation, data.price)
     return {"status": "success", "added_item": item, "total_items": len(ITEMS_POOL)}
 
 
-# --- ЛОГИКА TELEGRAM БОТА И ОПЛАТЫ STARS ---
+# --- ЛОГИКА TELEGRAM БОТА ---
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
     await message.answer(
@@ -263,15 +263,16 @@ async def cmd_add_item(message: types.Message):
     except Exception as e:
         await message.answer(f"❌ Ошибка при добавлении: {e}")
 
+# Команда для отправки счета на оплату за Telegram Stars (XTR)
 @dp.message(Command("buy"))
 async def cmd_buy(message: types.Message):
     prices = [LabeledPrice(label="Подарок в CatRoll", amount=15)]
     await message.bot.send_invoice(
         chat_id=message.chat.id,
         title="Покупка подарка",
-        description="Случайный подарок в рулетке CatRoll за Telegram Stars",
+        description="Случайный подарок в рулетке CatRoll за 15 Telegram Stars",
         payload="gift_case_15",
-        currency="XTR",  # Валюта Telegram Stars
+        currency="XTR",
         prices=prices
     )
 
@@ -279,14 +280,24 @@ async def cmd_buy(message: types.Message):
 async def process_pre_checkout_query(pre_checkout_query: types.PreCheckoutQuery):
     await pre_checkout_query.bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True)
 
+# Автоматическая обработка успешного платежа и выдача подарка в инвентарь
 @dp.message(F.successful_payment)
 async def success_payment(message: types.Message):
     uid = str(message.from_user.id)
     if uid not in users_db:
         users_db[uid] = {"balance": 200000, "inventory": [], "last_bonus": 0}
     
-    # Начисляем баланс или выдаем случайный предмет за покупку
-    users_db[uid]["balance"] += 200  # Добавляем 200 звезд на баланс за покупку
-    save_db()
-    
-    await message.answer("🎉 Оплата прошла успешно! Вам начислено +200 ⭐ на баланс в игре.")
+    if ITEMS_POOL:
+        won_item = random.choice(ITEMS_POOL)
+        item_with_uid = {**won_item, "uid": time.time() * 1000 + random.random()}
+        users_db[uid]["inventory"].append(item_with_uid)
+        save_db()
+        
+        await message.answer(
+            f"🎉 <b>Оплата прошла успешно!</b>\n\n"
+            f"🎁 Вы получили подарок: <b>{won_item['name']}</b>\n"
+            f"Он уже добавлен в ваш инвентарь в игре!",
+            parse_mode="HTML"
+        )
+    else:
+        await message.answer("🎉 Оплата прошла успешно, но пул предметов пуст!")
