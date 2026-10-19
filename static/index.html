@@ -318,7 +318,7 @@
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
         .item-card img { width: 50px; height: 50px; object-fit: contain; }
-        .item-card .name { font-size: 10px; color: var(--text-secondary); margin-top: 6px; font-weight: 700; text-align: center; }
+        .item-card .name { font-size: 9px; color: var(--text-secondary); margin-top: 4px; font-weight: 700; text-align: center; }
         .item-card .price-tag { font-size: 11px; color: var(--gold); font-weight: 800; margin-top: 2px; }
 
         .wheel-box {
@@ -670,7 +670,7 @@
             }
         };
 
-        // Бассейн предметов с реальными ссылками на картинки подарков (включая Timeless Book)
+        // Бассейн предметов: заменили звездочку на Timeless Book с ценой 30 ⭐
         const itemsPool = [
             { id: 1, name: 'Timeless Book', icon: 'https://nft.fragment.com/gift/TimelessBook-14508.png', price: 30 },
             { id: 2, name: 'Gift Box', icon: 'https://cdn4.iconfinder.com/data/icons/christmas-flat-13/64/gift-box-present-surprise-holiday-512.png', price: 60 },
@@ -748,7 +748,6 @@
                 const res = await fetch(`/api/inventory/${userId}`);
                 const data = await res.json();
                 state.inventory = data.map(item => {
-                    // Ищем соответствующий подарок в itemsPool по имени для надежного отображения картинки
                     const found = itemsPool.find(p => p.name === item.gift_name);
                     return {
                         id: item.id,
@@ -799,7 +798,7 @@
             state.lastBonusTime = now;
             localStorage.setItem('catroll_bonus', state.lastBonusTime);
             if (window.confetti) confetti({ particleCount: 60, spread: 70 });
-            showWinModal({ name: state.lang === 'EN' ? 'Daily Reward' : 'Ежедневная награда', icon: 'https://cdn4.iconfinder.com/data/icons/christmas-flat-13/64/gift-box-present-surprise-holiday-512.png', price: 50 }, false);
+            showWinModal({ name: 'Timeless Book', icon: 'https://nft.fragment.com/gift/TimelessBook-14508.png', price: 30 }, false);
             startBonusTimer();
         }
 
@@ -880,7 +879,6 @@
                 });
                 const data = await res.json();
                 
-                // Сопоставляем выигранный предмет с локальным пулом по имени для корректной картинки
                 const foundItem = itemsPool.find(p => p.name === data.gift.name);
                 currentWinningItem = {
                     name: data.gift.name,
