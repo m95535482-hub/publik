@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -97,7 +97,7 @@
         .item-card .name { font-size: 10px; color: var(--text-secondary); margin-top: 6px; font-weight: 700; text-align: center; }
         .item-card .price-tag { font-size: 11px; color: var(--gold); font-weight: 800; margin-top: 2px; }
 
-        /* Колесо Фортуны */
+        /* Идеальное Колесо Фортуны (Черный / Серый) */
         .wheel-box { position: relative; width: 280px; height: 280px; margin: 10px 0 22px 0; display: flex; align-items: center; justify-content: center; }
         .wheel-pointer { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 24px solid #ff3b30; z-index: 20; filter: drop-shadow(0 4px 14px rgba(255,59,48,0.95)); }
         .wheel { width: 100%; height: 100%; border-radius: 50%; border: 7px solid #1a1a26; position: relative; overflow: hidden; transition: transform 5s cubic-bezier(0.1, 1, 0.1, 1); box-shadow: 0 0 40px rgba(0,0,0,0.9); }
@@ -112,19 +112,18 @@
             pointer-events: none; 
             display: flex; 
             justify-content: center;
-            align-items: flex-end;
         }
         
         .wheel-slice-content { 
             position: absolute; 
             left: 50%; 
-            top: 45px; 
-            transform: translateX(-50%) rotate(calc(var(--item-angle) * 1deg)); 
+            top: 35px; 
+            transform: translateX(-50%) rotate(45deg); 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             text-align: center; 
-            width: 50px;
+            width: 60px;
         }
 
         .wheel-center-cap { position: absolute; width: 48px; height: 48px; background: linear-gradient(135deg, #2c2c3d, #121218); border: 3px solid var(--purple-accent); border-radius: 50%; z-index: 15; display: flex; align-items: center; justify-content: center; color: #fff; }
@@ -168,63 +167,63 @@
             <div class="logo-icon">🐾</div>CatRoll
         </div>
         <div class="header-actions">
-            <button class="lang-btn" onclick="toggleLanguage()" id="langBtn">🌐 RU</button>
+            <button class="lang-btn" onclick="toggleLanguage()" id="langBtn">🌐 EN</button>
             <div class="balance-pill"><i class="fa-solid fa-star"></i><span id="userBalance">0</span></div>
         </div>
     </header>
 
     <main id="main-screen" class="screen active">
-        <h1 class="menu-title" data-i18n="mainTitle">Выбирай режим</h1>
-        <p class="menu-subtitle" data-i18n="mainSub">Крути рулетку, испытывай удачу и забирай NFT</p>
+        <h1 class="menu-title" data-i18n="mainTitle">Choose Mode</h1>
+        <p class="menu-subtitle" data-i18n="mainSub">Spin roulette, test your luck, get NFTs</p>
 
-        <div class="mode-card daily-bonus-card" onclick="claimDailyBonus()">
+        <div class="mode-card daily-bonus-card" onclick="openDailyBonusWheel()">
             <div class="mode-icon">🎁</div>
             <div class="mode-info">
-                <h3><span data-i18n="dailyTitle">Ежедневный Бонус</span><span class="timer-badge" id="bonusTimer">Готово</span></h3>
-                <p data-i18n="dailySub">Забери бесплатные Stars прямо сейчас</p>
+                <h3><span data-i18n="dailyTitle">Daily Bonus</span><span class="timer-badge" id="bonusTimer">Ready</span></h3>
+                <p data-i18n="dailySub">Spin the bonus wheel for free rewards</p>
             </div>
         </div>
 
         <div class="mode-card" onclick="switchScreen('cases-screen')">
             <div class="mode-icon">📦</div>
             <div class="mode-info">
-                <h3 data-i18n="casesTitle">Кейсы Подарков</h3>
-                <p data-i18n="casesSub">Открывай кейсы и выигрывай Telegram Stars</p>
+                <h3 data-i18n="casesTitle">Gift Cases</h3>
+                <p data-i18n="casesSub">Open cases and win Telegram Stars</p>
             </div>
         </div>
 
         <div class="mode-card" onclick="switchScreen('wheel-screen')">
             <div class="mode-icon">🎡</div>
             <div class="mode-info">
-                <h3 data-i18n="wheelTitle">Колесо Фортуны</h3>
-                <p data-i18n="wheelSub">Вращай колесо и получай до x10 наград</p>
+                <h3 data-i18n="wheelTitle">Wheel of Fortune</h3>
+                <p data-i18n="wheelSub">Spin the wheel and get up to x10 rewards</p>
             </div>
         </div>
 
         <div class="mode-card" onclick="switchScreen('inventory-screen')">
             <div class="mode-icon">🎒</div>
             <div class="mode-info">
-                <h3 data-i18n="inventoryTitle">Мой Инвентарь</h3>
-                <p data-i18n="inventorySub">Просматривай и продавай свои награды</p>
+                <h3 data-i18n="inventoryTitle">My Inventory</h3>
+                <p data-i18n="inventorySub">View and sell your rewards</p>
             </div>
         </div>
 
         <div class="live-feed">
-            <div class="live-feed-title" data-i18n="liveFeed">Лента выигрышей</div>
+            <div class="live-feed-title" data-i18n="liveFeed">Live Win Feed</div>
             <div class="feed-list" id="feedList"></div>
         </div>
     </main>
 
     <main id="cases-screen" class="screen">
-        <button class="back-btn" id="casesBackBtn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
-        <h1 class="menu-title" data-i18n="casesHeader">Открытие кейсов</h1>
-        <p class="menu-subtitle" data-i18n="casesSubHeader">Испытай удачу в рулетке</p>
+        <button class="back-btn" id="casesBackBtn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
+        <h1 class="menu-title" data-i18n="casesHeader">Case Opening</h1>
+        <p class="menu-subtitle" data-i18n="casesSubHeader">Try your luck in roulette</p>
 
         <div class="controls-row">
-            <label class="toggle-label"><span>Демо-режим</span>
+            <label class="toggle-label"><span data-i18n="demoMode">Demo Mode</span>
                 <div class="toggle-switch"><input type="checkbox" id="casesDemoToggle"><span class="slider"></span></div>
             </label>
-            <button class="skip-btn-mini" onclick="skipCaseAnimation()" data-i18n="skipBtn">Пропустить</button>
+            <button class="skip-btn-mini" onclick="skipCaseAnimation()" data-i18n="skipBtn">Skip</button>
         </div>
 
         <div class="cases-selector">
@@ -240,19 +239,19 @@
             </div>
         </div>
 
-        <button class="action-btn" id="spinCasesBtn" onclick="spinRoulette()" data-i18n="spinBtn">Крутить Кейс</button>
+        <button class="action-btn" id="spinCasesBtn" onclick="spinRoulette()" data-i18n="spinBtn">Spin Case</button>
     </main>
 
     <main id="wheel-screen" class="screen">
-        <button class="back-btn" id="wheelBackBtn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
-        <h1 class="menu-title" data-i18n="wheelHeader">Колесо Фортуны</h1>
-        <p class="menu-subtitle" data-i18n="wheelCost">Стоимость вращения: 100 ⭐</p>
+        <button class="back-btn" id="wheelBackBtn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
+        <h1 class="menu-title" id="wheelHeaderTitle" data-i18n="wheelHeader">Wheel of Fortune</h1>
+        <p class="menu-subtitle" id="wheelCostSubtitle" data-i18n="wheelCost">Spin cost: 100 ⭐</p>
 
         <div class="controls-row">
-            <label class="toggle-label"><span>Демо-режим</span>
+            <label class="toggle-label"><span data-i18n="demoMode">Demo Mode</span>
                 <div class="toggle-switch"><input type="checkbox" id="wheelDemoToggle"><span class="slider"></span></div>
             </label>
-            <button class="skip-btn-mini" onclick="skipWheelAnimation()" data-i18n="skipBtn">Пропустить</button>
+            <button class="skip-btn-mini" onclick="skipWheelAnimation()" data-i18n="skipBtn">Skip</button>
         </div>
 
         <div class="wheel-box">
@@ -261,19 +260,19 @@
             <div class="wheel-center-cap">🐾</div>
         </div>
 
-        <button class="action-btn" id="spinWheelBtn" onclick="spinWheel()" data-i18n="spinWheelBtn">Вращать Колесо</button>
+        <button class="action-btn" id="spinWheelBtn" onclick="executeWheelSpin()" data-i18n="spinWheelBtn">Spin Wheel</button>
     </main>
 
     <main id="inventory-screen" class="screen">
-        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
-        <h1 class="menu-title" data-i18n="invHeader">Инвентарь</h1>
-        <p class="menu-subtitle" data-i18n="invSubHeader">Ваши предметы и подарки</p>
+        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
+        <h1 class="menu-title" data-i18n="invHeader">Inventory</h1>
+        <p class="menu-subtitle" data-i18n="invSubHeader">Your items & gifts</p>
 
         <div class="inventory-controls">
-            <input type="text" class="search-input" id="searchInput" placeholder="Поиск..." oninput="filterInventory(this.value)">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search..." oninput="filterInventory(this.value)">
             <select class="sort-select" onchange="sortInventory(this.value)">
-                <option value="new" data-i18n="sortNew">Сначала новые</option>
-                <option value="expensive" data-i18n="sortExp">Сначала дорогие</option>
+                <option value="new" data-i18n="sortNew">Newest first</option>
+                <option value="expensive" data-i18n="sortExp">Expensive first</option>
             </select>
         </div>
 
@@ -282,34 +281,34 @@
 
     <div class="modal-overlay" id="winModal">
         <div class="modal-card">
-            <h2 class="menu-title" data-i18n="winTitle">Поздравляем!</h2>
+            <h2 class="menu-title" data-i18n="winTitle">Congratulations!</h2>
             <div class="modal-icon" id="modalIcon">🎁</div>
-            <h3 id="modalItemName" style="font-size: 18px; margin-bottom: 6px;">Предмет</h3>
+            <h3 id="modalItemName" style="font-size: 18px; margin-bottom: 6px;">Item</h3>
             <p id="modalItemPrice" style="color: var(--gold); font-weight: 800; font-size: 14px; margin-bottom: 20px;">0 ⭐</p>
             <div style="display: flex; gap: 10px;">
-                <button class="action-btn" onclick="closeModal('sell')" style="background: rgba(46,204,113,0.2); color: var(--green); border: 1px solid rgba(46,204,113,0.4);" data-i18n="sellBtnModal">Продать</button>
-                <button class="action-btn" onclick="closeModal('claim')" data-i18n="claimBtn">В инвентарь</button>
+                <button class="action-btn" onclick="closeModal('sell')" style="background: rgba(46,204,113,0.2); color: var(--green); border: 1px solid rgba(46,204,113,0.4);" data-i18n="sellBtnModal">Sell</button>
+                <button class="action-btn" onclick="closeModal('claim')" data-i18n="claimBtn">To Inventory</button>
             </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="withdrawModal">
         <div class="modal-card">
-            <h2 class="menu-title" style="font-size: 20px;" data-i18n="withdrawTitle">Вывод подарка</h2>
+            <h2 class="menu-title" style="font-size: 20px;" data-i18n="withdrawTitle">Gift Withdrawal</h2>
             <div class="modal-icon" id="withdrawModalIcon" style="font-size: 48px; margin: 10px 0;">📦</div>
-            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;" data-i18n="withdrawDesc">При выводе подарка с вас спишется 25 ⭐</p>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;" data-i18n="withdrawDesc">Withdrawal will charge 25 ⭐ from your balance</p>
             <div style="display: flex; gap: 10px;">
-                <button class="action-btn" onclick="closeWithdrawModal(false)" style="background: rgba(255,59,48,0.2); color: #ff3b30; border: 1px solid rgba(255,59,48,0.4);" data-i18n="rejectBtn">Отклонить</button>
-                <button class="action-btn" onclick="closeWithdrawModal(true)" data-i18n="confirmBtn">Подтвердить</button>
+                <button class="action-btn" onclick="closeWithdrawModal(false)" style="background: rgba(255,59,48,0.2); color: #ff3b30; border: 1px solid rgba(255,59,48,0.4);" data-i18n="rejectBtn">Reject</button>
+                <button class="action-btn" onclick="closeWithdrawModal(true)" data-i18n="confirmBtn">Confirm</button>
             </div>
         </div>
     </div>
 
     <nav class="bottom-nav">
-        <div class="nav-item active" onclick="switchScreen('main-screen')"><i class="fa-solid fa-house"></i><span data-i18n="navHome">Главная</span></div>
-        <div class="nav-item" onclick="switchScreen('cases-screen')"><i class="fa-solid fa-box-open"></i><span data-i18n="navCases">Кейсы</span></div>
-        <div class="nav-item" onclick="switchScreen('wheel-screen')"><i class="fa-solid fa-spinner"></i><span data-i18n="navWheel">Колесо</span></div>
-        <div class="nav-item" onclick="switchScreen('inventory-screen')"><i class="fa-solid fa-bag-shopping"></i><span data-i18n="navInv">Инвентарь</span></div>
+        <div class="nav-item active" onclick="switchScreen('main-screen')"><i class="fa-solid fa-house"></i><span data-i18n="navHome">Home</span></div>
+        <div class="nav-item" onclick="switchScreen('cases-screen')"><i class="fa-solid fa-box-open"></i><span data-i18n="navCases">Cases</span></div>
+        <div class="nav-item" onclick="switchScreen('wheel-screen')"><i class="fa-solid fa-spinner"></i><span data-i18n="navWheel">Wheel</span></div>
+        <div class="nav-item" onclick="switchScreen('inventory-screen')"><i class="fa-solid fa-bag-shopping"></i><span data-i18n="navInv">Inventory</span></div>
     </nav>
 
     <script>
@@ -317,52 +316,55 @@
         if (TG) { TG.ready(); TG.expand(); }
 
         const userId = String(TG?.initDataUnsafe?.user?.id || 'user_' + Math.floor(Math.random() * 100000));
-        let state = { balance: 0, inventory: [], currentCase: 'starter', isSpinning: false, lang: 'RU' };
+        let state = { balance: 0, inventory: [], currentCase: 'starter', isSpinning: false, lang: 'EN', isBonusSpin: false };
         let pendingWinItem = null;
         let pendingWithdrawItem = null;
 
         const translations = {
-            RU: {
-                mainTitle: "Выбирай режим", mainSub: "Крути рулетку, испытывай удачу и забирай NFT",
-                dailyTitle: "Ежедневный Бонус", dailySub: "Забери бесплатные Stars прямо сейчас",
-                casesTitle: "Кейсы Подарков", casesSub: "Открывай кейсы и выигрывай Telegram Stars",
-                wheelTitle: "Колесо Фортуны", wheelSub: "Вращай колесо и получай до x10 наград",
-                inventoryTitle: "Мой Инвентарь", inventorySub: "Просматривай и продавай свои награды",
-                liveFeed: "Лента выигрышей", back: "← Назад", casesHeader: "Открытие кейсов",
-                casesSubHeader: "Испытай удачу в рулетке", spinBtn: "Крутить Кейс", skipBtn: "Пропустить",
-                wheelHeader: "Колесо Фортуны", wheelCost: "Стоимость вращения: 100 ⭐", spinWheelBtn: "Вращать Колесо",
-                invHeader: "Инвентарь", invSubHeader: "Ваши предметы и подарки", sortNew: "Сначала новые",
-                sortExp: "Сначала дорогие", winTitle: "Поздравляем!", claimBtn: "В инвентарь", sellBtnModal: "Продать",
-                navHome: "Главная", navCases: "Кейсы", navWheel: "Колесо", navInv: "Инвентарь", emptyInv: "Инвентарь пуст",
-                sell: "Продать", withdraw: "Вывести", ready: "Готово", searchPlaceholder: "Поиск...",
-                withdrawTitle: "Вывод подарка", withdrawDesc: "При выводе подарка с вас спишется 25 ⭐", confirmBtn: "Подтвердить", rejectBtn: "Отклонить", soon: "Скоро будет"
-            },
             EN: {
                 mainTitle: "Choose Mode", mainSub: "Spin roulette, test your luck, get NFTs",
-                dailyTitle: "Daily Bonus", dailySub: "Claim free Stars right now",
+                dailyTitle: "Daily Bonus", dailySub: "Spin the bonus wheel for free rewards",
                 casesTitle: "Gift Cases", casesSub: "Open cases and win Telegram Stars",
                 wheelTitle: "Wheel of Fortune", wheelSub: "Spin the wheel and get up to x10 rewards",
                 inventoryTitle: "My Inventory", inventorySub: "View and sell your rewards",
                 liveFeed: "Live Win Feed", back: "← Back", casesHeader: "Case Opening",
                 casesSubHeader: "Try your luck in roulette", spinBtn: "Spin Case", skipBtn: "Skip",
                 wheelHeader: "Wheel of Fortune", wheelCost: "Spin cost: 100 ⭐", spinWheelBtn: "Spin Wheel",
+                bonusHeader: "Daily Bonus Wheel", bonusCost: "Free Daily Spin",
                 invHeader: "Inventory", invSubHeader: "Your items & gifts", sortNew: "Newest first",
                 sortExp: "Expensive first", winTitle: "Congratulations!", claimBtn: "To Inventory", sellBtnModal: "Sell",
                 navHome: "Home", navCases: "Cases", navWheel: "Wheel", navInv: "Inventory", emptyInv: "Inventory is empty",
                 sell: "Sell", withdraw: "Withdraw", ready: "Ready", searchPlaceholder: "Search...",
-                withdrawTitle: "Gift Withdrawal", withdrawDesc: "Withdrawal will charge 25 ⭐ from your balance", confirmBtn: "Confirm", rejectBtn: "Reject", soon: "Coming soon"
+                withdrawTitle: "Gift Withdrawal", withdrawDesc: "Withdrawal will charge 25 ⭐ from your balance", confirmBtn: "Confirm", rejectBtn: "Reject", soon: "Coming soon", demoMode: "Demo Mode"
+            },
+            RU: {
+                mainTitle: "Выбирай режим", mainSub: "Крути рулетку, испытывай удачу и забирай NFT",
+                dailyTitle: "Ежедневный Бонус", dailySub: "Крути бонусное колесо бесплатно",
+                casesTitle: "Кейсы Подарков", casesSub: "Открывай кейсы и выигрывай Telegram Stars",
+                wheelTitle: "Колесо Фортуны", wheelSub: "Вращай колесо и получай до x10 наград",
+                inventoryTitle: "Мой Инвентарь", inventorySub: "Просматривай и продавай свои награды",
+                liveFeed: "Лента выигрышей", back: "← Назад", casesHeader: "Открытие кейсов",
+                casesSubHeader: "Испытай удачу в рулетке", spinBtn: "Крутить Кейс", skipBtn: "Пропустить",
+                wheelHeader: "Колесо Фортуны", wheelCost: "Стоимость вращения: 100 ⭐", spinWheelBtn: "Вращать Колесо",
+                bonusHeader: "Колесо Бонуса", bonusCost: "Бесплатное вращение",
+                invHeader: "Инвентарь", invSubHeader: "Ваши предметы и подарки", sortNew: "Сначала новые",
+                sortExp: "Сначала дорогие", winTitle: "Поздравляем!", claimBtn: "В инвентарь", sellBtnModal: "Продать",
+                navHome: "Главная", navCases: "Кейсы", navWheel: "Колесо", navInv: "Инвентарь", emptyInv: "Инвентарь пуст",
+                sell: "Продать", withdraw: "Вывести", ready: "Готово", searchPlaceholder: "Поиск...",
+                withdrawTitle: "Вывод подарка", withdrawDesc: "При выводе подарка с вас спишется 25 ⭐", confirmBtn: "Подтвердить", rejectBtn: "Отклонить", soon: "Скоро будет", demoMode: "Демо-режим"
             }
         };
 
+        // Точно 4 подарка и 4 NFT (всего 8 элементов для колеса)
         const itemsPool = [
-            { id: 1, name: 'Star Pouch', icon: '⭐', price: 30 },
-            { id: 2, name: 'Gift Box', icon: '🎁', price: 60 },
-            { id: 3, name: 'Rubber Duck', icon: '🦆', price: 120 },
-            { id: 4, name: 'Telegram Gem', icon: '💎', price: 250 },
-            { id: 5, name: 'Rocket Gift', icon: '🚀', price: 450 },
-            { id: 6, name: 'Golden Crown', icon: '👑', price: 800 },
-            { id: 7, name: 'Cyber Cat NFT', icon: '🐱', price: 1500 },
-            { id: 8, name: 'Diamond Diamond', icon: '💠', price: 2500 }
+            { id: 1, name: 'Star Pouch', icon: '⭐', price: 30, type: 'gift' },
+            { id: 2, name: 'Gift Box', icon: '🎁', price: 60, type: 'gift' },
+            { id: 3, name: 'Rubber Duck', icon: '🦆', price: 120, type: 'gift' },
+            { id: 4, name: 'Rocket Gift', icon: '🚀', price: 450, type: 'gift' },
+            { id: 5, name: 'Telegram Gem', icon: '💎', price: 250, type: 'nft' },
+            { id: 6, name: 'Golden Crown', icon: '👑', price: 800, type: 'nft' },
+            { id: 7, name: 'Cyber Cat NFT', icon: '🐱', price: 1500, type: 'nft' },
+            { id: 8, name: 'Diamond NFT', icon: '💠', price: 2500, type: 'nft' }
         ];
 
         async function initApp() {
@@ -394,7 +396,7 @@
         }
 
         function toggleLanguage() {
-            state.lang = state.lang === 'RU' ? 'EN' : 'RU';
+            state.lang = state.lang === 'EN' ? 'RU' : 'EN';
             document.getElementById('langBtn').textContent = `🌐 ${state.lang}`;
             const t = translations[state.lang];
             document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -405,21 +407,12 @@
             renderInventory();
         }
 
-        async function claimDailyBonus() {
-            let res = await fetch('/api/bonus', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: userId })
-            });
-            if (!res.ok) {
-                alert(state.lang === 'RU' ? 'Бонус доступен раз в 24 часа!' : 'Bonus available once every 24h!');
-                return;
-            }
-            let data = await res.json();
-            state.balance = data.balance;
-            updateUI();
-            if (window.confetti) confetti({ particleCount: 60, spread: 70 });
-            showWinModal(data.item, false);
+        // Ежедневный бонус теперь открывает Колесо Фортуны в специальном бонусном режиме
+        function openDailyBonusWheel() {
+            state.isBonusSpin = true;
+            document.getElementById('wheelHeaderTitle').textContent = translations[state.lang].bonusHeader;
+            document.getElementById('wheelCostSubtitle').textContent = translations[state.lang].bonusCost;
+            switchScreen('wheel-screen');
         }
 
         function selectCase(caseType, el) {
@@ -488,12 +481,13 @@
             }, 5050);
         }
 
+        // Строго два цвета: черный (#111116) и серый (#2c2c38) с идеальным чередованием
         function buildWheel() {
             const wheel = document.getElementById('wheelTrack');
             wheel.innerHTML = '';
             const count = itemsPool.length;
             const sliceAngle = 360 / count;
-            const threeColors = ['#1d1d2c', '#2e274a', '#182436'];
+            const twoColors = ['#111116', '#2c2c38'];
 
             itemsPool.forEach((item, index) => {
                 const slice = document.createElement('div');
@@ -501,11 +495,10 @@
                 const rotation = index * sliceAngle;
                 
                 slice.style.transform = `rotate(${rotation}deg) skewY(${90 - sliceAngle}deg)`;
-                slice.style.backgroundColor = threeColors[index % 3];
+                slice.style.backgroundColor = twoColors[index % 2];
                 
                 const content = document.createElement('div');
                 content.className = 'wheel-slice-content';
-                content.style.setProperty('--item-angle', sliceAngle / 2);
                 content.innerHTML = `
                     <span style="font-size: 20px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));">${item.icon}</span>
                     <span style="font-size: 8px; color: #fff; font-weight: 700; margin-top: 2px; text-shadow: 0 1px 2px rgba(0,0,0,0.9);">${item.name}</span>
@@ -517,26 +510,38 @@
         }
 
         let currentWheelRotation = 0;
-        async function spinWheel() {
+        
+        async function executeWheelSpin() {
             if (state.isSpinning) return;
             const isDemo = document.getElementById('wheelDemoToggle').checked;
 
-            let res = await fetch('/api/spin-wheel', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: userId, is_demo: isDemo })
-            });
-            if (!res.ok) {
-                alert(state.lang === 'RU' ? 'Недостаточно Stars!' : 'Not enough Stars!');
-                return;
-            }
-            let data = await res.json();
-            state.balance = data.balance;
-            updateUI();
+            if (state.isBonusSpin) {
+                // Бонусное бесплатное вращение
+                state.isSpinning = true;
+                const winningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+                spinWheelAnimation(winningItem, true);
+            } else {
+                let res = await fetch('/api/spin-wheel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, is_demo: isDemo })
+                });
+                if (!res.ok) {
+                    alert(state.lang === 'RU' ? 'Недостаточно Stars!' : 'Not enough Stars!');
+                    return;
+                }
+                let data = await res.json();
+                state.balance = data.balance;
+                updateUI();
 
-            state.isSpinning = true;
+                state.isSpinning = true;
+                spinWheelAnimation(data.item, isDemo);
+            }
+        }
+
+        function spinWheelAnimation(winningItem, isDemo) {
             const wheel = document.getElementById('wheelTrack');
-            const winningIndex = itemsPool.findIndex(i => i.id === data.item.id);
+            const winningIndex = itemsPool.findIndex(i => i.id === winningItem.id);
             const segmentAngle = 360 / itemsPool.length;
             const targetRotation = currentWheelRotation + (5 * 360) + (360 - (winningIndex * segmentAngle + segmentAngle / 2));
             currentWheelRotation = targetRotation;
@@ -544,16 +549,37 @@
 
             setTimeout(() => {
                 state.isSpinning = false;
-                pendingWinItem = data.item;
-                showWinModal(data.item, isDemo);
-                addFeedItem('You', data.item.name);
+                pendingWinItem = winningItem;
+                showWinModal(winningItem, isDemo);
+                addFeedItem('You', winningItem.name);
+                
+                // Сбрасываем бонусный режим после прокрута
+                if (state.isBonusSpin) {
+                    state.isBonusSpin = false;
+                    document.getElementById('wheelHeaderTitle').textContent = translations[state.lang].wheelHeader;
+                    document.getElementById('wheelCostSubtitle').textContent = translations[state.lang].wheelCost;
+                }
             }, 5000);
+        }
+
+        function skipWheelAnimation() {
+            if (!state.isSpinning) return;
+            const winningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+            state.isSpinning = false;
+            pendingWinItem = winningItem;
+            showWinModal(winningItem, document.getElementById('wheelDemoToggle').checked);
+            
+            if (state.isBonusSpin) {
+                state.isBonusSpin = false;
+                document.getElementById('wheelHeaderTitle').textContent = translations[state.lang].wheelHeader;
+                document.getElementById('wheelCostSubtitle').textContent = translations[state.lang].wheelCost;
+            }
         }
 
         function showWinModal(item, isDemo) {
             document.getElementById('modalIcon').textContent = item.icon;
             document.getElementById('modalItemName').textContent = item.name;
-            document.getElementById('modalItemPrice').textContent = isDemo ? '(Демо)' : `+${item.price} ⭐`;
+            document.getElementById('modalItemPrice').textContent = isDemo ? '(Demo)' : `+${item.price} ⭐`;
             document.getElementById('winModal').classList.add('active');
             if (window.confetti && !isDemo) confetti({ particleCount: 50 });
         }
