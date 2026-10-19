@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import telebot
 
-# Ваш актуальный токен бота
+# Токен вашего бота
 TOKEN = "8643024766:AAFkb8a0NzGGz6DJ2ksE2aqDwWsQbhTAybI"
 
 # Данные администратора
@@ -22,6 +22,16 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 def init_db():
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
+    
+    # Таблица пользователей и их баланса звёзд
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            user_id INTEGER PRIMARY KEY,
+            balance INTEGER DEFAULT 0
+        )
+    """)
+    
+    # Таблица подарков
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS gifts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,6 +41,8 @@ def init_db():
             price INTEGER NOT NULL
         )
     """)
+    
+    # Таблица инвентаря
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS inventory (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,6 +53,8 @@ def init_db():
             status TEXT DEFAULT 'in_inventory'
         )
     """)
+    
+    # Базовые подарки
     cursor.execute("SELECT COUNT(*) FROM gifts")
     if cursor.fetchone()[0] == 0:
         base_gifts = [
@@ -62,7 +76,7 @@ def init_db():
 
 init_db()
 
-# Запуск бота в фоновом потоке
+# Фоновый поток для работы бота
 def run_bot():
     try:
         bot.infinity_polling(skip_pending=True)
@@ -89,32 +103,52 @@ def give_random_gift(user_id: int):
     conn.close()
     return gift_name
 
+# --- Команды Telegram Бота ---
+
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     bot.reply_to(
         message, 
         "Welcome to CatRoll Mini App!\n\n"
-        "• Type `/buy` to get a test gift into your inventory.\n"
-        "• Open the Mini App using the menu button to check your inventory and request withdrawals!",
+        "• Open the Mini App using the menu button to play, check inventory, top up stars, and request withdrawals!",
         parse_mode="Markdown"
     )
 
-@bot.message_handler(commands=['buy'])
-def handle_buy_free(message):
-    user_id = message.from_user.id
-    gift_name = give_random_gift(user_id)
-    if not gift_name:
-        bot.send_message(message.chat.id, "❌ No available gifts found.")
-    else:
-        bot.send_message(
-            message.chat.id, 
-            f"🎉 Congratulations! You received: **{gift_name}**!",
-            parse_mode="Markdown"
-        )
+# --- API Эндпоинты ---
 
 @app.get("/")
 def read_root():
     return FileResponse("static/index.html")
+
+@app.get("/api/user/{user_id}")
+def get_user(user_id: int):
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute("INSERT OR IGNORE INTO users (user_id, balance) VALUES (?, 0)", (user_id,))
+    conn.commit()
+    cursor.execute("SELECT balance FROM users WHERE user_id = ?", (user_id,))
+    balance = cursor.fetchone()[0]
+    conn.close()
+    return {"user_id": user_id, "balance": balance}
+
+@app.post("/api/topup/{user_id}")
+def topup_balance(user_id: int, data: dict):
+    amount = data.get("amount", 0)
+    allowed_amounts = [100, 200, 500, 1000, 2500]
+    
+    if amount not in allowed_amounts:
+        raise HTTPException(status_code=400, detail="Invalid topup amount")
+        
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute("INSERT OR IGNORE INTO users (user_id, balance) VALUES (?, 0)", (user_id,))
+    cursor.execute("UPDATE users SET balance = balance + ? WHERE user_id = ?", (amount, user_id))
+    cursor.execute("SELECT balance FROM users WHERE user_id = ?", (user_id,))
+    new_balance = cursor.fetchone()[0]
+    conn.commit()
+    conn.close()
+    
+    return {"success": True, "balance": new_balance}
 
 @app.get("/api/gifts")
 def get_gifts():
@@ -173,14 +207,12 @@ def withdraw_item(item_id: int):
         f"👉 Open the user's profile and send them this gift manually in Telegram!"
     )
 
-    # Попытка 1: отправить по числовому ID
     try:
         bot.send_message(ADMIN_ID, text_msg, parse_mode="Markdown")
         success = True
     except Exception as e1:
         error_message += f"ID error: {e1}; "
 
-    # Попытка 2: через юзернейм для подстраховки
     if not success:
         try:
             admin_chat = bot.get_chat(ADMIN_USERNAME)

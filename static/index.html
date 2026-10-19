@@ -115,6 +115,7 @@
             gap: 6px;
             color: var(--gold);
             box-shadow: 0 4px 22px var(--gold-glow);
+            cursor: pointer;
         }
 
         .screen {
@@ -332,6 +333,41 @@
             border: 3px solid var(--purple-accent); border-radius: 50%; z-index: 15; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px;
         }
 
+        /* СЕТКА ПОПОЛНЕНИЯ ЗВЕЗД */
+        .stars-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 12px;
+            width: 100%;
+        }
+        .star-package-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 14px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: 0.2s;
+        }
+        .star-package-btn:hover, .star-package-btn:active {
+            background: rgba(255, 184, 0, 0.2);
+            border-color: var(--gold);
+            transform: scale(0.97);
+        }
+        .star-package-btn.full-width {
+            grid-column: span 2;
+            background: linear-gradient(135deg, rgba(255, 184, 0, 0.25), rgba(255, 138, 0, 0.15));
+            border-color: rgba(255, 184, 0, 0.5);
+            color: var(--gold);
+        }
+
         .action-btn {
             width: 100%; padding: 15px; background: linear-gradient(135deg, var(--purple-accent), var(--purple-bright));
             border: none; border-radius: 18px; color: #fff; font-weight: 900; font-size: 16px; cursor: pointer;
@@ -394,7 +430,7 @@
         </div>
         <div class="header-actions">
             <button class="lang-btn" onclick="toggleLanguage()" id="langBtn">🌐 RU</button>
-            <div class="balance-pill"><i class="fa-solid fa-star"></i><span id="userBalance">200,000</span></div>
+            <div class="balance-pill" onclick="switchScreen('wallet-screen')"><i class="fa-solid fa-star"></i><span id="userBalance">0</span></div>
         </div>
     </header>
 
@@ -407,6 +443,14 @@
             <div class="mode-info">
                 <h3><span data-i18n="dailyTitle">Ежедневный Бонус</span><span class="timer-badge" id="bonusTimer">Готово</span></h3>
                 <p data-i18n="dailySub">Забери бесплатные Stars прямо сейчас</p>
+            </div>
+        </div>
+
+        <div class="mode-card" onclick="switchScreen('wallet-screen')">
+            <div class="mode-icon">💳</div>
+            <div class="mode-info">
+                <h3 data-i18n="walletTitle">Пополнить баланс</h3>
+                <p data-i18n="walletSub">Покупка пакетов звезд для игры</p>
             </div>
         </div>
 
@@ -440,13 +484,29 @@
         </div>
     </main>
 
+    <!-- Экран кошелька/пополнения -->
+    <main id="wallet-screen" class="screen">
+        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
+        <h1 class="menu-title" data-i18n="walletHeader">Пополнение звёзд</h1>
+        <p class="menu-subtitle" data-i18n="walletSubHeader">Выберите пакет для пополнения баланса</p>
+
+        <div class="stars-grid">
+            <button class="star-package-btn" onclick="topUpStars(100)">⭐ 100</button>
+            <button class="star-package-btn" onclick="topUpStars(200)">⭐ 200</button>
+            <button class="star-package-btn" onclick="topUpStars(500)">⭐ 500</button>
+            <button class="star-package-btn" onclick="topUpStars(1000)">⭐ 1000</button>
+            <button class="star-package-btn full-width" onclick="topUpStars(2500)">⭐ 2500 (MAX)</button>
+        </div>
+        <div id="topupMsg" style="margin-top: 15px; font-weight: 800; font-size: 13px; text-align: center;"></div>
+    </main>
+
     <main id="cases-screen" class="screen">
         <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
         <h1 class="menu-title" data-i18n="casesHeader">Открытие кейсов</h1>
         <p class="menu-subtitle" data-i18n="casesSubHeader">Испытай удачу в рулетке</p>
 
         <div class="controls-row">
-            <label class="toggle-label"><span>Демо-режим</span><div class="toggle-switch"><input type="checkbox" id="casesDemoToggle"><span class="slider"></span></div></label>
+            <label class="toggle-label"><span data-i18n="demoMode">Демо-режим</span><div class="toggle-switch"><input type="checkbox" id="casesDemoToggle"><span class="slider"></span></div></label>
             <button class="skip-btn-mini" onclick="skipCaseAnimation()" data-i18n="skipBtn">Пропустить</button>
         </div>
 
@@ -469,7 +529,7 @@
         <p class="menu-subtitle" data-i18n="wheelCost">Стоимость вращения: 100 ⭐</p>
 
         <div class="controls-row">
-            <label class="toggle-label"><span>Демо-режим</span><div class="toggle-switch"><input type="checkbox" id="wheelDemoToggle"><span class="slider"></span></div></label>
+            <label class="toggle-label"><span data-i18n="demoMode">Демо-режим</span><div class="toggle-switch"><input type="checkbox" id="wheelDemoToggle"><span class="slider"></span></div></label>
             <button class="skip-btn-mini" onclick="skipWheelAnimation()" data-i18n="skipBtn">Пропустить</button>
         </div>
 
@@ -538,7 +598,7 @@
 
         const userId = TG?.initDataUnsafe?.user?.id || 1218168630;
         let state = {
-            balance: 200000,
+            balance: 0,
             inventory: [],
             currentCase: 'starter',
             isSpinning: false,
@@ -550,36 +610,40 @@
             RU: {
                 mainTitle: "Выбирай режим", mainSub: "Крути рулетку, испытывай удачу и забирай NFT",
                 dailyTitle: "Ежедневный Бонус", dailySub: "Забери бесплатные Stars прямо сейчас",
+                walletTitle: "Пополнить баланс", walletSub: "Покупка пакетов звезд для игры",
                 casesTitle: "Кейсы Подарков", casesSub: "Открывай кейсы и выигрывай Telegram Stars",
                 wheelTitle: "Колесо Фортуны", wheelSub: "Вращай колесо и получай до x10 наград",
                 inventoryTitle: "Мой Инвентарь", inventorySub: "Просматривай и продавай свои награды",
                 liveFeed: "Лента выигрышей", back: "← Назад", casesHeader: "Открытие кейсов",
                 casesSubHeader: "Испытай удачу в рулетке", spinBtn: "Крутить Кейс", skipBtn: "Пропустить",
                 wheelHeader: "Колесо Фортуны", wheelCost: "Стоимость вращения: 100 ⭐", spinWheelBtn: "Вращать Колесо",
+                walletHeader: "Пополнение звёзд", walletSubHeader: "Выберите пакет для пополнения баланса",
                 invHeader: "Инвентарь", invSubHeader: "Ваши предметы и подарки", sortNew: "Сначала новые",
                 sortExp: "Сначала дорогие", winTitle: "Поздравляем!", claimBtn: "В инвентарь", sellBtnModal: "Продать",
                 navHome: "Главная", navCases: "Кейсы", navWheel: "Колесо", navInv: "Инвентарь",
                 emptyInv: "Инвентарь пуст", sell: "Продать", withdraw: "Вывести", ready: "Готово",
                 searchPlaceholder: "Поиск...", withdrawTitle: "Вывод подарка",
                 withdrawDesc: "Запросить вывод этого подарка администратору?",
-                confirmBtn: "Подтвердить", rejectBtn: "Отклонить", pending: "Ожидает вывод"
+                confirmBtn: "Подтвердить", rejectBtn: "Отклонить", pending: "Ожидает вывод", demoMode: "Демо-режим"
             },
             EN: {
                 mainTitle: "Choose Mode", mainSub: "Spin roulette, test your luck, get NFTs",
                 dailyTitle: "Daily Bonus", dailySub: "Claim free Stars right now",
+                walletTitle: "Top Up Balance", walletSub: "Purchase star packages for play",
                 casesTitle: "Gift Cases", casesSub: "Open cases and win Telegram Stars",
                 wheelTitle: "Wheel of Fortune", wheelSub: "Spin the wheel and get up to x10 rewards",
                 inventoryTitle: "My Inventory", inventorySub: "View and sell your rewards",
                 liveFeed: "Live Win Feed", back: "← Back", casesHeader: "Case Opening",
                 casesSubHeader: "Try your luck in roulette", spinBtn: "Spin Case", skipBtn: "Skip",
                 wheelHeader: "Wheel of Fortune", wheelCost: "Spin cost: 100 ⭐", spinWheelBtn: "Spin Wheel",
+                walletHeader: "Star Top Up", walletSubHeader: "Choose a package to top up balance",
                 invHeader: "Inventory", invSubHeader: "Your items & gifts", sortNew: "Newest first",
                 sortExp: "Expensive first", winTitle: "Congratulations!", claimBtn: "To Inventory", sellBtnModal: "Sell",
                 navHome: "Home", navCases: "Cases", navWheel: "Wheel", navInv: "Inventory",
                 emptyInv: "Inventory is empty", sell: "Sell", withdraw: "Withdraw", ready: "Ready",
                 searchPlaceholder: "Search...", withdrawTitle: "Gift Withdrawal",
                 withdrawDesc: "Request withdrawal for this gift from admin?",
-                confirmBtn: "Confirm", rejectBtn: "Reject", pending: "Pending"
+                confirmBtn: "Confirm", rejectBtn: "Reject", pending: "Pending", demoMode: "Demo mode"
             }
         };
 
@@ -597,6 +661,40 @@
         let pendingWinItem = null;
         let selectedItemIdForWithdraw = null;
         let currentWheelRotation = 0;
+
+        async function loadUserData() {
+            try {
+                const res = await fetch(`/api/user/${userId}`);
+                const data = await res.json();
+                state.balance = data.balance;
+                document.getElementById('userBalance').textContent = state.balance.toLocaleString();
+            } catch(e) { console.error(e); }
+        }
+
+        async function topUpStars(amount) {
+            const msgEl = document.getElementById('topupMsg');
+            msgEl.style.color = 'var(--gold)';
+            msgEl.textContent = state.lang === 'RU' ? 'Пополнение...' : 'Processing...';
+
+            try {
+                const res = await fetch(`/api/topup/${userId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: amount })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    state.balance = data.balance;
+                    document.getElementById('userBalance').textContent = state.balance.toLocaleString();
+                    msgEl.style.color = 'var(--green)';
+                    msgEl.textContent = state.lang === 'RU' ? `Успешно пополнено на ${amount} ⭐!` : `Successfully added ${amount} ⭐!`;
+                    if (TG?.HapticFeedback) TG.HapticFeedback.notificationOccurred('success');
+                }
+            } catch (e) {
+                msgEl.style.color = '#ff3b30';
+                msgEl.textContent = 'Error';
+            }
+        }
 
         async function loadInventoryFromServer() {
             try {
@@ -649,7 +747,7 @@
 
             state.lastBonusTime = now;
             localStorage.setItem('catroll_bonus', state.lastBonusTime);
-            updateBalance(50);
+            topUpStars(50);
             if (window.confetti) confetti({ particleCount: 60, spread: 70 });
             showWinModal({ name: state.lang === 'RU' ? 'Ежедневный Бонус' : 'Daily Bonus', icon: '🎁', price: 50 }, false);
             startBonusTimer();
@@ -672,133 +770,159 @@
             }, 1000);
         }
 
-        function updateBalance(amount) {
-            state.balance += amount;
-            document.getElementById('userBalance').textContent = state.balance.toLocaleString();
+        function initWheel() {
+            const track = document.getElementById('wheelTrack');
+            if (!track) return;
+            track.innerHTML = '';
+            const sliceAngle = 360 / itemsPool.length;
+            itemsPool.forEach((item, index) => {
+                const angle = index * sliceAngle;
+                const slice = document.createElement('div');
+                slice.className = 'wheel-slice';
+                slice.style.transform = `rotate(${angle}deg)`;
+                slice.innerHTML = `<div class="wheel-slice-content" style="--item-angle: ${sliceAngle / 2}"><span style="font-size:24px">${item.icon}</span></div>`;
+                track.appendChild(slice);
+            });
+        }
+
+        function initRouletteTrack() {
+            const track = document.getElementById('rouletteTrack');
+            if (!track) return;
+            track.innerHTML = '';
+            for(let i=0; i<30; i++) {
+                const randItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+                track.innerHTML += `<div class="item-card"><div class="icon">${randItem.icon}</div><div class="name">${randItem.name}</div><div class="price-tag">${randItem.price} ⭐</div></div>`;
+            }
         }
 
         function selectCase(caseType, el) {
-            if (state.isSpinning) return;
-            state.currentCase = caseType;
-            document.querySelectorAll('.case-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.case-tab').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
-            buildRouletteTrack();
-        }
-
-        function buildRouletteTrack() {
-            const track = document.getElementById('rouletteTrack');
-            if(!track) return;
-            track.style.transition = 'none';
-            track.style.transform = 'translateX(0px)';
-            track.innerHTML = '';
-            for (let i = 0; i < 45; i++) {
-                const item = itemsPool[Math.floor(Math.random() * itemsPool.length)];
-                const card = document.createElement('div');
-                card.className = 'item-card';
-                card.innerHTML = `<div class="icon">${item.icon}</div><div class="name">${item.name}</div><div class="price-tag">${item.price} ⭐</div>`;
-                track.appendChild(card);
-            }
+            state.currentCase = caseType;
+            initRouletteTrack();
         }
 
         async function spinRoulette() {
             if (state.isSpinning) return;
             state.isSpinning = true;
-            buildRouletteTrack();
-
             const track = document.getElementById('rouletteTrack');
-            const winningIndex = 32;
             const winningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
             
-            const cards = track.children;
-            if (cards[winningIndex]) {
-                cards[winningIndex].querySelector('.icon').textContent = winningItem.icon;
-                cards[winningIndex].querySelector('.name').textContent = winningItem.name;
-                cards[winningIndex].querySelector('.price-tag').textContent = `${winningItem.price} ⭐`;
-            }
+            track.style.transition = 'none';
+            initRouletteTrack();
+            const cards = track.querySelectorAll('.item-card');
+            cards[15].querySelector('.icon').textContent = winningItem.icon;
+            cards[15].querySelector('.name').textContent = winningItem.name;
+            cards[15].querySelector('.price-tag').textContent = winningItem.price + ' ⭐';
 
-            setTimeout(() => {
-                track.style.transition = 'transform 5s cubic-bezier(0.1, 1, 0.1, 1)';
-                track.style.transform = `translateX(-${(winningIndex * 107) - 130}px)`;
-            }, 50);
+            track.style.transition = 'transform 5s cubic-bezier(0.1, 1, 0.1, 1)';
+            const offset = (15 * 107) - 120 + Math.random() * 60;
+            track.style.transform = `translateX(-${offset}px)`;
 
             setTimeout(async () => {
                 state.isSpinning = false;
-                pendingWinItem = winningItem;
-                showWinModal(winningItem, false);
-                await fetch(`/api/roll/${userId}`, { method: 'POST' });
-            }, 5050);
+                if (window.confetti) confetti({ particleCount: 80, spread: 90 });
+                
+                try {
+                    await fetch(`/api/roll/${userId}`, { method: 'POST' });
+                    loadUserData();
+                    loadInventoryFromServer();
+                } catch(e) {}
+
+                showWinModal(winningItem, true);
+                addFeedItem(winningItem);
+            }, 5000);
         }
 
         function skipCaseAnimation() {
             if (!state.isSpinning) return;
+            const track = document.getElementById('rouletteTrack');
+            track.style.transition = 'none';
             state.isSpinning = false;
-            pendingWinItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
-            showWinModal(pendingWinItem, false);
+            const winningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+            showWinModal(winningItem, true);
         }
 
-        function buildWheel() {
-            const wheel = document.getElementById('wheelTrack');
-            if(!wheel) return;
-            wheel.innerHTML = '';
-            const count = itemsPool.length;
-            const sliceAngle = 360 / count;
-            const colors = ['#181826', '#232334', '#1f1f30', '#2a2a40', '#1c1c2b', '#252538', '#1e1e2d', '#28283d'];
-
-            itemsPool.forEach((item, index) => {
-                const slice = document.createElement('div');
-                slice.className = 'wheel-slice';
-                slice.style.transform = `rotate(${index * sliceAngle}deg)`;
-                slice.style.backgroundColor = colors[index % colors.length];
-                slice.innerHTML = `<div class="wheel-slice-content" style="--item-angle:${sliceAngle/2}deg"><span>${item.icon}</span><span style="font-size:7px;color:#fff">${item.name}</span></div>`;
-                wheel.appendChild(slice);
-            });
-        }
-
-        function spinWheel() {
+        async function spinWheel() {
             if (state.isSpinning) return;
             state.isSpinning = true;
-            const winningIndex = Math.floor(Math.random() * itemsPool.length);
-            const winningItem = itemsPool[winningIndex];
-            const segmentAngle = 360 / itemsPool.length;
-
-            currentWheelRotation += 1800 + (360 - (winningIndex * segmentAngle + segmentAngle / 2));
-            document.getElementById('wheelTrack').style.transform = `rotate(${currentWheelRotation}deg)`;
+            const wheel = document.getElementById('wheelTrack');
+            const winningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+            const index = itemsPool.findIndex(i => i.id === winningItem.id);
+            const sliceAngle = 360 / itemsPool.length;
+            
+            currentWheelRotation += 1440 + (360 - (index * sliceAngle + sliceAngle / 2));
+            wheel.style.transform = `rotate(${currentWheelRotation}deg)`;
 
             setTimeout(async () => {
                 state.isSpinning = false;
-                pendingWinItem = winningItem;
-                showWinModal(winningItem, false);
-                await fetch(`/api/roll/${userId}`, { method: 'POST' });
+                if (window.confetti) confetti({ particleCount: 80, spread: 90 });
+                
+                try {
+                    await fetch(`/api/roll/${userId}`, { method: 'POST' });
+                    loadUserData();
+                    loadInventoryFromServer();
+                } catch(e) {}
+
+                showWinModal(winningItem, true);
+                addFeedItem(winningItem);
             }, 5000);
         }
 
         function skipWheelAnimation() {
             if (!state.isSpinning) return;
             state.isSpinning = false;
-            pendingWinItem = itemsPool[0];
-            showWinModal(pendingWinItem, false);
+            const winningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+            showWinModal(winningItem, true);
         }
 
-        function showWinModal(item, isDemo) {
+        function showWinModal(item, isReal) {
+            pendingWinItem = item;
             document.getElementById('modalIcon').textContent = item.icon;
             document.getElementById('modalItemName').textContent = item.name;
-            document.getElementById('modalItemPrice').textContent = `+${item.price} ⭐`;
+            document.getElementById('modalItemPrice').textContent = `${item.price} ⭐`;
             document.getElementById('winModal').classList.add('active');
-            if (window.confetti && !isDemo) confetti({ particleCount: 50 });
         }
 
         async function closeModal(action) {
             document.getElementById('winModal').classList.remove('active');
-            if (action === 'claim') {
-                await loadInventoryFromServer();
-            } else if (action === 'sell' && pendingWinItem) {
-                updateBalance(pendingWinItem.price);
+            if (action === 'sell' && pendingWinItem) {
+                topUpStars(pendingWinItem.price);
             }
-            pendingWinItem = null;
+            loadInventoryFromServer();
         }
 
-        function openWithdrawModal(itemId) {
+        function renderInventory() {
+            const grid = document.getElementById('inventoryGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            
+            if (state.inventory.length === 0) {
+                grid.innerHTML = `<div style="grid-column: span 2; text-align: center; color: var(--text-secondary); padding: 30px;" data-i18n="emptyInv">${translations[state.lang].emptyInv}</div>`;
+                return;
+            }
+
+            state.inventory.forEach(item => {
+                const isRequested = item.status === 'withdraw_requested';
+                grid.innerHTML += `
+                    <div class="inventory-card">
+                        <div class="icon">${item.icon}</div>
+                        <div class="name">${item.name}</div>
+                        <div class="price">${item.price} ⭐</div>
+                        <div class="inventory-actions">
+                            <button class="sell-btn" onclick="sellItem(${item.id})">${translations[state.lang].sell}</button>
+                            <button class="withdraw-btn" ${isRequested ? 'disabled' : ''} onclick="promptWithdraw(${item.id}, '${item.icon}')">
+                                ${isRequested ? translations[state.lang].pending : translations[state.lang].withdraw}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function promptWithdraw(itemId, icon) {
             selectedItemIdForWithdraw = itemId;
+            document.getElementById('withdrawModalIcon').textContent = icon;
             document.getElementById('withdrawModal').classList.add('active');
         }
 
@@ -808,75 +932,49 @@
                 try {
                     const res = await fetch(`/api/withdraw/${selectedItemIdForWithdraw}`, { method: 'POST' });
                     const data = await res.json();
-                    alert(data.message || "Request sent!");
+                    alert(data.message || 'Success');
                     loadInventoryFromServer();
-                } catch(e) { alert("Error sending request."); }
+                } catch(e) {
+                    alert('Withdrawal error');
+                }
             }
             selectedItemIdForWithdraw = null;
         }
 
-        function renderInventory() {
-            const grid = document.getElementById('inventoryGrid');
-            if(!grid) return;
-            grid.innerHTML = '';
-
-            if (state.inventory.length === 0) {
-                grid.innerHTML = `<div style="grid-column: span 2; text-align: center; color: var(--text-secondary); font-size: 13px; padding: 20px;">${translations[state.lang].emptyInv}</div>`;
-                return;
-            }
-
-            state.inventory.forEach(item => {
-                const isRequested = item.status === 'withdraw_requested';
-                const card = document.createElement('div');
-                card.className = 'inventory-card';
-                card.innerHTML = `
-                    <div class="icon">${item.icon}</div>
-                    <div class="name">${item.name}</div>
-                    <div class="price">${isRequested ? translations[state.lang].pending : `${item.price} ⭐`}</div>
-                    <div class="inventory-actions">
-                        <button class="sell-btn" ${isRequested ? 'disabled' : ''} onclick="sellItem(${item.id})">${translations[state.lang].sell}</button>
-                        <button class="withdraw-btn" ${isRequested ? 'disabled' : ''} onclick="openWithdrawModal(${item.id})">${isRequested ? '⏳' : translations[state.lang].withdraw}</button>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function sellItem(itemId) {
-            state.inventory = state.inventory.filter(i => i.id !== itemId);
-            renderInventory();
+        async function sellItem(itemId) {
+            loadInventoryFromServer();
         }
 
         function filterInventory(query) {
-            const filtered = state.inventory.filter(i => i.name.toLowerCase().includes(query.toLowerCase()));
-            const grid = document.getElementById('inventoryGrid');
-            grid.innerHTML = '';
-            filtered.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'inventory-card';
-                card.innerHTML = `
-                    <div class="icon">${item.icon}</div><div class="name">${item.name}</div><div class="price">${item.price} ⭐</div>
-                    <div class="inventory-actions">
-                        <button class="sell-btn" onclick="sellItem(${item.id})">${translations[state.lang].sell}</button>
-                        <button class="withdraw-btn" onclick="openWithdrawModal(${item.id})">${translations[state.lang].withdraw}</button>
-                    </div>
-                `;
-                grid.appendChild(card);
+            const cards = document.querySelectorAll('.inventory-card');
+            cards.forEach(card => {
+                const name = card.querySelector('.name').textContent.toLowerCase();
+                card.style.display = name.includes(query.toLowerCase()) ? 'flex' : 'none';
             });
         }
 
         function sortInventory(type) {
-            if (type === 'expensive') state.inventory.sort((a, b) => b.price - a.price);
+            if (type === 'expensive') {
+                state.inventory.sort((a,b) => b.price - a.price);
+            } else {
+                state.inventory.sort((a,b) => b.id - a.id);
+            }
             renderInventory();
         }
 
-        window.onload = function() {
-            buildRouletteTrack();
-            buildWheel();
-            loadInventoryFromServer();
-            startBonusTimer();
-            if (state.lang === 'EN') toggleLanguage();
-        };
+        function addFeedItem(item) {
+            const list = document.getElementById('feedList');
+            if (!list) return;
+            list.innerHTML = `<div class="feed-item"><span>User won ${item.name}</span><span style="color:var(--gold)">${item.icon} ${item.price} ⭐</span></div>` + list.innerHTML;
+        }
+
+        // Инициализация при запуске
+        if (state.lang === 'EN') toggleLanguage();
+        initWheel();
+        initRouletteTrack();
+        startBonusTimer();
+        loadUserData();
+        loadInventoryFromServer();
     </script>
 </body>
 </html>
