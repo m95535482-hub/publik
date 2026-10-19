@@ -1,3 +1,5 @@
+import json
+import os
 import random
 import time
 from fastapi import FastAPI, HTTPException
@@ -6,8 +8,26 @@ from pydantic import BaseModel
 
 app = FastAPI(title="CatRoll Secure Backend")
 
-# Временное хранилище в памяти (в будущем можно подключить базу данных)
-users_db = {}
+DB_FILE = "database.json"
+
+
+def load_db():
+    if os.path.exists(DB_FILE):
+        try:
+            with open(DB_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
+
+
+def save_db():
+    with open(DB_FILE, "w", encoding="utf-8") as f:
+        json.dump(users_db, f, ensure_ascii=False, indent=4)
+
+
+# Загружаем базу при старте сервера
+users_db = load_db()
 
 ITEMS_POOL = [
     {"id": 1, "name": "Star Pouch", "icon": "⭐", "price": 30},
@@ -33,7 +53,7 @@ class SpinRequest(BaseModel):
 
 class InventoryAction(BaseModel):
     user_id: str
-    action: str  # 'claim' или 'sell'
+    action: str
     item: dict
 
 
@@ -56,6 +76,7 @@ def init_user(data: UserRequest):
             "inventory": [],
             "last_bonus": 0,
         }
+        save_db()
     return users_db[uid]
 
 
@@ -72,6 +93,7 @@ def claim_bonus(data: UserRequest):
 
     users_db[uid]["last_bonus"] = now
     users_db[uid]["balance"] += 50
+    save_db()
     return {
         "balance": users_db[uid]["balance"],
         "item": {"name": "Ежедневный Бонус", "icon": "🎁", "price": 50},
@@ -93,6 +115,7 @@ def spin_case(data: SpinRequest):
         users_db[uid]["balance"] -= cost
 
     winning_item = random.choice(ITEMS_POOL)
+    save_db()
     return {"balance": users_db[uid]["balance"], "item": winning_item}
 
 
@@ -109,6 +132,7 @@ def spin_wheel(data: SpinRequest):
         users_db[uid]["balance"] -= cost
 
     winning_item = random.choice(ITEMS_POOL)
+    save_db()
     return {"balance": users_db[uid]["balance"], "item": winning_item}
 
 
@@ -126,6 +150,7 @@ def inventory_action(data: InventoryAction):
     elif data.action == "sell":
         user["balance"] += data.item["price"]
 
+    save_db()
     return {"balance": user["balance"], "inventory": user["inventory"]}
 
 
@@ -144,6 +169,7 @@ def sell_inventory_item(data: SellItemRequest):
         item = user["inventory"].pop(idx)
         user["balance"] += item["price"]
 
+    save_db()
     return {"balance": user["balance"], "inventory": user["inventory"]}
 
 
