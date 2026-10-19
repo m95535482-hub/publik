@@ -43,7 +43,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
         .logo {
@@ -82,6 +82,76 @@
             display: flex;
             align-items: center;
             gap: 6px;
+        }
+
+        /* Панель настроек (Демо и Пропуск анимации) */
+        .settings-panel {
+            width: 100%;
+            max-width: 360px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 10px 14px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .toggle-row span {
+            color: #fff;
+        }
+
+        /* Кастомный чекбокс-тумблер */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 22px;
+        }
+
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #26262e;
+            transition: .3s;
+            border-radius: 22px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--green);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(18px);
         }
 
         .screen {
@@ -499,6 +569,24 @@
         </div>
     </div>
 
+    <!-- ПАНЕЛЬ НАСТРОЕК (Демо-режим и Пропуск анимации) -->
+    <div class="settings-panel">
+        <div class="toggle-row">
+            <span>🧪 Демо-режим (без списаний)</span>
+            <label class="switch">
+                <input type="checkbox" id="demoToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="toggle-row">
+            <span>⚡ Пропуск анимации</span>
+            <label class="switch">
+                <input type="checkbox" id="skipToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+
     <!-- ЭКРАН 1: ГЛАВНОЕ МЕНЮ ВЫБОРА РУЛЕТОК -->
     <div class="screen active" id="menuScreen">
         <div class="menu-title">Выберите режим</div>
@@ -606,6 +694,17 @@
         let activeMode = null;
         let currentRotation = 0;
         let currentWinItem = null;
+        let isDemoMode = false;
+        let isSkipAnimation = false;
+
+        // Обработчики переключателей настроек
+        document.getElementById('demoToggle').addEventListener('change', (e) => {
+            isDemoMode = e.target.checked;
+        });
+
+        document.getElementById('skipToggle').addEventListener('change', (e) => {
+            isSkipAnimation = e.target.checked;
+        });
 
         const items = [
             { nft_id: 'santa_hat', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f385.png', name: 'Santa Hat NFT', price: 500, weight: 30 },
@@ -694,16 +793,26 @@
         }
 
         function triggerSpin() {
-            if (userBalance < currentPrice) {
-                tg.showAlert("Недостаточно Telegram Stars на балансе!");
-                return;
+            // Если не демо-режим, проверяем баланс и списываем звезды
+            if (!isDemoMode) {
+                if (userBalance < currentPrice) {
+                    tg.showAlert("Недостаточно Telegram Stars на балансе!");
+                    return;
+                }
+                userBalance -= currentPrice;
+                saveUserData();
             }
 
             spinBtn.disabled = true;
-            userBalance -= currentPrice;
-            saveUserData();
-
             currentWinItem = getRandomItem();
+
+            // Если включен пропуск анимации, мгновенно показываем окно выигрыша
+            if (isSkipAnimation) {
+                spinBtn.disabled = false;
+                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                showWinModal(currentWinItem);
+                return;
+            }
 
             if (activeMode === 'classic') {
                 spinClassic();
@@ -759,10 +868,20 @@
             document.getElementById('sellBtn').disabled = false;
             document.getElementById('keepBtn').disabled = false;
 
+            // Если демо-режим, меняем тексты на модалке, чтобы пользователь понимал
+            if (isDemoMode) {
+                document.getElementById('winTitle').innerText = `${item.name} [ДЕМО]`;
+                document.getElementById('sellBtninnerText') = `Продать (Демо)`;
+                document.getElementById('sellBtn').innerText = `Продать [ДЕМО]`;
+                document.getElementById('keepBtn').innerText = `Забрать [ДЕМО]`;
+            } else {
+                document.getElementById('winTitle').innerText = item.name;
+                document.getElementById('sellBtn').innerText = `Продать за ${item.price} ⭐`;
+                document.getElementById('keepBtn').innerText = `Забрать в инвентарь`;
+            }
+
             document.getElementById('winIcon').innerHTML = `<img src="${item.image}" alt="${item.name}">`;
-            document.getElementById('winTitle').innerText = item.name;
             document.getElementById('winPrice').innerText = `Стоимость: ${item.price} ⭐`;
-            document.getElementById('sellBtn').innerText = `Продать за ${item.price} ⭐`;
             document.getElementById('winModal').style.display = 'flex';
         }
 
@@ -787,12 +906,15 @@
             }
 
             if (itemToSell) {
-                userBalance += itemToSell.price;
-                saveUserData();
+                if (!isDemoMode) {
+                    userBalance += itemToSell.price;
+                    saveUserData();
+                }
                 if (isInventory) {
                     renderInventory();
                 }
-                tg.showAlert(`Предмет "${itemToSell.name}" (ID: ${itemToSell.nft_id}) успешно продан за +${itemToSell.price} ⭐!`);
+                const demoSuffix = isDemoMode ? " [ДЕМО — баланс не изменен]" : "";
+                tg.showAlert(`Предмет "${itemToSell.name}" успешно продан!${demoSuffix}`);
             }
         }
 
@@ -813,6 +935,12 @@
             document.getElementById('sellBtn').disabled = true;
             document.getElementById('keepBtn').disabled = true;
             closeWinModal();
+
+            if (isDemoMode) {
+                currentWinItem = null;
+                tg.showAlert(`[ДЕМО] Предмет не сохранен в реальный инвентарь.`);
+                return;
+            }
 
             const itemToKeep = {...currentWinItem, invId: Date.now() + Math.random()};
             currentWinItem = null;
