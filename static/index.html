@@ -429,6 +429,7 @@
             background: linear-gradient(145deg, #181824, #0f0f16); border: 1px solid var(--card-border); border-radius: 28px; padding: 24px; width: 100%; max-width: 320px; text-align: center;
         }
         
+        /* Стили для картинки в модалке (соответствуют советам вашего друга) */
         .win-image {
             width: 120px;
             height: 120px;
@@ -670,16 +671,16 @@
             }
         };
 
-        // Бассейн предметов: заменили звездочку на Timeless Book с ценой 30 ⭐
+        // Используем прямую и рабочую ссылку на графику книги Timeless Book с ценой 30 ⭐ везде
         const itemsPool = [
-            { id: 1, name: 'Timeless Book', icon: 'https://nft.fragment.com/gift/TimelessBook-14508.png', price: 30 },
-            { id: 2, name: 'Gift Box', icon: 'https://cdn4.iconfinder.com/data/icons/christmas-flat-13/64/gift-box-present-surprise-holiday-512.png', price: 60 },
-            { id: 3, name: 'Rubber Duck', icon: 'https://cdn3.iconfinder.com/data/icons/summer-solid-style/64/rubber-duck-toy-summer-beach-water-512.png', price: 120 },
-            { id: 4, name: 'Telegram Gem', icon: 'https://cdn1.iconfinder.com/data/icons/user-interface-142/48/Gem-512.png', price: 250 },
-            { id: 5, name: 'Rocket Gift', icon: 'https://cdn3.iconfinder.com/data/icons/space-exploration-solid/64/space-rocket-launch-ship-travel-512.png', price: 450 },
-            { id: 6, name: 'Golden Crown', icon: 'https://cdn3.iconfinder.com/data/icons/royal-and-king/512/crown_king_queen_royal_gold-512.png', price: 800 },
-            { id: 7, name: 'Cyber Cat NFT', icon: 'https://cdn2.iconfinder.com/data/icons/cyberpunk-vol-1/512/Cyberpunk_cat-512.png', price: 1500 },
-            { id: 8, name: 'Diamond', icon: 'https://cdn4.iconfinder.com/data/icons/jewelry-16/64/diamond-gem-luxury-precious-stone-crystal-512.png', price: 2500 }
+            { id: 1, name: 'Timeless Book', icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png', price: 30 },
+            { id: 2, name: 'Timeless Book', icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png', price: 30 },
+            { id: 3, name: 'Timeless Book', icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png', price: 30 },
+            { id: 4, name: 'Timeless Book', icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png', price: 30 },
+            { id: 5, name: 'Timeless Book', icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png', price: 30 },
+            { id: 6, name: 'Timeless Book', icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png', price: 30 },
+            { id: 7, name: 'Timeless Book', icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png', price: 30 },
+            { id: 8, name: 'Timeless Book', icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png', price: 30 }
         ];
 
         let pendingWinItem = null;
@@ -747,16 +748,13 @@
             try {
                 const res = await fetch(`/api/inventory/${userId}`);
                 const data = await res.json();
-                state.inventory = data.map(item => {
-                    const found = itemsPool.find(p => p.name === item.gift_name);
-                    return {
-                        id: item.id,
-                        name: item.gift_name,
-                        icon: found ? found.icon : item.image_url,
-                        price: item.price,
-                        status: item.status
-                    };
-                });
+                state.inventory = data.map(item => ({
+                    id: item.id,
+                    name: 'Timeless Book',
+                    icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png',
+                    price: 30,
+                    status: item.status
+                }));
                 renderInventory();
             } catch(e) { console.error(e); }
         }
@@ -798,7 +796,7 @@
             state.lastBonusTime = now;
             localStorage.setItem('catroll_bonus', state.lastBonusTime);
             if (window.confetti) confetti({ particleCount: 60, spread: 70 });
-            showWinModal({ name: 'Timeless Book', icon: 'https://nft.fragment.com/gift/TimelessBook-14508.png', price: 30 }, false);
+            showWinModal({ name: 'Timeless Book', icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png', price: 30 }, false);
             startBonusTimer();
         }
 
@@ -879,11 +877,10 @@
                 });
                 const data = await res.json();
                 
-                const foundItem = itemsPool.find(p => p.name === data.gift.name);
                 currentWinningItem = {
-                    name: data.gift.name,
-                    icon: foundItem ? foundItem.icon : data.gift.icon,
-                    price: data.gift.price
+                    name: 'Timeless Book',
+                    icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png',
+                    price: 30
                 };
 
                 state.balance = data.balance;
@@ -955,11 +952,10 @@
                 });
                 const data = await res.json();
                 
-                const foundItem = itemsPool.find(p => p.name === data.gift.name);
                 currentWinningItem = {
-                    name: data.gift.name,
-                    icon: foundItem ? foundItem.icon : data.gift.icon,
-                    price: data.gift.price
+                    name: 'Timeless Book',
+                    icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png',
+                    price: 30
                 };
 
                 state.balance = data.balance;
@@ -974,7 +970,7 @@
                 return;
             }
 
-            const index = itemsPool.findIndex(i => i.name === currentWinningItem.name);
+            const index = 0; // Всегда книга
             const sliceAngle = 360 / itemsPool.length;
             
             currentWheelRotation += 1800 + (360 - (index * sliceAngle + sliceAngle / 2));
