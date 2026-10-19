@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CatRoll — Cases & NFT</title>
+    <title>CatRoll — Cases & Rewards</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -79,9 +79,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 16px;
             box-shadow: 0 4px 20px var(--accent-glow);
             border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
         }
 
         .header-actions {
@@ -187,8 +188,9 @@
             align-items: center;
             justify-content: center;
             border: 1px solid rgba(255, 255, 255, 0.15);
-            font-size: 24px;
+            font-size: 20px;
             flex-shrink: 0;
+            color: var(--purple-bright);
         }
 
         .mode-info { flex: 1; }
@@ -315,7 +317,7 @@
             border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center;
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
-        .item-card .icon { font-size: 34px; }
+        .item-card .icon { font-size: 30px; }
         .item-card .name { font-size: 10px; color: var(--text-secondary); margin-top: 6px; font-weight: 700; text-align: center; }
         .item-card .price-tag { font-size: 11px; color: var(--gold); font-weight: 800; margin-top: 2px; }
 
@@ -341,7 +343,7 @@
         }
         .wheel-center-cap {
             position: absolute; width: 48px; height: 48px; background: linear-gradient(135deg, #2c2c3d, #121218);
-            border: 3px solid var(--purple-accent); border-radius: 50%; z-index: 15; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px;
+            border: 3px solid var(--purple-accent); border-radius: 50%; z-index: 15; display: flex; align-items: center; justify-content: center; color: var(--purple-bright); font-size: 16px;
         }
 
         .stars-grid {
@@ -363,9 +365,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 8px;
             transition: 0.2s;
         }
+        .star-package-btn i { color: var(--gold); }
         .star-package-btn:hover, .star-package-btn:active {
             background: rgba(255, 184, 0, 0.2);
             border-color: var(--gold);
@@ -398,7 +401,7 @@
             background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 16px;
             display: flex; flex-direction: column; align-items: center; text-align: center;
         }
-        .inventory-card .icon { font-size: 42px; margin-bottom: 8px; }
+        .inventory-card .icon { font-size: 38px; margin-bottom: 8px; }
         .inventory-card .name { font-size: 13px; font-weight: 800; margin-bottom: 3px; }
         .inventory-card .price { font-size: 12px; color: var(--gold); font-weight: 800; margin-bottom: 10px; }
 
@@ -423,7 +426,7 @@
         .modal-card {
             background: linear-gradient(145deg, #181824, #0f0f16); border: 1px solid var(--card-border); border-radius: 28px; padding: 24px; width: 100%; max-width: 320px; text-align: center;
         }
-        .modal-icon { font-size: 64px; margin: 14px 0; }
+        .modal-icon { font-size: 56px; margin: 14px 0; color: var(--purple-bright); }
 
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10, 10, 14, 0.92); backdrop-filter: blur(22px);
@@ -438,87 +441,87 @@
 
     <header class="header">
         <div class="logo" onclick="switchScreen('main-screen')">
-            <div class="logo-icon">🐾</div> CatRoll
+            <div class="logo-icon"><i class="fa-solid fa-paw"></i></div> CatRoll
         </div>
         <div class="header-actions">
-            <button class="lang-btn" onclick="toggleLanguage()" id="langBtn">🌐 RU</button>
+            <button class="lang-btn" onclick="toggleLanguage()" id="langBtn">🌐 EN</button>
             <div class="balance-pill" onclick="switchScreen('wallet-screen')"><i class="fa-solid fa-star"></i><span id="userBalance">0</span></div>
         </div>
     </header>
 
     <main id="main-screen" class="screen active">
-        <h1 class="menu-title" data-i18n="mainTitle">Выбирай режим</h1>
-        <p class="menu-subtitle" data-i18n="mainSub">Крути рулетку, испытывай удачу и забирай NFT</p>
+        <h1 class="menu-title" data-i18n="mainTitle">Select Mode</h1>
+        <p class="menu-subtitle" data-i18n="mainSub">Spin roulette, test your luck & collect rewards</p>
 
         <div class="mode-card daily-bonus-card" onclick="claimDailyBonus()">
-            <div class="mode-icon">🎁</div>
+            <div class="mode-icon"><i class="fa-solid fa-gift"></i></div>
             <div class="mode-info">
-                <h3><span data-i18n="dailyTitle">Ежедневный Бонус</span><span class="timer-badge" id="bonusTimer">Готово</span></h3>
-                <p data-i18n="dailySub">Забери бесплатные Stars прямо сейчас</p>
+                <h3><span data-i18n="dailyTitle">Daily Reward</span><span class="timer-badge" id="bonusTimer">Ready</span></h3>
+                <p data-i18n="dailySub">Claim free Telegram Stars right now</p>
             </div>
         </div>
 
         <div class="mode-card" onclick="switchScreen('wallet-screen')">
-            <div class="mode-icon">💳</div>
+            <div class="mode-icon"><i class="fa-solid fa-wallet"></i></div>
             <div class="mode-info">
-                <h3 data-i18n="walletTitle">Пополнить баланс</h3>
-                <p data-i18n="walletSub">Покупка пакетов звезд для игры</p>
+                <h3 data-i18n="walletTitle">Top Up Balance</h3>
+                <p data-i18n="walletSub">Purchase star packages for play</p>
             </div>
         </div>
 
         <div class="mode-card" onclick="switchScreen('cases-screen')">
-            <div class="mode-icon">📦</div>
+            <div class="mode-icon"><i class="fa-solid fa-box-open"></i></div>
             <div class="mode-info">
-                <h3 data-i18n="casesTitle">Кейсы Подарков</h3>
-                <p data-i18n="casesSub">Открывай кейсы и выигрывай Telegram Stars</p>
+                <h3 data-i18n="casesTitle">Mystery Vaults</h3>
+                <p data-i18n="casesSub">Open vaults and win exclusive rewards</p>
             </div>
         </div>
 
         <div class="mode-card" onclick="switchScreen('wheel-screen')">
-            <div class="mode-icon">🎡</div>
+            <div class="mode-icon"><i class="fa-solid fa-dharmachakra"></i></div>
             <div class="mode-info">
-                <h3 data-i18n="wheelTitle">Колесо Фортуны</h3>
-                <p data-i18n="wheelSub">Вращай колесо и получай до x10 наград</p>
+                <h3 data-i18n="wheelTitle">Fortune Wheel</h3>
+                <p data-i18n="wheelSub">Spin the wheel and get up to x10 multipliers</p>
             </div>
         </div>
 
         <div class="mode-card" onclick="switchScreen('inventory-screen')">
-            <div class="mode-icon">🎒</div>
+            <div class="mode-icon"><i class="fa-solid fa-suitcase"></i></div>
             <div class="mode-info">
-                <h3 data-i18n="inventoryTitle">Мой Инвентарь</h3>
-                <p data-i18n="inventorySub">Просматривай и продавай свои награды</p>
+                <h3 data-i18n="inventoryTitle">My Collection</h3>
+                <p data-i18n="inventorySub">Manage, sell, and withdraw your items</p>
             </div>
         </div>
 
         <div class="live-feed">
-            <div class="live-feed-title" data-i18n="liveFeed">Лента выигрышей</div>
+            <div class="live-feed-title" data-i18n="liveFeed">Live Winners Feed</div>
             <div class="feed-list" id="feedList"></div>
         </div>
     </main>
 
     <main id="wallet-screen" class="screen">
-        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
-        <h1 class="menu-title" data-i18n="walletHeader">Пополнение звёзд</h1>
-        <p class="menu-subtitle" data-i18n="walletSubHeader">Выберите пакет для пополнения баланса</p>
+        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
+        <h1 class="menu-title" data-i18n="walletHeader">Top Up Stars</h1>
+        <p class="menu-subtitle" data-i18n="walletSubHeader">Choose a package to top up your balance</p>
 
         <div class="stars-grid">
-            <button class="star-package-btn" onclick="topUpStars(100)">⭐ 100</button>
-            <button class="star-package-btn" onclick="topUpStars(200)">⭐ 200</button>
-            <button class="star-package-btn" onclick="topUpStars(500)">⭐ 500</button>
-            <button class="star-package-btn" onclick="topUpStars(1000)">⭐ 1000</button>
-            <button class="star-package-btn full-width" onclick="topUpStars(2500)">⭐ 2500 (MAX)</button>
+            <button class="star-package-btn" onclick="topUpStars(100)"><i class="fa-solid fa-star"></i> 100</button>
+            <button class="star-package-btn" onclick="topUpStars(200)"><i class="fa-solid fa-star"></i> 200</button>
+            <button class="star-package-btn" onclick="topUpStars(500)"><i class="fa-solid fa-star"></i> 500</button>
+            <button class="star-package-btn" onclick="topUpStars(1000)"><i class="fa-solid fa-star"></i> 1000</button>
+            <button class="star-package-btn full-width" onclick="topUpStars(2500)"><i class="fa-solid fa-star"></i> 2500 (MAX)</button>
         </div>
         <div id="topupMsg" style="margin-top: 15px; font-weight: 800; font-size: 13px; text-align: center;"></div>
     </main>
 
     <main id="cases-screen" class="screen">
-        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
-        <h1 class="menu-title" data-i18n="casesHeader">Открытие кейсов</h1>
-        <p class="menu-subtitle" id="caseCostSubtitle">Стоимость кейса: 50 ⭐</p>
+        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
+        <h1 class="menu-title" data-i18n="casesHeader">Mystery Vaults</h1>
+        <p class="menu-subtitle" id="caseCostSubtitle">Vault cost: 50 ⭐</p>
 
         <div class="controls-row">
-            <label class="toggle-label"><span data-i18n="demoMode">Демо-режим</span><div class="toggle-switch"><input type="checkbox" id="casesDemoToggle"><span class="slider"></span></div></label>
-            <button class="skip-btn-mini" onclick="skipCaseAnimation()" data-i18n="skipBtn">Пропустить</button>
+            <label class="toggle-label"><span data-i18n="demoMode">Demo mode</span><div class="toggle-switch"><input type="checkbox" id="casesDemoToggle"><span class="slider"></span></div></label>
+            <button class="skip-btn-mini" onclick="skipCaseAnimation()" data-i18n="skipBtn">Skip</button>
         </div>
 
         <div class="cases-selector">
@@ -531,38 +534,38 @@
             <div class="roulette-wrapper"><div class="pointer"></div><div class="roulette-track" id="rouletteTrack"></div></div>
         </div>
 
-        <button class="action-btn" id="spinCaseBtn" onclick="spinRoulette()" data-i18n="spinBtn">Крутить Кейс</button>
+        <button class="action-btn" id="spinCaseBtn" onclick="spinRoulette()" data-i18n="spinBtn">Open Vault</button>
     </main>
 
     <main id="wheel-screen" class="screen">
-        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
-        <h1 class="menu-title" data-i18n="wheelHeader">Колесо Фортуны</h1>
-        <p class="menu-subtitle" data-i18n="wheelCost">Стоимость вращения: 100 ⭐</p>
+        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
+        <h1 class="menu-title" data-i18n="wheelHeader">Fortune Wheel</h1>
+        <p class="menu-subtitle" data-i18n="wheelCost">Spin cost: 100 ⭐</p>
 
         <div class="controls-row">
-            <label class="toggle-label"><span data-i18n="demoMode">Демо-режим</span><div class="toggle-switch"><input type="checkbox" id="wheelDemoToggle"><span class="slider"></span></div></label>
-            <button class="skip-btn-mini" onclick="skipWheelAnimation()" data-i18n="skipBtn">Пропустить</button>
+            <label class="toggle-label"><span data-i18n="demoMode">Demo mode</span><div class="toggle-switch"><input type="checkbox" id="wheelDemoToggle"><span class="slider"></span></div></label>
+            <button class="skip-btn-mini" onclick="skipWheelAnimation()" data-i18n="skipBtn">Skip</button>
         </div>
 
         <div class="wheel-box">
             <div class="wheel-pointer"></div>
             <div class="wheel" id="wheelTrack"></div>
-            <div class="wheel-center-cap">🐾</div>
+            <div class="wheel-center-cap"><i class="fa-solid fa-dharmachakra"></i></div>
         </div>
 
-        <button class="action-btn" id="spinWheelBtn" onclick="spinWheel()" data-i18n="spinWheelBtn">Вращать Колесо</button>
+        <button class="action-btn" id="spinWheelBtn" onclick="spinWheel()" data-i18n="spinWheelBtn">Spin Wheel</button>
     </main>
 
     <main id="inventory-screen" class="screen">
-        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
-        <h1 class="menu-title" data-i18n="invHeader">Инвентарь</h1>
-        <p class="menu-subtitle" data-i18n="invSubHeader">Ваши предметы и подарки</p>
+        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
+        <h1 class="menu-title" data-i18n="invHeader">My Collection</h1>
+        <p class="menu-subtitle" data-i18n="invSubHeader">Your items and rewards</p>
 
         <div class="inventory-controls">
-            <input type="text" class="search-input" id="searchInput" placeholder="Поиск..." oninput="filterInventory(this.value)">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search..." oninput="filterInventory(this.value)">
             <select class="sort-select" onchange="sortInventory(this.value)">
-                <option value="new" data-i18n="sortNew">Сначала новые</option>
-                <option value="expensive" data-i18n="sortExp">Сначала дорогие</option>
+                <option value="new" data-i18n="sortNew">Newest first</option>
+                <option value="expensive" data-i18n="sortExp">Highest price</option>
             </select>
         </div>
 
@@ -571,34 +574,34 @@
 
     <div class="modal-overlay" id="winModal">
         <div class="modal-card">
-            <h2 class="menu-title" data-i18n="winTitle">Поздравляем!</h2>
-            <div class="modal-icon" id="modalIcon">🎁</div>
-            <h3 id="modalItemName" style="font-size: 18px; margin-bottom: 6px;">Предмет</h3>
+            <h2 class="menu-title" data-i18n="winTitle">Congratulations!</h2>
+            <div class="modal-icon" id="modalIcon"><i class="fa-solid fa-award"></i></div>
+            <h3 id="modalItemName" style="font-size: 18px; margin-bottom: 6px;">Item</h3>
             <p id="modalItemPrice" style="color: var(--gold); font-weight: 800; font-size: 14px; margin-bottom: 20px;">0 ⭐</p>
             <div style="display: flex; gap: 10px;">
-                <button class="action-btn" onclick="closeModal('sell')" style="background: rgba(46,204,113,0.2); color: var(--green); border: 1px solid rgba(46,204,113,0.4);" data-i18n="sellBtnModal">Продать</button>
-                <button class="action-btn" onclick="closeModal('claim')" data-i18n="claimBtn">В инвентарь</button>
+                <button class="action-btn" onclick="closeModal('sell')" style="background: rgba(46,204,113,0.2); color: var(--green); border: 1px solid rgba(46,204,113,0.4);" data-i18n="sellBtnModal">Sell</button>
+                <button class="action-btn" onclick="closeModal('claim')" data-i18n="claimBtn">To Collection</button>
             </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="withdrawModal">
         <div class="modal-card">
-            <h2 class="menu-title" style="font-size: 20px;" data-i18n="withdrawTitle">Вывод подарка</h2>
-            <div class="modal-icon" id="withdrawModalIcon" style="font-size: 48px; margin: 10px 0;">📦</div>
-            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;" data-i18n="withdrawDesc">Запросить вывод этого подарка администратору?</p>
+            <h2 class="menu-title" style="font-size: 20px;" data-i18n="withdrawTitle">Item Withdrawal</h2>
+            <div class="modal-icon" id="withdrawModalIcon" style="font-size: 48px; margin: 10px 0;"><i class="fa-solid fa-paper-plane"></i></div>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;" data-i18n="withdrawDesc">Request withdrawal of this reward from admin?</p>
             <div style="display: flex; gap: 10px;">
-                <button class="action-btn" onclick="closeWithdrawModal(false)" style="background: rgba(255,59,48,0.2); color: #ff3b30; border: 1px solid rgba(255,59,48,0.4);" data-i18n="rejectBtn">Отклонить</button>
-                <button class="action-btn" onclick="closeWithdrawModal(true)" data-i18n="confirmBtn">Подтвердить</button>
+                <button class="action-btn" onclick="closeWithdrawModal(false)" style="background: rgba(255,59,48,0.2); color: #ff3b30; border: 1px solid rgba(255,59,48,0.4);" data-i18n="rejectBtn">Reject</button>
+                <button class="action-btn" onclick="closeWithdrawModal(true)" data-i18n="confirmBtn">Confirm</button>
             </div>
         </div>
     </div>
 
     <nav class="bottom-nav">
-        <div class="nav-item active" onclick="switchScreen('main-screen')"><i class="fa-solid fa-house"></i><span data-i18n="navHome">Главная</span></div>
-        <div class="nav-item" onclick="switchScreen('cases-screen')"><i class="fa-solid fa-box-open"></i><span data-i18n="navCases">Кейсы</span></div>
-        <div class="nav-item" onclick="switchScreen('wheel-screen')"><i class="fa-solid fa-spinner"></i><span data-i18n="navWheel">Колесо</span></div>
-        <div class="nav-item" onclick="switchScreen('inventory-screen')"><i class="fa-solid fa-bag-shopping"></i><span data-i18n="navInv">Инвентарь</span></div>
+        <div class="nav-item active" onclick="switchScreen('main-screen')"><i class="fa-solid fa-house"></i><span data-i18n="navHome">Home</span></div>
+        <div class="nav-item" onclick="switchScreen('cases-screen')"><i class="fa-solid fa-box-open"></i><span data-i18n="navCases">Vaults</span></div>
+        <div class="nav-item" onclick="switchScreen('wheel-screen')"><i class="fa-solid fa-dharmachakra"></i><span data-i18n="navWheel">Fortune</span></div>
+        <div class="nav-item" onclick="switchScreen('inventory-screen')"><i class="fa-solid fa-suitcase"></i><span data-i18n="navInv">Collection</span></div>
     </nav>
 
     <script>
@@ -611,48 +614,48 @@
             inventory: [],
             currentCaseCost: 50,
             isSpinning: false,
-            lang: localStorage.getItem('catroll_lang') || 'RU',
+            lang: localStorage.getItem('catroll_lang') || 'EN',
             lastBonusTime: parseInt(localStorage.getItem('catroll_bonus')) || 0
         };
 
         const translations = {
-            RU: {
-                mainTitle: "Выбирай режим", mainSub: "Крути рулетку, испытывай удачу и забирай NFT",
-                dailyTitle: "Ежедневный Бонус", dailySub: "Забери бесплатные Stars прямо сейчас",
-                walletTitle: "Пополнить баланс", walletSub: "Покупка пакетов звезд для игры",
-                casesTitle: "Кейсы Подарков", casesSub: "Открывай кейсы и выигрывай Telegram Stars",
-                wheelTitle: "Колесо Фортуны", wheelSub: "Вращай колесо и получай до x10 наград",
-                inventoryTitle: "Мой Инвентарь", inventorySub: "Просматривай и продавай свои награды",
-                liveFeed: "Лента выигрышей", back: "← Назад", casesHeader: "Открытие кейсов",
-                casesSubHeader: "Испытай удачу в рулетке", spinBtn: "Крутить Кейс", skipBtn: "Пропустить",
-                wheelHeader: "Колесо Фортуны", wheelCost: "Стоимость вращения: 100 ⭐", spinWheelBtn: "Вращать Колесо",
-                walletHeader: "Пополнение звёзд", walletSubHeader: "Выберите пакет для пополнения баланса",
-                invHeader: "Инвентарь", invSubHeader: "Ваши предметы и подарки", sortNew: "Сначала новые",
-                sortExp: "Сначала дорогие", winTitle: "Поздравляем!", claimBtn: "В инвентарь", sellBtnModal: "Продать",
-                navHome: "Главная", navCases: "Кейсы", navWheel: "Колесо", navInv: "Инвентарь",
-                emptyInv: "Инвентарь пуст", sell: "Продать", withdraw: "Вывести", ready: "Готово",
-                searchPlaceholder: "Поиск...", withdrawTitle: "Вывод подарка",
-                withdrawDesc: "Запросить вывод этого подарка администратору?",
-                confirmBtn: "Подтвердить", rejectBtn: "Отклонить", pending: "Ожидает вывод", demoMode: "Демо-режим"
-            },
             EN: {
-                mainTitle: "Choose Mode", mainSub: "Spin roulette, test your luck, get NFTs",
-                dailyTitle: "Daily Bonus", dailySub: "Claim free Stars right now",
+                mainTitle: "Select Mode", mainSub: "Spin roulette, test your luck & collect rewards",
+                dailyTitle: "Daily Reward", dailySub: "Claim free Telegram Stars right now",
                 walletTitle: "Top Up Balance", walletSub: "Purchase star packages for play",
-                casesTitle: "Gift Cases", casesSub: "Open cases and win Telegram Stars",
-                wheelTitle: "Wheel of Fortune", wheelSub: "Spin the wheel and get up to x10 rewards",
-                inventoryTitle: "My Inventory", inventorySub: "View and sell your rewards",
-                liveFeed: "Live Win Feed", back: "← Back", casesHeader: "Case Opening",
-                casesSubHeader: "Try your luck in roulette", spinBtn: "Spin Case", skipBtn: "Skip",
-                wheelHeader: "Wheel of Fortune", wheelCost: "Spin cost: 100 ⭐", spinWheelBtn: "Spin Wheel",
-                walletHeader: "Star Top Up", walletSubHeader: "Choose a package to top up balance",
-                invHeader: "Inventory", invSubHeader: "Your items & gifts", sortNew: "Newest first",
-                sortExp: "Expensive first", winTitle: "Congratulations!", claimBtn: "To Inventory", sellBtnModal: "Sell",
-                navHome: "Home", navCases: "Cases", navWheel: "Wheel", navInv: "Inventory",
-                emptyInv: "Inventory is empty", sell: "Sell", withdraw: "Withdraw", ready: "Ready",
-                searchPlaceholder: "Search...", withdrawTitle: "Gift Withdrawal",
-                withdrawDesc: "Request withdrawal for this gift from admin?",
+                casesTitle: "Mystery Vaults", casesSub: "Open vaults and win exclusive rewards",
+                wheelTitle: "Fortune Wheel", wheelSub: "Spin the wheel and get up to x10 multipliers",
+                inventoryTitle: "My Collection", inventorySub: "Manage, sell, and withdraw your items",
+                liveFeed: "Live Winners Feed", back: "← Back", casesHeader: "Mystery Vaults",
+                casesSubHeader: "Try your luck in roulette", spinBtn: "Open Vault", skipBtn: "Skip",
+                wheelHeader: "Fortune Wheel", wheelCost: "Spin cost: 100 ⭐", spinWheelBtn: "Spin Wheel",
+                walletHeader: "Top Up Stars", walletSubHeader: "Choose a package to top up your balance",
+                invHeader: "My Collection", invSubHeader: "Your items and rewards", sortNew: "Newest first",
+                sortExp: "Highest price", winTitle: "Congratulations!", claimBtn: "To Collection", sellBtnModal: "Sell",
+                navHome: "Home", navCases: "Vaults", navWheel: "Fortune", navInv: "Collection",
+                emptyInv: "Collection is empty", sell: "Sell", withdraw: "Withdraw", ready: "Ready",
+                searchPlaceholder: "Search...", withdrawTitle: "Item Withdrawal",
+                withdrawDesc: "Request withdrawal of this reward from admin?",
                 confirmBtn: "Confirm", rejectBtn: "Reject", pending: "Pending", demoMode: "Demo mode"
+            },
+            RU: {
+                mainTitle: "Выбор режима", mainSub: "Крутите рулетку, испытывайте удачу и собирайте награды",
+                dailyTitle: "Ежедневная награда", dailySub: "Заберите бесплатные Stars прямо сейчас",
+                walletTitle: "Пополнить баланс", walletSub: "Покупка пакетов звезд для игры",
+                casesTitle: "Сейфы наград", casesSub: "Открывайте сейфы и выигрывайте ценные призы",
+                wheelTitle: "Колесо Фортуны", wheelSub: "Вращайте колесо и получайте до x10 множителей",
+                inventoryTitle: "Моя коллекция", inventorySub: "Управляйте, продавайте и выводите предметы",
+                liveFeed: "Лента победителей", back: "← Назад", casesHeader: "Сейфы наград",
+                casesSubHeader: "Испытайте удачу в рулетке", spinBtn: "Открыть сейф", skipBtn: "Пропустить",
+                wheelHeader: "Колесо Фортуны", wheelCost: "Стоимость вращения: 100 ⭐", spinWheelBtn: "Вращать колесо",
+                walletHeader: "Пополнение звезд", walletSubHeader: "Выберите пакет для пополнения баланса",
+                invHeader: "Моя коллекция", invSubHeader: "Ваши предметы и награды", sortNew: "Сначала новые",
+                sortExp: "Сначала дороже", winTitle: "Поздравляем!", claimBtn: "В коллекцию", sellBtnModal: "Продать",
+                navHome: "Главная", navCases: "Сейфы", navWheel: "Колесо", navInv: "Коллекция",
+                emptyInv: "Коллекция пуста", sell: "Продать", withdraw: "Вывести", ready: "Готово",
+                searchPlaceholder: "Поиск...", withdrawTitle: "Вывод предмета",
+                withdrawDesc: "Запросить вывод этой награды у администратора?",
+                confirmBtn: "Подтвердить", rejectBtn: "Отклонить", pending: "Ожидает", demoMode: "Демо-режим"
             }
         };
 
@@ -687,7 +690,7 @@
         async function topUpStars(amount) {
             const msgEl = document.getElementById('topupMsg');
             msgEl.style.color = 'var(--gold)';
-            msgEl.textContent = state.lang === 'RU' ? 'Формирование счета...' : 'Creating invoice...';
+            msgEl.textContent = state.lang === 'EN' ? 'Creating invoice...' : 'Формирование счета...';
 
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 8000);
@@ -709,11 +712,11 @@
                         TG.openInvoice(data.invoice_link, function(status) {
                             if (status === 'paid') {
                                 msgEl.style.color = 'var(--green)';
-                                msgEl.textContent = state.lang === 'RU' ? 'Оплата прошла успешно!' : 'Payment successful!';
+                                msgEl.textContent = state.lang === 'EN' ? 'Payment successful!' : 'Оплата прошла успешно!';
                                 setTimeout(loadUserData, 1500);
                             } else {
                                 msgEl.style.color = '#ff3b30';
-                                msgEl.textContent = state.lang === 'RU' ? 'Оплата отменена' : 'Payment cancelled';
+                                msgEl.textContent = state.lang === 'EN' ? 'Payment cancelled' : 'Оплата отменена';
                             }
                         });
                     } else {
@@ -724,7 +727,7 @@
                 }
             } catch (e) {
                 msgEl.style.color = '#ff3b30';
-                msgEl.textContent = state.lang === 'RU' ? 'Ошибка связи с сервером' : 'Connection error';
+                msgEl.textContent = state.lang === 'EN' ? 'Connection error' : 'Ошибка связи с сервером';
             }
         }
 
@@ -759,7 +762,7 @@
         }
 
         function toggleLanguage() {
-            state.lang = state.lang === 'RU' ? 'EN' : 'RU';
+            state.lang = state.lang === 'EN' ? 'RU' : 'EN';
             document.getElementById('langBtn').textContent = `🌐 ${state.lang}`;
             localStorage.setItem('catroll_lang', state.lang);
             
@@ -780,7 +783,7 @@
             state.lastBonusTime = now;
             localStorage.setItem('catroll_bonus', state.lastBonusTime);
             if (window.confetti) confetti({ particleCount: 60, spread: 70 });
-            showWinModal({ name: state.lang === 'RU' ? 'Ежедневный Бонус' : 'Daily Bonus', icon: '🎁', price: 50 }, false);
+            showWinModal({ name: state.lang === 'EN' ? 'Daily Reward' : 'Ежедневная награда', icon: '🎁', price: 50 }, false);
             startBonusTimer();
         }
 
@@ -811,7 +814,7 @@
                 const slice = document.createElement('div');
                 slice.className = 'wheel-slice';
                 slice.style.transform = `rotate(${angle}deg)`;
-                slice.innerHTML = `<div class="wheel-slice-content" style="--item-angle: ${sliceAngle / 2}"><span style="font-size:24px">${item.icon}</span></div>`;
+                slice.innerHTML = `<div class="wheel-slice-content" style="--item-angle: ${sliceAngle / 2}"><span style="font-size:22px">${item.icon}</span></div>`;
                 track.appendChild(slice);
             });
         }
@@ -822,7 +825,6 @@
             track.style.transition = 'none';
             track.style.transform = 'translateX(0px)';
             track.innerHTML = '';
-            // Генерируем длинную ленту из 50 элементов для плавной и долгой прокрутки
             for(let i=0; i<50; i++) {
                 const randItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
                 track.innerHTML += `<div class="item-card"><div class="icon">${randItem.icon}</div><div class="name">${randItem.name}</div><div class="price-tag">${randItem.price} ⭐</div></div>`;
@@ -834,7 +836,7 @@
             document.querySelectorAll('.case-tab').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
             state.currentCaseCost = cost;
-            document.getElementById('caseCostSubtitle').textContent = state.lang === 'RU' ? `Стоимость кейса: ${cost} ⭐` : `Case cost: ${cost} ⭐`;
+            document.getElementById('caseCostSubtitle').textContent = state.lang === 'EN' ? `Vault cost: ${cost} ⭐` : `Стоимость сейфа: ${cost} ⭐`;
             initRouletteTrack();
         }
 
@@ -843,7 +845,7 @@
             const isDemo = document.getElementById('casesDemoToggle').checked;
 
             if (!isDemo && state.balance < state.currentCaseCost) {
-                alert(state.lang === 'RU' ? 'Недостаточно звёзд на балансе!' : 'Insufficient balance!');
+                alert(state.lang === 'EN' ? 'Insufficient balance!' : 'Недостаточно звезд на балансе!');
                 return;
             }
 
@@ -851,7 +853,6 @@
             document.getElementById('spinCaseBtn').disabled = true;
             const track = document.getElementById('rouletteTrack');
             
-            // Сбрасываем положение ленты перед новым спином
             track.style.transition = 'none';
             track.style.transform = 'translateX(0px)';
 
@@ -875,19 +876,15 @@
                 return;
             }
             
-            // Гарантируем, что лента заполнена свежими элементами
             initRouletteTrack();
             const cards = track.querySelectorAll('.item-card');
             
-            // Размещаем выигранный предмет точно на 30-ю позицию для красивого финиша
             cards[30].querySelector('.icon').textContent = currentWinningItem.icon;
             cards[30].querySelector('.name').textContent = currentWinningItem.name;
             cards[30].querySelector('.price-tag').textContent = currentWinningItem.price + ' ⭐';
 
-            // Небольшая задержка перед запуском CSS-анимации движения
             setTimeout(() => {
                 track.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.85, 0.35, 1.05)';
-                // Ширина карточки (95px) + отступы (12px) = 107px. Центрируем 30-ю карточку по указателю (-130px смещение центра)
                 const offset = (30 * 107) - 130 + (Math.random() * 40 - 20);
                 track.style.transform = `translateX(-${offset}px)`;
             }, 50);
@@ -920,7 +917,7 @@
             const wheelCost = 100;
 
             if (!isDemo && state.balance < wheelCost) {
-                alert(state.lang === 'RU' ? 'Недостаточно звёзд на балансе!' : 'Insufficient balance!');
+                alert(state.lang === 'EN' ? 'Insufficient balance!' : 'Недостаточно звезд на балансе!');
                 return;
             }
 
@@ -979,7 +976,7 @@
 
         function showWinModal(item, isReal) {
             pendingWinItem = item;
-            document.getElementById('modalIcon').textContent = item.icon;
+            document.getElementById('modalIcon').innerHTML = `<span style="font-size:56px">${item.icon}</span>`;
             document.getElementById('modalItemName').textContent = item.name;
             document.getElementById('modalItemPrice').textContent = `${item.price} ⭐`;
             document.getElementById('winModal').classList.add('active');
@@ -1039,7 +1036,7 @@
 
         function promptWithdraw(itemId, icon) {
             selectedItemIdForWithdraw = itemId;
-            document.getElementById('withdrawModalIcon').textContent = icon;
+            document.getElementById('withdrawModalIcon').innerHTML = `<span style="font-size:48px">${icon}</span>`;
             document.getElementById('withdrawModal').classList.add('active');
         }
 
@@ -1081,7 +1078,7 @@
             list.innerHTML = `<div class="feed-item"><span>User won ${item.name}</span><span style="color:var(--gold)">${item.icon} ${item.price} ⭐</span></div>` + list.innerHTML;
         }
 
-        if (state.lang === 'EN') toggleLanguage();
+        if (state.lang === 'RU') toggleLanguage();
         initWheel();
         initRouletteTrack();
         startBonusTimer();
