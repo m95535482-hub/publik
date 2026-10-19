@@ -176,18 +176,9 @@
             overflow: hidden;
         }
 
-        .mode-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.06), transparent);
-            pointer-events: none;
-        }
-
         .mode-card:active {
             transform: scale(0.97);
             border-color: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
         }
 
         .daily-bonus-card {
@@ -207,7 +198,6 @@
             border: 1px solid rgba(255, 255, 255, 0.15);
             font-size: 24px;
             flex-shrink: 0;
-            box-shadow: inset 0 0 10px rgba(255,255,255,0.05);
         }
 
         .mode-info { flex: 1; }
@@ -369,8 +359,8 @@
             border-left: 8px solid transparent;
             border-right: 8px solid transparent;
         }
-        .pointer::before { top: 0; border-top: 12px solid #ff3b30; filter: drop-shadow(0 2px 5px rgba(255,59,48,0.9)); }
-        .pointer::after { bottom: 0; border-bottom: 12px solid #ff3b30; filter: drop-shadow(0 -2px 5px rgba(255,59,48,0.9)); }
+        .pointer::before { top: 0; border-top: 12px solid #ff3b30; }
+        .pointer::after { bottom: 0; border-bottom: 12px solid #ff3b30; }
 
         .roulette-track {
             display: flex;
@@ -398,7 +388,7 @@
             overflow: hidden;
         }
 
-        .item-card .icon { font-size: 34px; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.5)); transition: transform 0.2s; }
+        .item-card .icon { font-size: 34px; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.5)); }
         .item-card .name { font-size: 10px; color: var(--text-secondary); margin-top: 6px; font-weight: 700; text-align: center; }
         .item-card .price-tag { font-size: 11px; color: var(--gold); font-weight: 800; margin-top: 2px; }
 
@@ -444,21 +434,22 @@
             top: 0;
             left: 50%;
             transform-origin: 0% 100%;
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            padding-top: 18px;
             pointer-events: none;
+            display: flex;
+            justify-content: center;
         }
 
         .wheel-slice-content {
+            position: absolute;
+            left: 50%;
+            top: 30%;
+            transform: translate(-50%, -50%) rotate(calc(var(--item-angle) * 1deg));
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 2px;
-            /* Rotate content back and shift it properly into the slice center */
-            transform: rotate(calc(var(--slice-angle) / 2)) translateY(4px);
-            transform-origin: center top;
+            justify-content: center;
+            width: 60px;
+            text-align: center;
         }
 
         .wheel-center-cap {
@@ -489,7 +480,6 @@
             cursor: pointer;
             box-shadow: 0 8px 25px var(--accent-glow);
             transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
-            letter-spacing: 0.2px;
         }
 
         .action-btn:active { transform: scale(0.96); opacity: 0.9; }
@@ -544,28 +534,47 @@
             align-items: center;
             text-align: center;
             box-shadow: 0 6px 18px rgba(0,0,0,0.35);
-            transition: transform 0.2s ease;
         }
 
-        .inventory-card:active { transform: scale(0.97); }
         .inventory-card .icon { font-size: 42px; margin-bottom: 8px; filter: drop-shadow(0 6px 10px rgba(0,0,0,0.5)); }
         .inventory-card .name { font-size: 13px; font-weight: 800; margin-bottom: 3px; }
-        .inventory-card .price { font-size: 12px; color: var(--gold); font-weight: 800; margin-bottom: 12px; }
+        .inventory-card .price { font-size: 12px; color: var(--gold); font-weight: 800; margin-bottom: 10px; }
+
+        .inventory-actions {
+            display: flex;
+            gap: 6px;
+            width: 100%;
+        }
 
         .sell-btn {
             background: rgba(46, 204, 113, 0.15);
             border: 1px solid rgba(46, 204, 113, 0.4);
             color: var(--green);
-            padding: 9px;
-            border-radius: 12px;
-            font-size: 12px;
+            padding: 8px 4px;
+            border-radius: 10px;
+            font-size: 11px;
             font-weight: 800;
             cursor: pointer;
-            width: 100%;
+            flex: 1;
             transition: all 0.2s;
         }
 
         .sell-btn:active { transform: scale(0.95); background: rgba(46, 204, 113, 0.25); }
+
+        .withdraw-btn {
+            background: rgba(108, 92, 231, 0.15);
+            border: 1px solid rgba(108, 92, 231, 0.4);
+            color: var(--purple-bright);
+            padding: 8px 4px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            flex: 1;
+            transition: all 0.2s;
+        }
+
+        .withdraw-btn:active { transform: scale(0.95); background: rgba(108, 92, 231, 0.25); }
 
         .live-feed {
             width: 100%;
@@ -618,12 +627,8 @@
             border: 1px solid rgba(255,255,255,0.03);
         }
 
-        .feed-item span.user-blur {
-            filter: blur(3px);
-            transition: filter 0.3s;
-        }
+        .feed-item span.user-blur { filter: blur(3px); transition: filter 0.3s; }
         .feed-item span.user-blur:hover { filter: blur(0px); }
-
         .feed-item span.item-name { color: #fff; font-weight: 700; }
 
         .modal-overlay {
@@ -649,19 +654,9 @@
             max-width: 320px;
             text-align: center;
             box-shadow: 0 10px 40px rgba(0,0,0,0.85), 0 0 35px var(--accent-glow);
-            animation: modalPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        @keyframes modalPop {
-            from { opacity: 0; transform: scale(0.85); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .modal-icon {
-            font-size: 64px;
-            margin: 14px 0;
-            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.6));
-        }
+        .modal-icon { font-size: 64px; margin: 14px 0; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.6)); }
 
         .bottom-nav {
             position: fixed;
@@ -709,7 +704,6 @@
         </div>
     </header>
 
-    <!-- MAIN SCREEN -->
     <main id="main-screen" class="screen active">
         <h1 class="menu-title" data-i18n="mainTitle">Выбирай режим</h1>
         <p class="menu-subtitle" data-i18n="mainSub">Крути рулетку, испытывай удачу и забирай NFT</p>
@@ -755,7 +749,6 @@
         </div>
     </main>
 
-    <!-- CASES SCREEN -->
     <main id="cases-screen" class="screen">
         <button class="back-btn" id="casesBackBtn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
         <h1 class="menu-title" data-i18n="casesHeader">Открытие кейсов</h1>
@@ -788,7 +781,6 @@
         <button class="action-btn" id="spinCasesBtn" onclick="spinRoulette()" data-i18n="spinBtn">Крутить Кейс</button>
     </main>
 
-    <!-- WHEEL SCREEN -->
     <main id="wheel-screen" class="screen">
         <button class="back-btn" id="wheelBackBtn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
         <h1 class="menu-title" data-i18n="wheelHeader">Колесо Фортуны</h1>
@@ -814,7 +806,6 @@
         <button class="action-btn" id="spinWheelBtn" onclick="spinWheel()" data-i18n="spinWheelBtn">Вращать Колесо</button>
     </main>
 
-    <!-- INVENTORY SCREEN -->
     <main id="inventory-screen" class="screen">
         <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
         <h1 class="menu-title" data-i18n="invHeader">Инвентарь</h1>
@@ -831,18 +822,33 @@
         <div class="inventory-grid" id="inventoryGrid"></div>
     </main>
 
-    <!-- WIN MODAL -->
+    <!-- Модальное окно выигрыша -->
     <div class="modal-overlay" id="winModal">
         <div class="modal-card">
             <h2 class="menu-title" data-i18n="winTitle">Поздравляем!</h2>
             <div class="modal-icon" id="modalIcon">🎁</div>
             <h3 id="modalItemName" style="font-size: 18px; margin-bottom: 6px;">Предмет</h3>
             <p id="modalItemPrice" style="color: var(--gold); font-weight: 800; font-size: 14px; margin-bottom: 20px;">0 ⭐</p>
-            <button class="action-btn" onclick="closeModal()" data-i18n="claimBtn">Забрать в инвентарь</button>
+            <div style="display: flex; gap: 10px;">
+                <button class="action-btn" onclick="closeModal('sell')" style="background: rgba(46,204,113,0.2); color: var(--green); border: 1px solid rgba(46,204,113,0.4);" data-i18n="sellBtnModal">Продать</button>
+                <button class="action-btn" onclick="closeModal('claim')" data-i18n="claimBtn">В инвентарь</button>
+            </div>
         </div>
     </div>
 
-    <!-- BOTTOM NAV -->
+    <!-- Модальное окно подтверждения вывода подарка -->
+    <div class="modal-overlay" id="withdrawModal">
+        <div class="modal-card">
+            <h2 class="menu-title" style="font-size: 20px;" data-i18n="withdrawTitle">Вывод подарка</h2>
+            <div class="modal-icon" id="withdrawModalIcon" style="font-size: 48px; margin: 10px 0;">📦</div>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;" data-i18n="withdrawDesc">При выводе подарка с вас спишется 25 ⭐</p>
+            <div style="display: flex; gap: 10px;">
+                <button class="action-btn" onclick="closeWithdrawModal(false)" style="background: rgba(255,59,48,0.2); color: #ff3b30; border: 1px solid rgba(255,59,48,0.4);" data-i18n="rejectBtn">Отклонить</button>
+                <button class="action-btn" onclick="closeWithdrawModal(true)" data-i18n="confirmBtn">Подтвердить</button>
+            </div>
+        </div>
+    </div>
+
     <nav class="bottom-nav" id="bottomNav">
         <div class="nav-item active" onclick="switchScreen('main-screen')">
             <i class="fa-solid fa-house"></i>
@@ -866,12 +872,11 @@
         const TG = window.Telegram?.WebApp;
         if (TG) { TG.ready(); TG.expand(); }
 
-        // Determine unique user key if available through Telegram initDataUnsafe, otherwise fallback to device storage
         const userId = TG?.initDataUnsafe?.user?.id || 'default_user';
         const STORAGE_PREFIX = `catroll_${userId}_`;
 
         let state = {
-            balance: parseInt(localStorage.getItem(STORAGE_PREFIX + 'balance')) || 200000,
+            balance: localStorage.getItem(STORAGE_PREFIX + 'balance') !== null ? parseInt(localStorage.getItem(STORAGE_PREFIX + 'balance')) : 200000,
             inventory: JSON.parse(localStorage.getItem(STORAGE_PREFIX + 'inventory')) || [],
             currentCase: 'starter',
             isSpinning: false,
@@ -912,15 +917,22 @@
                 sortNew: "Сначала новые",
                 sortExp: "Сначала дорогие",
                 winTitle: "Поздравляем!",
-                claimBtn: "Забрать в инвентарь",
+                claimBtn: "В инвентарь",
+                sellBtnModal: "Продать",
                 navHome: "Главная",
                 navCases: "Кейсы",
                 navWheel: "Колесо",
                 navInv: "Инвентарь",
                 emptyInv: "Инвентарь пуст",
                 sell: "Продать",
+                withdraw: "Вывести",
                 ready: "Готово",
-                searchPlaceholder: "Поиск..."
+                searchPlaceholder: "Поиск...",
+                withdrawTitle: "Вывод подарка",
+                withdrawDesc: "При выводе подарка с вас спишется 25 ⭐",
+                confirmBtn: "Подтвердить",
+                rejectBtn: "Отклонить",
+                soon: "Скоро будет"
             },
             EN: {
                 mainTitle: "Choose Mode",
@@ -947,15 +959,22 @@
                 sortNew: "Newest first",
                 sortExp: "Expensive first",
                 winTitle: "Congratulations!",
-                claimBtn: "Claim to Inventory",
+                claimBtn: "To Inventory",
+                sellBtnModal: "Sell",
                 navHome: "Home",
                 navCases: "Cases",
                 navWheel: "Wheel",
                 navInv: "Inventory",
                 emptyInv: "Inventory is empty",
                 sell: "Sell",
+                withdraw: "Withdraw",
                 ready: "Ready",
-                searchPlaceholder: "Search..."
+                searchPlaceholder: "Search...",
+                withdrawTitle: "Gift Withdrawal",
+                withdrawDesc: "Withdrawal will charge 25 ⭐ from your balance",
+                confirmBtn: "Confirm",
+                rejectBtn: "Reject",
+                soon: "Coming soon"
             }
         };
 
@@ -971,6 +990,7 @@
         ];
 
         let pendingWinItem = null;
+        let pendingWithdrawItem = null;
         let caseTimerId = null;
         let wheelTimerId = null;
 
@@ -981,7 +1001,7 @@
         }
 
         function switchScreen(screenId) {
-            if (state.isSpinning) return; // Locked during active animation
+            if (state.isSpinning) return; 
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
 
@@ -1120,12 +1140,8 @@
             document.getElementById('casesBackBtn').style.opacity = '1';
             document.getElementById('casesBackBtn').style.pointerEvents = 'auto';
 
-            if (!isDemo) {
-                pendingWinItem = winningItem;
-                showWinModal(winningItem, true);
-            } else {
-                showWinModal(winningItem, false);
-            }
+            pendingWinItem = winningItem;
+            showWinModal(winningItem, isDemo);
             addFeedItem('You', winningItem.name);
         }
 
@@ -1138,7 +1154,6 @@
             const count = itemsPool.length;
             const sliceAngle = 360 / count;
 
-            // Background colors for segments
             const sliceColors = ['#181826', '#232334', '#1f1f30', '#2a2a40', '#1c1c2b', '#252538', '#1e1e2d', '#28283d'];
 
             itemsPool.forEach((item, index) => {
@@ -1146,17 +1161,15 @@
                 slice.className = 'wheel-slice';
                 const rotation = index * sliceAngle;
                 
-                // Set slice color and rotation
                 slice.style.transform = `rotate(${rotation}deg)`;
                 slice.style.backgroundColor = sliceColors[index % sliceColors.length];
-                slice.style.setProperty('--slice-angle', `${sliceAngle}deg`);
                 
-                // Create visible icon and label element with proper transform container
                 const content = document.createElement('div');
                 content.className = 'wheel-slice-content';
+                content.style.setProperty('--item-angle', sliceAngle / 2);
                 content.innerHTML = `
-                    <span style="font-size: 20px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));">${item.icon}</span>
-                    <span style="font-size: 8px; color: #fff; font-weight: 700; max-width: 45px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</span>
+                    <span style="font-size: 22px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));">${item.icon}</span>
+                    <span style="font-size: 8px; color: #fff; font-weight: 700; margin-top: 2px; white-space: nowrap;">${item.name}</span>
                 `;
                 slice.appendChild(content);
                 wheel.appendChild(slice);
@@ -1205,40 +1218,49 @@
             document.getElementById('wheelBackBtn').style.opacity = '1';
             document.getElementById('wheelBackBtn').style.pointerEvents = 'auto';
 
-            if (!isDemo) {
-                pendingWinItem = winningItem;
-                showWinModal(winningItem, true);
-            } else {
-                showWinModal(winningItem, false);
-            }
+            pendingWinItem = winningItem;
+            showWinModal(winningItem, isDemo);
             addFeedItem('You', winningItem.name);
         }
 
-        function showWinModal(item, canClaim) {
+        function showWinModal(item, isDemo) {
             document.getElementById('modalIcon').textContent = item.icon;
             document.getElementById('modalItemName').textContent = item.name;
-            document.getElementById('modalItemPrice').textContent = `+${item.price} ⭐`;
+            document.getElementById('modalItemPrice').textContent = isDemo ? (state.lang === 'RU' ? '(Демо-режим)' : '(Demo Mode)') : `+${item.price} ⭐`;
             
-            const claimBtn = document.querySelector('#winModal .action-btn');
-            if (canClaim) {
-                claimBtn.style.display = 'block';
-                claimBtn.textContent = translations[state.lang].claimBtn;
-            } else {
-                claimBtn.style.display = 'none';
-            }
-
             document.getElementById('winModal').classList.add('active');
-            if (window.confetti) confetti({ particleCount: 50 });
+            if (window.confetti && !isDemo) confetti({ particleCount: 50 });
         }
 
-        function closeModal() {
-            if (pendingWinItem) {
-                state.inventory.push({ ...pendingWinItem, uid: Date.now() + Math.random() });
-                pendingWinItem = null;
+        function closeModal(action) {
+            const isDemo = document.getElementById('casesDemoToggle').checked || document.getElementById('wheelDemoToggle').checked;
+            if (pendingWinItem && !isDemo) {
+                if (action === 'claim') {
+                    state.inventory.push({ ...pendingWinItem, uid: Date.now() + Math.random() });
+                } else if (action === 'sell') {
+                    updateBalance(pendingWinItem.price);
+                }
                 renderInventory();
                 saveState();
             }
+            pendingWinItem = null;
             document.getElementById('winModal').classList.remove('active');
+        }
+
+        function openWithdrawModal(uid) {
+            const item = state.inventory.find(i => i.uid === uid);
+            if (!item) return;
+            pendingWithdrawItem = item;
+            document.getElementById('withdrawModalIcon').textContent = item.icon;
+            document.getElementById('withdrawModal').classList.add('active');
+        }
+
+        function closeWithdrawModal(confirmed) {
+            document.getElementById('withdrawModal').classList.remove('active');
+            if (confirmed && pendingWithdrawItem) {
+                alert(translations[state.lang].soon);
+            }
+            pendingWithdrawItem = null;
         }
 
         function renderInventory(items = state.inventory) {
@@ -1258,7 +1280,10 @@
                     <div class="icon">${item.icon}</div>
                     <div class="name">${item.name}</div>
                     <div class="price">${item.price} ⭐</div>
-                    <button class="sell-btn" onclick="sellItem(${item.uid})">${translations[state.lang].sell}</button>
+                    <div class="inventory-actions">
+                        <button class="sell-btn" onclick="sellItem(${item.uid})">${translations[state.lang].sell}</button>
+                        <button class="withdraw-btn" onclick="openWithdrawModal(${item.uid})">${translations[state.lang].withdraw}</button>
+                    </div>
                 `;
                 grid.appendChild(card);
             });
