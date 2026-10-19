@@ -568,11 +568,18 @@
         tg.expand();
 
         let currentPrice = 50;
-        let userBalance = 200000;
+        
+        // 1. ЗАГРУЗКА БАЛАНСА: проверяем, есть ли сохранённый баланс в localStorage
+        let savedBalance = localStorage.getItem('catroll_user_balance');
+        let userBalance = savedBalance !== null ? parseInt(savedBalance) : 200000;
+
+        // 2. ЗАГРУЗКА ИНВЕНТАРЯ: проверяем, есть ли сохранённые предметы
+        let savedInventory = localStorage.getItem('catroll_user_inventory');
+        let userInventory = savedInventory !== null ? JSON.parse(savedInventory) : [];
+
         let activeMode = null;
         let currentRotation = 0;
         let currentWinItem = null;
-        let userInventory = [];
 
         const items = [
             { id: 1, icon: '🎅', name: 'Santa Hat NFT', price: 500, weight: 30 },
@@ -589,6 +596,16 @@
         const spinBtn = document.getElementById('spinBtn');
         const balanceEl = document.getElementById('balance');
         const actionBox = document.getElementById('actionBox');
+
+        // Функция сохранения баланса и инвентаря
+        function saveUserData() {
+            localStorage.setItem('catroll_user_balance', userBalance.toString());
+            localStorage.setItem('catroll_user_inventory', JSON.stringify(userInventory));
+            balanceEl.innerText = userBalance;
+        }
+
+        // Обновляем отображение баланса сразу при запуске
+        balanceEl.innerText = userBalance;
 
         function getRandomItem() {
             const totalWeight = items.reduce((acc, item) => acc + item.weight, 0);
@@ -654,7 +671,7 @@
 
             spinBtn.disabled = true;
             userBalance -= currentPrice;
-            balanceEl.innerText = userBalance;
+            saveUserData(); // Сохраняем списание звёзд
 
             currentWinItem = getRandomItem();
 
@@ -709,7 +726,6 @@
         }
 
         function showWinModal(item) {
-            // Включаем кнопки модалки
             document.getElementById('sellBtn').disabled = false;
             document.getElementById('keepBtn').disabled = false;
 
@@ -727,32 +743,32 @@
         function sellModalItem() {
             if (!currentWinItem) return;
 
-            // Мгновенно блокируем кнопки и закрываем окно для защиты от дюпа
             document.getElementById('sellBtn').disabled = true;
             document.getElementById('keepBtn').disabled = true;
             closeWinModal();
 
             const priceToAdd = currentWinItem.price;
             const itemName = currentWinItem.name;
-            currentWinItem = null; // Обнуляем выигранный элемент
+            currentWinItem = null;
 
             userBalance += priceToAdd;
-            balanceEl.innerText = userBalance;
+            saveUserData(); // Сохраняем пополнение
             tg.showAlert(`Вы успешно продали "${itemName}" и получили +${priceToAdd} ⭐!`);
         }
 
         function keepModalItem() {
             if (!currentWinItem) return;
 
-            // Мгновенно блокируем кнопки и закрываем окно для защиты от дюпа
             document.getElementById('sellBtn').disabled = true;
             document.getElementById('keepBtn').disabled = true;
             closeWinModal();
 
             const itemToKeep = {...currentWinItem, invId: Date.now() + Math.random()};
-            currentWinItem = null; // Обнуляем выигранный элемент
+            currentWinItem = null;
 
             userInventory.push(itemToKeep);
+            saveUserData(); // Сохраняем добавление предмета в инвентарь
+
             tg.showAlert(`Предмет "${itemToKeep.name}" сохранен в ваш инвентарь!`);
             
             tg.sendData(JSON.stringify({
@@ -762,7 +778,6 @@
             }));
         }
 
-        // Отрисовка инвентаря
         function renderInventory() {
             const grid = document.getElementById('inventoryGrid');
             const emptyMsg = document.getElementById('emptyInv');
@@ -792,12 +807,12 @@
             if (index !== -1) {
                 const item = userInventory[index];
                 userBalance += item.price;
-                balanceEl.innerText = userBalance;
                 userInventory.splice(index, 1);
+                saveUserData(); // Сохраняем продажу предмета и баланс
                 renderInventory();
                 tg.showAlert(`Предмет "${item.name}" продан за +${item.price} ⭐!`);
             }
         }
     </script>
-</body>
+    </body>
 </html>
