@@ -1,23 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CatRoll — Cases & NFT</title>
+    <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- FontAwesome & Canvas Confetti -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
     <style>
         :root {
-            --bg-color: #08080a;
-            --card-bg: rgba(22, 22, 28, 0.75);
+            --bg-color: #07070a;
+            --card-bg: rgba(18, 18, 26, 0.75);
             --card-border: rgba(255, 255, 255, 0.08);
-            --accent-color: #ffffff;
-            --text-secondary: #8e8e9f;
+            --accent-glow: rgba(108, 92, 231, 0.45);
+            --text-main: #ffffff;
+            --text-secondary: #9090a7;
             --gold: #ffb800;
-            --gold-glow: rgba(255, 184, 0, 0.25);
+            --gold-glow: rgba(255, 184, 0, 0.4);
             --green: #2ecc71;
-            --green-glow: rgba(46, 204, 113, 0.25);
+            --green-glow: rgba(46, 204, 113, 0.35);
             --purple-accent: #6c5ce7;
-            --purple-glow: rgba(108, 92, 231, 0.35);
+            --purple-bright: #a29bfe;
+            --red-glow: rgba(255, 59, 48, 0.5);
         }
 
         * {
@@ -25,32 +32,35 @@
             margin: 0;
             padding: 0;
             user-select: none;
+            -webkit-user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
 
         body {
             background-color: var(--bg-color);
             background-image: 
-                radial-gradient(circle at 50% 0%, rgba(108, 92, 231, 0.15) 0%, transparent 60%),
-                radial-gradient(circle at 100% 100%, rgba(255, 184, 0, 0.05) 0%, transparent 50%);
-            color: #ffffff;
+                radial-gradient(circle at 50% 0%, rgba(108, 92, 231, 0.28) 0%, transparent 65%),
+                radial-gradient(circle at 100% 100%, rgba(255, 184, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 0% 50%, rgba(46, 204, 113, 0.08) 0%, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
             padding: 16px;
-            padding-bottom: 90px;
+            padding-bottom: 95px;
+            overflow-x: hidden;
         }
 
-        /* Шапка */
         .header {
             width: 100%;
-            max-width: 360px;
+            max-width: 380px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .logo {
@@ -61,21 +71,20 @@
             align-items: center;
             gap: 10px;
             letter-spacing: -0.5px;
+            text-shadow: 0 0 16px var(--accent-glow);
         }
 
         .logo-icon {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
-            border-radius: 10px;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--purple-accent), var(--purple-bright));
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px;
-            color: #fff;
-            font-weight: 900;
-            box-shadow: 0 4px 15px var(--purple-glow);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 18px;
+            box-shadow: 0 4px 20px var(--accent-glow);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .header-actions {
@@ -84,27 +93,27 @@
             gap: 8px;
         }
 
-        .lang-btn, .inventory-btn-top {
+        .lang-btn {
             background: var(--card-bg);
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(16px);
             border: 1px solid var(--card-border);
             color: #fff;
             padding: 8px 12px;
             border-radius: 14px;
             font-size: 12px;
-            font-weight: 700;
+            font-weight: 800;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
-        .lang-btn:active, .inventory-btn-top:active {
-            transform: scale(0.95);
-            background: rgba(255, 255, 255, 0.1);
+        .lang-btn:active {
+            transform: scale(0.94);
+            background: rgba(255, 255, 255, 0.15);
         }
 
         .balance-pill {
-            background: rgba(255, 184, 0, 0.1);
-            border: 1px solid rgba(255, 184, 0, 0.3);
+            background: rgba(255, 184, 0, 0.12);
+            border: 1px solid rgba(255, 184, 0, 0.4);
             padding: 7px 14px;
             border-radius: 14px;
             font-size: 14px;
@@ -113,32 +122,31 @@
             align-items: center;
             gap: 6px;
             color: var(--gold);
-            box-shadow: 0 4px 15px var(--gold-glow);
+            box-shadow: 0 4px 22px var(--gold-glow);
         }
 
-        /* Экраны */
         .screen {
             width: 100%;
-            max-width: 360px;
+            max-width: 380px;
             display: none;
             flex-direction: column;
             align-items: center;
-            animation: fadeIn 0.3s ease;
+            animation: screenFadeIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
         .screen.active {
             display: flex;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes screenFadeIn {
+            from { opacity: 0; transform: translateY(10px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .menu-title {
             font-size: 24px;
             font-weight: 900;
-            margin: 10px 0 4px 0;
+            margin: 6px 0 4px 0;
             text-align: center;
             letter-spacing: -0.5px;
         }
@@ -146,75 +154,71 @@
         .menu-subtitle {
             font-size: 13px;
             color: var(--text-secondary);
-            margin-bottom: 22px;
+            margin-bottom: 20px;
             text-align: center;
         }
 
-        /* Карточки режимов */
         .mode-card {
             width: 100%;
             background: var(--card-bg);
-            backdrop-filter: blur(16px);
+            backdrop-filter: blur(20px);
             border: 1px solid var(--card-border);
             border-radius: 22px;
             padding: 16px;
             margin-bottom: 12px;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
             display: flex;
             align-items: center;
             gap: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mode-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.06), transparent);
+            pointer-events: none;
         }
 
         .mode-card:active {
             transform: scale(0.97);
-            border-color: rgba(255, 255, 255, 0.25);
-        }
-
-        .mode-card.inventory-main-card {
-            background: linear-gradient(135deg, rgba(22, 22, 30, 0.8), rgba(15, 15, 20, 0.9));
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
         }
 
         .daily-bonus-card {
-            background: linear-gradient(135deg, rgba(108, 92, 231, 0.25), rgba(22, 22, 28, 0.8));
-            border: 1px solid rgba(108, 92, 231, 0.4);
-            box-shadow: 0 8px 25px var(--purple-glow);
+            background: linear-gradient(135deg, rgba(108, 92, 231, 0.35), rgba(22, 22, 32, 0.9));
+            border: 1px solid rgba(108, 92, 231, 0.55);
+            box-shadow: 0 8px 25px var(--accent-glow);
         }
 
         .mode-icon {
             width: 52px;
             height: 52px;
             border-radius: 16px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.08);
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            font-size: 24px;
             flex-shrink: 0;
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.05);
         }
 
-        .mode-icon img {
-            width: 32px;
-            height: 32px;
-            object-fit: contain;
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-        }
-
-        .mode-info h3 {
-            font-size: 16px;
-            font-weight: 800;
-        }
-
-        .mode-info p {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-top: 3px;
-        }
+        .mode-info { flex: 1; }
+        .mode-info h3 { font-size: 16px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
+        .mode-info p { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+        .timer-badge { font-size: 11px; color: var(--gold); background: rgba(255,184,0,0.15); padding: 3px 8px; border-radius: 8px; border: 1px solid rgba(255,184,0,0.35); }
 
         .back-btn {
             align-self: flex-start;
             background: var(--card-bg);
+            backdrop-filter: blur(12px);
             border: 1px solid var(--card-border);
             border-radius: 12px;
             padding: 8px 14px;
@@ -226,73 +230,8 @@
             transition: all 0.2s;
         }
 
-        .back-btn:active {
-            transform: scale(0.95);
-            color: #fff;
-        }
+        .back-btn:active { transform: scale(0.95); color: #fff; }
 
-        /* Настройки */
-        .settings-panel {
-            width: 100%;
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--card-border);
-            border-radius: 18px;
-            padding: 12px 16px;
-            margin-bottom: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .toggle-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-secondary);
-        }
-
-        .toggle-row span {
-            color: #e1e1e6;
-        }
-
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 40px;
-            height: 22px;
-        }
-
-        .switch input { opacity: 0; width: 0; height: 0; }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #1f1f28;
-            transition: .3s;
-            border-radius: 20px;
-            border: 1px solid var(--card-border);
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 2px;
-            bottom: 2px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider { background-color: var(--green); }
-        input:checked + .slider:before { transform: translateX(18px); }
-
-        /* Табы кейсов */
         .cases-selector {
             display: flex;
             gap: 8px;
@@ -309,50 +248,49 @@
             padding: 10px;
             border-radius: 14px;
             font-size: 13px;
-            font-weight: 700;
+            font-weight: 800;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
         .case-tab.active {
-            background: #ffffff;
+            background: linear-gradient(135deg, #ffffff, #dcdde1);
             color: #000000;
             border-color: #ffffff;
-            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 18px rgba(255, 255, 255, 0.3);
         }
 
-        /* Рулетка (Классика) */
         .case-container {
             width: 100%;
-            background: rgba(14, 14, 18, 0.9);
+            background: rgba(12, 12, 18, 0.95);
             border: 1px solid var(--card-border);
             border-radius: 24px;
             padding: 18px;
             position: relative;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.8), 0 10px 30px rgba(0,0,0,0.5);
-            margin-bottom: 16px;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.95), 0 10px 30px rgba(0,0,0,0.6);
+            margin-bottom: 18px;
         }
 
         .roulette-wrapper {
             position: relative;
             width: 100%;
-            height: 115px;
+            height: 120px;
             overflow: hidden;
             border-radius: 18px;
-            background: #09090c;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.9);
+            background: #060608;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 0 25px rgba(0,0,0,0.95);
         }
 
-        /* Неоновый индикатор рулетки */
         .pointer {
             position: absolute;
             top: 0; left: 50%;
             transform: translateX(-50%);
-            width: 3px; height: 100%;
+            width: 4px; height: 100%;
             background: linear-gradient(to bottom, #ff3b30, #ff9500);
-            box-shadow: 0 0 12px #ff3b30, 0 0 20px #ff3b30;
+            box-shadow: 0 0 16px #ff3b30, 0 0 30px #ff3b30;
             z-index: 10;
+            border-radius: 2px;
         }
 
         .pointer::before, .pointer::after {
@@ -361,11 +299,11 @@
             left: 50%;
             transform: translateX(-50%);
             width: 0; height: 0;
-            border-left: 7px solid transparent;
-            border-right: 7px solid transparent;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
         }
-        .pointer::before { top: 0; border-top: 10px solid #ff3b30; }
-        .pointer::after { bottom: 0; border-bottom: 10px solid #ff3b30; }
+        .pointer::before { top: 0; border-top: 12px solid #ff3b30; filter: drop-shadow(0 2px 5px rgba(255,59,48,0.9)); }
+        .pointer::after { bottom: 0; border-bottom: 12px solid #ff3b30; filter: drop-shadow(0 -2px 5px rgba(255,59,48,0.9)); }
 
         .roulette-track {
             display: flex;
@@ -374,50 +312,34 @@
             left: 0; top: 0;
             height: 100%;
             transition: transform 5s cubic-bezier(0.1, 1, 0.1, 1);
+            will-change: transform;
         }
 
         .item-card {
-            min-width: 90px;
-            height: 95px;
-            margin: 0 5px;
-            background: linear-gradient(145deg, #16161e, #111116);
-            border-radius: 14px;
+            min-width: 95px;
+            height: 100px;
+            margin: 0 6px;
+            background: linear-gradient(145deg, #181824, #101018);
+            border-radius: 16px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.4);
+            position: relative;
+            overflow: hidden;
         }
 
-        .item-card img { 
-            width: 44px; 
-            height: 44px; 
-            object-fit: contain; 
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
-        }
+        .item-card .icon { font-size: 34px; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.5)); transition: transform 0.2s; }
+        .item-card .name { font-size: 10px; color: var(--text-secondary); margin-top: 6px; font-weight: 700; text-align: center; }
+        .item-card .price-tag { font-size: 11px; color: var(--gold); font-weight: 800; margin-top: 2px; }
 
-        .item-card .name { 
-            font-size: 9px; 
-            color: var(--text-secondary); 
-            margin-top: 4px; 
-            font-weight: 700; 
-            text-align: center; 
-        }
-
-        .item-card .price-tag { 
-            font-size: 10px; 
-            color: var(--gold); 
-            font-weight: 800; 
-            margin-top: 2px; 
-        }
-
-        /* Колесо Фортуны */
         .wheel-box {
             position: relative; 
-            width: 250px; 
-            height: 250px; 
-            margin: 10px 0 20px 0;
+            width: 260px; 
+            height: 260px; 
+            margin: 10px 0 22px 0;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -425,14 +347,14 @@
 
         .wheel-pointer {
             position: absolute; 
-            top: -12px; 
+            top: -14px; 
             left: 50%; 
             transform: translateX(-50%); 
             width: 0; height: 0; 
-            border-left: 12px solid transparent; 
-            border-right: 12px solid transparent; 
-            border-top: 22px solid #ff3b30; 
-            filter: drop-shadow(0 2px 8px rgba(255, 59, 48, 0.8));
+            border-left: 14px solid transparent; 
+            border-right: 14px solid transparent; 
+            border-top: 24px solid #ff3b30; 
+            filter: drop-shadow(0 4px 14px rgba(255, 59, 48, 0.95));
             z-index: 20;
         }
 
@@ -440,35 +362,55 @@
             width: 100%; 
             height: 100%; 
             border-radius: 50%; 
-            border: 6px solid #1c1c24; 
+            border: 7px solid #1a1a26; 
             position: relative; 
             overflow: hidden; 
             transition: transform 5s cubic-bezier(0.1, 1, 0.1, 1); 
-            box-shadow: 0 0 30px rgba(0,0,0,0.8), inset 0 0 15px rgba(0,0,0,0.8);
+            box-shadow: 0 0 40px rgba(0,0,0,0.9), inset 0 0 20px rgba(0,0,0,0.9);
+            will-change: transform;
             background: conic-gradient(
-                #181822 0deg 51.4deg, 
-                #222230 51.4deg 102.8deg, 
-                #181822 102.8deg 154.2deg, 
-                #222230 154.2deg 205.6deg, 
-                #181822 205.6deg 257deg, 
-                #222230 257deg 308.4deg, 
-                #181822 308.4deg 360deg
+                #181826 0deg 60deg, 
+                #232334 60deg 120deg, 
+                #181826 120deg 180deg, 
+                #232334 180deg 240deg, 
+                #181826 240deg 300deg, 
+                #232334 300deg 360deg
             );
         }
 
-        /* Центр колеса */
         .wheel-center-cap {
             position: absolute;
-            width: 44px;
-            height: 44px;
-            background: linear-gradient(135deg, #2a2a36, #121218);
-            border: 2px solid var(--purple-accent);
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #2c2c3d, #121218);
+            border: 3px solid var(--purple-accent);
             border-radius: 50%;
             z-index: 15;
-            box-shadow: 0 0 15px var(--purple-glow);
+            box-shadow: 0 0 22px var(--accent-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 16px;
         }
 
-        /* Инвентарь */
+        .action-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--purple-accent), var(--purple-bright));
+            border: none;
+            border-radius: 18px;
+            color: #fff;
+            font-weight: 900;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px var(--accent-glow);
+            transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+            letter-spacing: 0.2px;
+        }
+
+        .action-btn:active { transform: scale(0.96); opacity: 0.9; }
+
         .inventory-controls {
             width: 100%;
             display: flex;
@@ -480,24 +422,24 @@
             flex: 1;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            padding: 10px 14px;
+            padding: 12px 14px;
             border-radius: 14px;
             color: #fff;
             font-size: 13px;
             outline: none;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(14px);
         }
 
         .sort-select {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            padding: 10px 12px;
+            padding: 12px;
             border-radius: 14px;
             color: #fff;
             font-size: 13px;
             outline: none;
             cursor: pointer;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(14px);
         }
 
         .inventory-grid {
@@ -509,31 +451,28 @@
 
         .inventory-card {
             background: var(--card-bg);
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(16px);
             border: 1px solid var(--card-border);
-            border-radius: 18px;
-            padding: 14px;
+            border-radius: 20px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+            transition: transform 0.2s ease;
         }
 
-        .inventory-card img { 
-            width: 52px; height: 52px; 
-            object-fit: contain; 
-            margin-bottom: 8px; 
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
-        }
+        .inventory-card:active { transform: scale(0.97); }
+        .inventory-card .icon { font-size: 42px; margin-bottom: 8px; filter: drop-shadow(0 6px 10px rgba(0,0,0,0.5)); }
+        .inventory-card .name { font-size: 13px; font-weight: 800; margin-bottom: 3px; }
+        .inventory-card .price { font-size: 12px; color: var(--gold); font-weight: 800; margin-bottom: 12px; }
 
-        .inventory-card .name { font-size: 12px; font-weight: 800; margin-bottom: 2px; }
-        .inventory-card .price { font-size: 11px; color: var(--gold); font-weight: 800; margin-bottom: 10px; }
-        .inventory-card .sell-btn {
-            background: rgba(46, 204, 113, 0.12);
-            border: 1px solid rgba(46, 204, 113, 0.3);
+        .sell-btn {
+            background: rgba(46, 204, 113, 0.15);
+            border: 1px solid rgba(46, 204, 113, 0.4);
             color: var(--green);
-            padding: 8px;
+            padding: 9px;
             border-radius: 12px;
             font-size: 12px;
             font-weight: 800;
@@ -542,44 +481,44 @@
             transition: all 0.2s;
         }
 
-        .inventory-card .sell-btn:active {
-            transform: scale(0.95);
-            background: var(--green);
-            color: #000;
-        }
+        .sell-btn:active { transform: scale(0.95); background: rgba(46, 204, 113, 0.25); }
 
-        .empty-inv {
-            color: var(--text-secondary);
-            font-size: 13px;
-            margin-top: 40px;
-            text-align: center;
-        }
-
-        /* Лента побед */
         .live-feed {
             width: 100%;
             background: var(--card-bg);
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(16px);
             border: 1px solid var(--card-border);
-            border-radius: 20px;
-            padding: 14px;
+            border-radius: 22px;
+            padding: 16px;
             margin-top: 16px;
         }
 
         .live-feed-title {
             font-size: 11px;
             color: var(--text-secondary);
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 0.9px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .live-feed-title::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--green);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--green);
         }
 
         .feed-list {
             display: flex;
             flex-direction: column;
             gap: 8px;
-            max-height: 130px;
+            max-height: 135px;
             overflow-y: auto;
         }
 
@@ -588,787 +527,538 @@
             align-items: center;
             justify-content: space-between;
             font-size: 12px;
-            background: rgba(0, 0, 0, 0.3);
+            color: var(--text-secondary);
+            background: rgba(0,0,0,0.25);
             padding: 8px 12px;
             border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255,255,255,0.03);
         }
 
-        .feed-user { color: var(--text-secondary); font-family: monospace; font-weight: 600; }
-        .feed-user .blurred { filter: blur(4px); user-select: none; color: #888; }
-        .feed-prize { color: var(--gold); font-weight: 700; display: flex; align-items: center; gap: 6px; }
-        .feed-prize img { width: 16px; height: 16px; object-fit: contain; }
-
-        /* Нижняя плавающая кнопка */
-        .actions {
-            width: 100%;
-            max-width: 360px;
-            position: fixed;
-            bottom: 20px;
-            padding: 0 16px;
-            z-index: 50;
+        .feed-item span.user-blur {
+            filter: blur(3px);
+            transition: filter 0.3s;
         }
+        .feed-item span.user-blur:hover { filter: blur(0px); }
 
-        .spin-btn {
-            width: 100%;
-            background: #ffffff;
-            color: #000000;
-            border: none;
-            padding: 16px;
-            border-radius: 18px;
-            font-size: 16px;
-            font-weight: 900;
-            cursor: pointer;
-            box-shadow: 0 6px 25px rgba(255, 255, 255, 0.25);
-            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-        }
+        .feed-item span.item-name { color: #fff; font-weight: 700; }
 
-        .spin-btn:active { transform: scale(0.97); }
-        .spin-btn:disabled { 
-            background: #22222c; 
-            color: #555566; 
-            box-shadow: none; 
-            cursor: not-allowed; 
-        }
-
-        /* Модалка выигрыша */
         .modal-overlay {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(8px);
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(14px);
             display: none;
             align-items: center;
             justify-content: center;
             z-index: 100;
             padding: 20px;
-            animation: fadeIn 0.2s ease;
         }
 
+        .modal-overlay.active { display: flex; animation: fadeIn 0.25s ease; }
+
         .modal-card {
-            background: linear-gradient(145deg, #1c1c26, #12121a);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: linear-gradient(145deg, #181824, #0f0f16);
+            border: 1px solid var(--card-border);
             border-radius: 28px;
-            padding: 28px;
+            padding: 24px;
             width: 100%;
             max-width: 320px;
             text-align: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 30px var(--purple-glow);
-            animation: modalScale 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.85), 0 0 35px var(--accent-glow);
+            animation: modalPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        @keyframes modalScale {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.85); }
+            to { opacity: 1; transform: scale(1); }
         }
 
-        .win-icon img { 
-            width: 80px; height: 80px; 
-            object-fit: contain; 
-            margin-bottom: 12px; 
-            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.5));
+        .modal-icon {
+            font-size: 64px;
+            margin: 14px 0;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.6));
         }
 
-        .win-title { font-size: 22px; font-weight: 900; margin-bottom: 4px; }
-        .win-price { font-size: 16px; color: var(--gold); font-weight: 800; margin-bottom: 24px; }
-
-        .modal-btns { display: flex; flex-direction: column; gap: 10px; }
-        .btn-sell { 
-            background: var(--green); 
-            color: #000; 
-            border: none; 
-            padding: 15px; 
-            border-radius: 16px; 
-            font-size: 15px; 
-            font-weight: 900; 
-            cursor: pointer; 
-            box-shadow: 0 4px 20px var(--green-glow);
-            transition: transform 0.15s;
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: rgba(10, 10, 14, 0.92);
+            backdrop-filter: blur(22px);
+            border-top: 1px solid var(--card-border);
+            padding: 10px 24px 14px 24px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 50;
         }
-        .btn-sell:active { transform: scale(0.96); }
 
-        .btn-keep { 
-            background: rgba(255, 255, 255, 0.06); 
-            color: #fff; 
-            border: 1px solid var(--card-border); 
-            padding: 15px; 
-            border-radius: 16px; 
-            font-size: 15px; 
-            font-weight: 700; 
-            cursor: pointer; 
-            transition: transform 0.15s;
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+            font-size: 10px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
         }
-        .btn-keep:active { transform: scale(0.96); }
+
+        .nav-item i { font-size: 19px; transition: transform 0.2s; }
+        .nav-item.active { color: var(--purple-bright); }
+        .nav-item.active i { transform: translateY(-2px); }
     </style>
 </head>
 <body>
 
-    <!-- Шапка -->
-    <div class="header">
-        <div class="logo" onclick="showScreen('menuScreen')">
-            <div class="logo-icon">❖</div> CatRoll
+    <header class="header">
+        <div class="logo" onclick="switchScreen('main-screen')">
+            <div class="logo-icon">🐾</div>
+            CatRoll
         </div>
         <div class="header-actions">
-            <button class="lang-btn" id="langBtn" onclick="toggleLanguage()">🇬🇧 EN</button>
-            <button class="inventory-btn-top" id="navInvBtn" onclick="showScreen('inventoryScreen')">🎒 Inventory</button>
+            <button class="lang-btn" onclick="toggleLanguage()" id="langBtn">🌐 RU</button>
             <div class="balance-pill">
-                ⭐ <span id="balance">200000</span>
+                <i class="fa-solid fa-star"></i>
+                <span id="userBalance">1,250</span>
             </div>
         </div>
-    </div>
+    </header>
 
-    <!-- ЭКРАН 1: ГЛАВНОЕ МЕНЮ -->
-    <div class="screen active" id="menuScreen">
-        <div class="menu-title" id="t-menuTitle">Choose a Mode</div>
-        <div class="menu-subtitle" id="t-menuSub">Spin cases, claim daily bonuses</div>
+    <main id="main-screen" class="screen active">
+        <h1 class="menu-title" data-i18n="mainTitle">Выбирай режим</h1>
+        <p class="menu-subtitle" data-i18n="mainSub">Крути рулетку, испытывай удачу и забирай NFT</p>
 
-        <div class="mode-card daily-bonus-card" onclick="openDailyBonus()">
-            <div class="mode-icon"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f381.png" alt="Daily"></div>
+        <div class="mode-card daily-bonus-card" onclick="claimDailyBonus()">
+            <div class="mode-icon">🎁</div>
             <div class="mode-info">
-                <h3 id="dailyTitle">Daily Bonus</h3>
-                <p id="dailySub">Free case every 24 hours</p>
-            </div>
-        </div>
-
-        <div class="mode-card" onclick="openGameMode('classic')">
-            <div class="mode-icon"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f3b0.png" alt="Classic"></div>
-            <div class="mode-info">
-                <h3 id="t-classicTitle">Classic Roll</h3>
-                <p id="t-classicSub">Horizontal item tape</p>
+                <h3>
+                    <span data-i18n="dailyTitle">Ежедневный Бонус</span>
+                    <span class="timer-badge" id="bonusTimer">Готово</span>
+                </h3>
+                <p data-i18n="dailySub">Забери бесплатные Stars прямо сейчас</p>
             </div>
         </div>
 
-        <div class="mode-card" onclick="openGameMode('wheel')">
-            <div class="mode-icon"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f3a1.png" alt="Wheel"></div>
+        <div class="mode-card" onclick="switchScreen('cases-screen')">
+            <div class="mode-icon">📦</div>
             <div class="mode-info">
-                <h3 id="t-wheelTitle">Wheel of Fortune</h3>
-                <p id="t-wheelSub">Spinning wheel with prizes</p>
+                <h3 data-i18n="casesTitle">Кейсы Подарков</h3>
+                <p data-i18n="casesSub">Открывай кейсы и выигрывай Telegram Stars</p>
             </div>
         </div>
 
-        <div class="mode-card inventory-main-card" onclick="showScreen('inventoryScreen')">
-            <div class="mode-icon"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f392.png" alt="Inventory"></div>
+        <div class="mode-card" onclick="switchScreen('wheel-screen')">
+            <div class="mode-icon">🎡</div>
             <div class="mode-info">
-                <h3 id="t-invTitle">My Inventory</h3>
-                <p id="t-invSub">View and sell your items</p>
+                <h3 data-i18n="wheelTitle">Колесо Фортуны</h3>
+                <p data-i18n="wheelSub">Вращай колесо и получай до x10 наград</p>
+            </div>
+        </div>
+
+        <div class="mode-card" onclick="switchScreen('inventory-screen')">
+            <div class="mode-icon">🎒</div>
+            <div class="mode-info">
+                <h3 data-i18n="inventoryTitle">Мой Инвентарь</h3>
+                <p data-i18n="inventorySub">Просматривай и продавай свои награды</p>
             </div>
         </div>
 
         <div class="live-feed">
-            <div class="live-feed-title" id="t-feedTitle">⚡ Recent Wins</div>
+            <div class="live-feed-title" data-i18n="liveFeed">Лента выигрышей</div>
             <div class="feed-list" id="feedList"></div>
         </div>
-    </div>
+    </main>
 
-    <!-- ЭКРАН 2: РУЛЕТКА (КЛАССИКА) -->
-    <div class="screen" id="classicScreen">
-        <button class="back-btn" id="t-backMenu1" onclick="showScreen('menuScreen')">← Back to Menu</button>
-
-        <div class="settings-panel">
-            <div class="toggle-row">
-                <span id="t-demoLabel">🧪 Demo mode (no spend/rewards)</span>
-                <label class="switch">
-                    <input type="checkbox" id="demoToggle">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="toggle-row">
-                <span id="t-skipLabel">⚡ Skip animation</span>
-                <label class="switch">
-                    <input type="checkbox" id="skipToggle">
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </div>
+    <main id="cases-screen" class="screen">
+        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
+        <h1 class="menu-title" data-i18n="casesHeader">Открытие кейсов</h1>
+        <p class="menu-subtitle" data-i18n="casesSubHeader">Испытай удачу в рулетке</p>
 
         <div class="cases-selector">
-            <div class="case-tab active" id="tabStandard" onclick="switchCase(this, 'standard', 50)">Standard (50⭐)</div>
-            <div class="case-tab" id="tabEpic" onclick="switchCase(this, 'epic', 150)">Epic (150⭐)</div>
+            <div class="case-tab active" onclick="selectCase('starter', this)">Starter (50 ⭐)</div>
+            <div class="case-tab" onclick="selectCase('rare', this)">Rare (250 ⭐)</div>
+            <div class="case-tab" onclick="selectCase('legend', this)">Royal (1000 ⭐)</div>
         </div>
 
         <div class="case-container">
             <div class="roulette-wrapper">
                 <div class="pointer"></div>
-                <div class="roulette-track" id="track"></div>
+                <div class="roulette-track" id="rouletteTrack"></div>
             </div>
         </div>
-    </div>
 
-    <!-- ЭКРАН 3: КОЛЕСО ФОРТУНЫ -->
-    <div class="screen" id="wheelScreen">
-        <button class="back-btn" id="t-backMenu2" onclick="showScreen('menuScreen')">← Back to Menu</button>
+        <button class="action-btn" id="spinCasesBtn" onclick="spinRoulette()" data-i18n="spinBtn">Крутить Кейс</button>
+    </main>
 
-        <div class="settings-panel">
-            <div class="toggle-row">
-                <span id="t-demoLabel2">🧪 Demo mode (no spend/rewards)</span>
-                <label class="switch">
-                    <input type="checkbox" id="demoToggleWheel">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="toggle-row">
-                <span id="t-skipLabel2">⚡ Skip animation</span>
-                <label class="switch">
-                    <input type="checkbox" id="skipToggleWheel">
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </div>
+    <main id="wheel-screen" class="screen">
+        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
+        <h1 class="menu-title" data-i18n="wheelHeader">Колесо Фортуны</h1>
+        <p class="menu-subtitle" data-i18n="wheelCost">Стоимость вращения: 100 ⭐</p>
 
         <div class="wheel-box">
             <div class="wheel-pointer"></div>
-            <div class="wheel-center-cap"></div>
             <div class="wheel" id="wheelTrack"></div>
+            <div class="wheel-center-cap">🐾</div>
         </div>
-    </div>
 
-    <!-- ЭКРАН 4: ИНВЕНТАРЬ -->
-    <div class="screen" id="inventoryScreen">
-        <button class="back-btn" id="t-backMenu3" onclick="showScreen('menuScreen')">← Back to Menu</button>
-        <div class="menu-title" id="t-invHeader">Your Inventory</div>
-        
+        <button class="action-btn" id="spinWheelBtn" onclick="spinWheel()" data-i18n="spinWheelBtn">Вращать Колесо</button>
+    </main>
+
+    <main id="inventory-screen" class="screen">
+        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
+        <h1 class="menu-title" data-i18n="invHeader">Инвентарь</h1>
+        <p class="menu-subtitle" data-i18n="invSubHeader">Ваши предметы и предметы для продажи</p>
+
         <div class="inventory-controls">
-            <input type="text" class="search-input" id="searchInput" placeholder="Search by name..." oninput="renderInventory()">
-            <select class="sort-select" id="sortSelect" onchange="renderInventory()">
-                <option value="new" id="t-sortNew">Newest first</option>
-                <option value="expensive" id="t-sortExp">Most expensive</option>
-                <option value="cheap" id="t-sortCheap">Cheapest</option>
+            <input type="text" class="search-input" id="searchInput" placeholder="Поиск..." oninput="filterInventory(this.value)">
+            <select class="sort-select" onchange="sortInventory(this.value)">
+                <option value="new" data-i18n="sortNew">Сначала новые</option>
+                <option value="expensive" data-i18n="sortExp">Сначала дорогие</option>
             </select>
         </div>
 
         <div class="inventory-grid" id="inventoryGrid"></div>
-        <div class="empty-inv" id="emptyInv">Inventory is empty or nothing found.</div>
-    </div>
+    </main>
 
-    <!-- КНОПКА КРУТКИ -->
-    <div class="actions" id="actionBox" style="display: none;">
-        <button class="spin-btn" id="spinBtn" onclick="triggerSpin()">Spin (50 ⭐)</button>
-    </div>
-
-    <!-- МОДАЛЬНОЕ ОКНО ВЫИГРЫША -->
     <div class="modal-overlay" id="winModal">
         <div class="modal-card">
-            <div class="win-icon" id="winIcon"><img src="" alt="Win"></div>
-            <div class="win-title" id="winTitle">Santa Hat NFT</div>
-            <div class="win-price" id="winPrice">Price: 500 ⭐</div>
-
-            <div class="modal-btns">
-                <button class="btn-sell" id="sellBtn" onclick="sellModalItem()">Sell for 500 ⭐</button>
-                <button class="btn-keep" id="keepBtn" onclick="keepModalItem()">Keep in inventory</button>
-            </div>
+            <h2 class="menu-title" data-i18n="winTitle">Поздравляем!</h2>
+            <div class="modal-icon" id="modalIcon">🎁</div>
+            <h3 id="modalItemName" style="font-size: 18px; margin-bottom: 6px;">Предмет</h3>
+            <p id="modalItemPrice" style="color: var(--gold); font-weight: 800; font-size: 14px; margin-bottom: 20px;">0 ⭐</p>
+            <button class="action-btn" onclick="closeModal()" data-i18n="claimBtn">Забрать</button>
         </div>
     </div>
 
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="switchScreen('main-screen')">
+            <i class="fa-solid fa-house"></i>
+            <span data-i18n="navHome">Главная</span>
+        </div>
+        <div class="nav-item" onclick="switchScreen('cases-screen')">
+            <i class="fa-solid fa-box-open"></i>
+            <span data-i18n="navCases">Кейсы</span>
+        </div>
+        <div class="nav-item" onclick="switchScreen('wheel-screen')">
+            <i class="fa-solid fa-spinner"></i>
+            <span data-i18n="navWheel">Колесо</span>
+        </div>
+        <div class="nav-item" onclick="switchScreen('inventory-screen')">
+            <i class="fa-solid fa-bag-shopping"></i>
+            <span data-i18n="navInv">Инвентарь</span>
+        </div>
+    </nav>
+
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+        const TG = window.Telegram?.WebApp;
+        if (TG) { TG.ready(); TG.expand(); }
 
-        let currentLang = localStorage.getItem('catroll_lang') || 'en';
+        let state = {
+            balance: 1250,
+            inventory: [],
+            currentCase: 'starter',
+            isSpinning: false,
+            lang: 'RU',
+            lastBonusTime: 0
+        };
 
-        const dict = {
-            en: {
-                navInv: "🎒 Inventory",
-                menuTitle: "Choose a Mode",
-                menuSub: "Spin cases, claim daily bonuses",
-                dailyTitle: "Daily Bonus",
-                dailySub: "Free case every 24 hours",
-                dailyTimer: (h, m) => `Bonus in ${h}h ${m}m`,
-                dailyReady: "🎁 Free Bonus!",
-                dailyReadySub: "Click to spin for free",
-                classicTitle: "Classic Roll",
-                classicSub: "Horizontal item tape",
-                wheelTitle: "Wheel of Fortune",
-                wheelSub: "Spinning wheel with prizes",
-                invTitle: "My Inventory",
-                invSub: "View and sell your items",
-                feedTitle: "⚡ Recent Wins",
-                backMenu: "← Back to Menu",
-                demoLabel: "🧪 Demo mode (no spend/rewards)",
-                skipLabel: "⚡ Skip animation",
-                tabStandard: "Standard (50⭐)",
-                tabEpic: "Epic (150⭐)",
-                spinDefault: (p) => `Spin (${p} ⭐)`,
-                spinDaily: "Free Spin (Bonus)",
-                invHeader: "Your Inventory",
-                searchPlaceholder: "Search by name...",
-                sortNew: "Newest first",
-                sortExp: "Most expensive",
-                sortCheap: "Cheapest",
-                emptyInv: "Inventory is empty or nothing found.",
-                sellBtn: (p) => `Sell for ${p} ⭐`,
-                keepBtn: "Keep in inventory",
-                demoSuffix: "[DEMO]",
-                msgNoStars: "Not enough Telegram Stars on balance!",
-                msgSold: (n, p) => `Item "${n}" successfully sold for +${p} ⭐!`,
-                msgDemoSold: "[DEMO] Balance not changed.",
-                msgKept: "Item saved to inventory!",
-                msgDemoKept: "[DEMO] Item not saved.",
-                msgDailyWait: "Daily bonus not available yet! Come back later."
-            },
-            ru: {
-                navInv: "🎒 Инвентарь",
-                menuTitle: "Выберите режим",
-                menuSub: "Крутите рулетки, забирайте ежедневные бонусы",
-                dailyTitle: "Ежедневный бонус",
-                dailySub: "Бесплатный кейс каждые 24 часа",
-                dailyTimer: (h, m) => `Бонус через ${h}ч ${m}м`,
-                dailyReady: "🎁 Бесплатный бонус!",
-                dailyReadySub: "Нажмите, чтобы забрать крутку",
-                classicTitle: "Классический ролл",
-                classicSub: "Горизонтальная лента с карточками",
+        const translations = {
+            RU: {
+                mainTitle: "Выбирай режим",
+                mainSub: "Крути рулетку, испытывай удачу и забирай NFT",
+                dailyTitle: "Ежедневный Бонус",
+                dailySub: "Забери бесплатные Stars прямо сейчас",
+                casesTitle: "Кейсы Подарков",
+                casesSub: "Открывай кейсы и выигрывай Telegram Stars",
                 wheelTitle: "Колесо Фортуны",
-                wheelSub: "Круговое вращающееся колесо с призами",
-                invTitle: "Мой Инвентарь",
-                invSub: "Просмотр и продажа ваших предметов",
-                feedTitle: "⚡ Последние выигрыши",
-                backMenu: "← Назад в меню",
-                demoLabel: "🧪 Демо-режим (без списаний и наград)",
-                skipLabel: "⚡ Пропуск анимации",
-                tabStandard: "Стандартный (50⭐)",
-                tabEpic: "Эпический (150⭐)",
-                spinDefault: (p) => `Крутить (${p} ⭐)`,
-                spinDaily: "Бесплатная крутка (Бонус)",
-                invHeader: "Ваш Инвентарь",
-                searchPlaceholder: "Поиск по названию...",
+                wheelSub: "Вращай колесо и получай до x10 наград",
+                inventoryTitle: "Мой Инвентарь",
+                inventorySub: "Просматривай и продавай свои награды",
+                liveFeed: "Лента выигрышей",
+                back: "← Назад",
+                casesHeader: "Открытие кейсов",
+                casesSubHeader: "Испытай удачу в рулетке",
+                spinBtn: "Крутить Кейс",
+                wheelHeader: "Колесо Фортуны",
+                wheelCost: "Стоимость вращения: 100 ⭐",
+                spinWheelBtn: "Вращать Колесо",
+                invHeader: "Инвентарь",
+                invSubHeader: "Ваши предметы и предметы для продажи",
                 sortNew: "Сначала новые",
-                sortExp: "Подороже",
-                sortCheap: "Подешевле",
-                emptyInv: "Ничего не найдено или инвентарь пуст.",
-                sellBtn: (p) => `Продать за ${p} ⭐`,
-                keepBtn: "Забрать в инвентарь",
-                demoSuffix: "[ДЕМО]",
-                msgNoStars: "Недостаточно Telegram Stars на балансе!",
-                msgSold: (n, p) => `Предмет "${n}" успешно продан за +${p} ⭐!`,
-                msgDemoSold: "[ДЕМО] Баланс не изменен.",
-                msgKept: "Предмет сохранен в инвентарь!",
-                msgDemoKept: "[ДЕМО] Предмет не сохранен.",
-                msgDailyWait: "Ежедневный бонус еще не доступен! Приходите позже."
+                sortExp: "Сначала дорогие",
+                winTitle: "Поздравляем!",
+                claimBtn: "Забрать",
+                navHome: "Главная",
+                navCases: "Кейсы",
+                navWheel: "Колесо",
+                navInv: "Инвентарь",
+                emptyInv: "Инвентарь пуст",
+                sell: "Продать",
+                ready: "Готово",
+                searchPlaceholder: "Поиск..."
+            },
+            EN: {
+                mainTitle: "Choose Mode",
+                mainSub: "Spin roulette, test your luck, get NFTs",
+                dailyTitle: "Daily Bonus",
+                dailySub: "Claim free Stars right now",
+                casesTitle: "Gift Cases",
+                casesSub: "Open cases and win Telegram Stars",
+                wheelTitle: "Wheel of Fortune",
+                wheelSub: "Spin the wheel and get up to x10 rewards",
+                inventoryTitle: "My Inventory",
+                inventorySub: "View and sell your rewards",
+                liveFeed: "Live Win Feed",
+                back: "← Back",
+                casesHeader: "Case Opening",
+                casesSubHeader: "Try your luck in roulette",
+                spinBtn: "Spin Case",
+                wheelHeader: "Wheel of Fortune",
+                wheelCost: "Spin cost: 100 ⭐",
+                spinWheelBtn: "Spin Wheel",
+                invHeader: "Inventory",
+                invSubHeader: "Your items available for sale",
+                sortNew: "Newest first",
+                sortExp: "Expensive first",
+                winTitle: "Congratulations!",
+                claimBtn: "Claim",
+                navHome: "Home",
+                navCases: "Cases",
+                navWheel: "Wheel",
+                navInv: "Inventory",
+                emptyInv: "Inventory is empty",
+                sell: "Sell",
+                ready: "Ready",
+                searchPlaceholder: "Search..."
             }
         };
 
-        function setLanguage(lang) {
-            currentLang = lang;
-            localStorage.setItem('catroll_lang', lang);
-            
-            document.getElementById('langBtn').innerText = lang === 'en' ? "🇬🇧 EN" : "🇷🇺 RU";
+        const itemsPool = [
+            { id: 1, name: 'Star Pouch', icon: '⭐', price: 30 },
+            { id: 2, name: 'Gift Box', icon: '🎁', price: 60 },
+            { id: 3, name: 'Rubber Duck', icon: '🦆', price: 120 },
+            { id: 4, name: 'Telegram Gem', icon: '💎', price: 250 },
+            { id: 5, name: 'Rocket Gift', icon: '🚀', price: 450 },
+            { id: 6, name: 'Golden Crown', icon: '👑', price: 800 }
+        ];
 
-            document.getElementById('navInvBtn').innerText = dict[lang].navInv;
-            document.getElementById('t-menuTitle').innerText = dict[lang].menuTitle;
-            document.getElementById('t-menuSub').innerText = dict[lang].menuSub;
-            document.getElementById('t-classicTitle').innerText = dict[lang].classicTitle;
-            document.getElementById('t-classicSub').innerText = dict[lang].classicSub;
-            document.getElementById('t-wheelTitle').innerText = dict[lang].wheelTitle;
-            document.getElementById('t-wheelSub').innerText = dict[lang].wheelSub;
-            document.getElementById('t-invTitle').innerText = dict[lang].invTitle;
-            document.getElementById('t-invSub').innerText = dict[lang].invSub;
-            document.getElementById('t-feedTitle').innerText = dict[lang].feedTitle;
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
 
-            document.getElementById('t-backMenu1').innerText = dict[lang].backMenu;
-            document.getElementById('t-backMenu2').innerText = dict[lang].backMenu;
-            document.getElementById('t-backMenu3').innerText = dict[lang].backMenu;
-
-            document.getElementById('t-demoLabel').innerText = dict[lang].demoLabel;
-            document.getElementById('t-demoLabel2').innerText = dict[lang].demoLabel;
-            document.getElementById('t-skipLabel').innerText = dict[lang].skipLabel;
-            document.getElementById('t-skipLabel2').innerText = dict[lang].skipLabel;
-
-            document.getElementById('tabStandard').innerText = dict[lang].tabStandard;
-            document.getElementById('tabEpic').innerText = dict[lang].tabEpic;
-
-            document.getElementById('t-invHeader').innerText = dict[lang].invHeader;
-            document.getElementById('searchInput').placeholder = dict[lang].searchPlaceholder;
-            document.getElementById('t-sortNew').innerText = dict[lang].sortNew;
-            document.getElementById('t-sortExp').innerText = dict[lang].sortExp;
-            document.getElementById('t-sortCheap').innerText = dict[lang].sortCheap;
-            document.getElementById('emptyInv').innerText = dict[lang].emptyInv;
-
-            checkDailyBonusTimer();
-            if(!isDailyActive) {
-                spinBtn.innerText = dict[currentLang].spinDefault(currentPrice);
-            }
-            renderInventory();
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            if(screenId === 'main-screen') document.querySelectorAll('.nav-item')[0].classList.add('active');
+            if(screenId === 'cases-screen') document.querySelectorAll('.nav-item')[1].classList.add('active');
+            if(screenId === 'wheel-screen') document.querySelectorAll('.nav-item')[2].classList.add('active');
+            if(screenId === 'inventory-screen') document.querySelectorAll('.nav-item')[3].classList.add('active');
         }
 
         function toggleLanguage() {
-            setLanguage(currentLang === 'en' ? 'ru' : 'en');
+            state.lang = state.lang === 'RU' ? 'EN' : 'RU';
+            document.getElementById('langBtn').textContent = `🌐 ${state.lang}`;
+            
+            const t = translations[state.lang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) el.textContent = t[key];
+            });
+
+            document.getElementById('searchInput').placeholder = t.searchPlaceholder;
+            renderInventory();
         }
 
-        let currentPrice = 50;
-        let isDailyActive = false;
-        
-        let userBalance = localStorage.getItem('catroll_user_balance') !== null ? parseInt(localStorage.getItem('catroll_user_balance')) : 200000;
-        let userInventory = localStorage.getItem('catroll_user_inventory') !== null ? JSON.parse(localStorage.getItem('catroll_user_inventory')) : [];
-
-        let activeMode = null;
-        let currentRotation = 0;
-        let currentWinItem = null;
-
-        document.getElementById('demoToggle').addEventListener('change', (e) => { document.getElementById('demoToggleWheel').checked = e.target.checked; });
-        document.getElementById('demoToggleWheel').addEventListener('change', (e) => { document.getElementById('demoToggle').checked = e.target.checked; });
-        document.getElementById('skipToggle').addEventListener('change', (e) => { document.getElementById('skipToggleWheel').checked = e.target.checked; });
-        document.getElementById('skipToggleWheel').addEventListener('change', (e) => { document.getElementById('skipToggle').checked = e.target.checked; });
-
-        function getDemoMode() { return document.getElementById('demoToggle').checked || document.getElementById('demoToggleWheel').checked; }
-        function getSkipAnimation() { return document.getElementById('skipToggle').checked || document.getElementById('skipToggleWheel').checked; }
-
-        const items = [
-            { nft_id: 'santa_hat', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f385.png', name: 'Santa Hat NFT', price: 500, weight: 30 },
-            { nft_id: 'snake_nft', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f40d.png', name: 'Snake NFT', price: 500, weight: 30 },
-            { nft_id: 'ny_gift', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f381.png', name: 'New Year Gift NFT', price: 500, weight: 30 },
-            { nft_id: 'teddy_bear', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f9f8.png', name: 'Teddy Bear', price: 15, weight: 100 },
-            { nft_id: 'heart_item', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f496.png', name: 'Heart', price: 15, weight: 100 },
-            { nft_id: 'gold_cup', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f3c6.png', name: 'Gold Cup', price: 100, weight: 60 },
-            { nft_id: 'diamond_item', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f48e.png', name: 'Diamond', price: 100, weight: 60 }
-        ];
-
-        const track = document.getElementById('track');
-        const wheelTrack = document.getElementById('wheelTrack');
-        const spinBtn = document.getElementById('spinBtn');
-        const balanceEl = document.getElementById('balance');
-        const actionBox = document.getElementById('actionBox');
-
-        function saveUserData() {
-            localStorage.setItem('catroll_user_balance', userBalance.toString());
-            localStorage.setItem('catroll_user_inventory', JSON.stringify(userInventory));
-            balanceEl.innerText = userBalance;
+        function updateBalance(amount) {
+            state.balance += amount;
+            document.getElementById('userBalance').textContent = state.balance.toLocaleString();
         }
-        balanceEl.innerText = userBalance;
 
-        function checkDailyBonusTimer() {
-            const lastClaim = localStorage.getItem('catroll_last_daily');
+        function claimDailyBonus() {
             const now = Date.now();
             const cooldown = 24 * 60 * 60 * 1000;
 
-            if (lastClaim && now - parseInt(lastClaim) < cooldown) {
-                const timeLeft = cooldown - (now - parseInt(lastClaim));
-                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-                
-                document.getElementById('dailyTitle').innerText = dict[currentLang].dailyTimer(hours, minutes);
-                document.getElementById('dailySub').innerText = dict[currentLang].dailySub;
-                return false;
-            } else {
-                document.getElementById('dailyTitle').innerText = dict[currentLang].dailyReady;
-                document.getElementById('dailySub').innerText = dict[currentLang].dailyReadySub;
-                return true;
-            }
-        }
-
-        function openDailyBonus() {
-            if (!checkDailyBonusTimer()) {
-                tg.showAlert(dict[currentLang].msgDailyWait);
+            if (now - state.lastBonusTime < cooldown) {
                 return;
             }
-            isDailyActive = true;
-            openGameMode('classic');
-            spinBtn.innerText = dict[currentLang].spinDaily;
+
+            state.lastBonusTime = now;
+            updateBalance(50);
+            if (window.confetti) confetti({ particleCount: 60, spread: 70 });
+            showWinModal({ name: state.lang === 'RU' ? 'Ежедневный Бонус' : 'Daily Bonus', icon: '🎁', price: 50 });
+            startBonusTimer();
         }
 
-        setInterval(checkDailyBonusTimer, 60000);
+        function startBonusTimer() {
+            const timerEl = document.getElementById('bonusTimer');
+            setInterval(() => {
+                const cooldown = 24 * 60 * 60 * 1000;
+                const diff = cooldown - (Date.now() - state.lastBonusTime);
 
-        function maskUsername(username) {
-            if (!username) username = "user_" + Math.floor(Math.random() * 8999 + 1000);
-            if (!username.startsWith('@')) username = '@' + username;
-            
-            const len = username.length;
-            const blurLength = Math.max(2, Math.floor(len * 0.33));
-            const visibleLength = len - blurLength;
-            
-            const visiblePart = username.substring(0, visibleLength);
-            const blurPart = "*".repeat(blurLength);
-            
-            return `<span class="feed-user">${visiblePart}<span class="blurred">${blurPart}</span></span>`;
+                if (diff <= 0) {
+                    timerEl.textContent = translations[state.lang].ready;
+                } else {
+                    const hrs = Math.floor(diff / (1000 * 60 * 60));
+                    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const secs = Math.floor((diff % (1000 * 60)) / 1000);
+                    timerEl.textContent = `${hrs}h ${mins}m ${secs}s`;
+                }
+            }, 1000);
         }
 
-        let feedData = [
-            { user: "cryptocat", prize: "Santa Hat NFT", image: "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f385.png" },
-            { user: "ton_holder", prize: "Gold Cup", image: "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f3c6.png" },
-            { user: "telegramer", prize: "Diamond", image: "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f48e.png" }
-        ];
-
-        function renderFeed() {
-            const list = document.getElementById('feedList');
-            list.innerHTML = '';
-            feedData.forEach(item => {
-                const row = document.createElement('div');
-                row.className = 'feed-item';
-                row.innerHTML = `
-                    ${maskUsername(item.user)}
-                    <span class="feed-prize"><img src="${item.image}">${item.prize}</span>
-                `;
-                list.appendChild(row);
-            });
-        }
-        renderFeed();
-
-        function addFeedItem(username, prizeName, prizeImg) {
-            feedData.unshift({ user: username, prize: prizeName, image: prizeImg });
-            if (feedData.length > 10) feedData.pop();
-            renderFeed();
-        }
-
-        function getRandomItem() {
-            const totalWeight = items.reduce((acc, item) => acc + item.weight, 0);
-            let random = Math.random() * totalWeight;
-            for (let item of items) {
-                if (random < item.weight) return item;
-                random -= item.weight;
-            }
-            return items[0];
-        }
-
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-            
-            if (screenId === 'menuScreen' || screenId === 'inventoryScreen') {
-                actionBox.style.display = 'none';
-            } else {
-                actionBox.style.display = 'block';
-            }
-            if (screenId === 'inventoryScreen') renderInventory();
-        }
-
-        function openGameMode(mode) {
-            activeMode = mode;
-            if (!isDailyActive) spinBtn.innerText = dict[currentLang].spinDefault(currentPrice);
-            
-            if (mode === 'classic') {
-                initClassicTrack();
-                showScreen('classicScreen');
-            } else if (mode === 'wheel') {
-                initWheelLabels();
-                showScreen('wheelScreen');
-            }
-        }
-
-        function initClassicTrack() {
+        function buildRouletteTrack() {
+            const track = document.getElementById('rouletteTrack');
+            track.style.transition = 'none';
+            track.style.transform = 'translateX(0px)';
             track.innerHTML = '';
-            for (let i = 0; i < 40; i++) {
-                const rItem = getRandomItem();
+
+            for (let i = 0; i < 45; i++) {
+                const item = itemsPool[Math.floor(Math.random() * itemsPool.length)];
                 const card = document.createElement('div');
                 card.className = 'item-card';
-                card.innerHTML = `<img src="${rItem.image}"><div class="name">${rItem.name}</div><div class="price-tag">${rItem.price} ⭐</div>`;
+                card.innerHTML = `
+                    <div class="icon">${item.icon}</div>
+                    <div class="name">${item.name}</div>
+                    <div class="price-tag">${item.price} ⭐</div>
+                `;
                 track.appendChild(card);
             }
         }
 
-        function initWheelLabels() {
-            wheelTrack.innerHTML = '';
-            items.slice(0, 7).forEach((item, index) => {
-                const label = document.createElement('div');
-                label.className = 'wheel-label';
-                label.style.position = 'absolute';
-                label.style.top = '50%';
-                label.style.left = '50%';
-                label.style.transformOrigin = '0 0';
-                label.style.transform = `rotate(${index * 51.4}deg) translate(68px, -15px)`;
-                label.innerHTML = `<img src="${item.image}" style="width:28px; height:28px; object-fit:contain; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">`;
-                wheelTrack.appendChild(label);
-            });
-        }
+        function spinRoulette() {
+            if (state.isSpinning) return;
+            const cost = state.currentCase === 'starter' ? 50 : state.currentCase === 'rare' ? 250 : 1000;
+            if (state.balance < cost) return alert(state.lang === 'RU' ? 'Недостаточно Stars!' : 'Not enough Stars!');
 
-        function switchCase(element, type, price) {
-            if (isDailyActive) return;
-            currentPrice = price;
-            spinBtn.innerText = dict[currentLang].spinDefault(price);
-            document.querySelectorAll('.case-tab').forEach(t => t.classList.remove('active'));
-            if (element) element.classList.add('active');
-            initClassicTrack();
-        }
+            updateBalance(-cost);
+            state.isSpinning = true;
+            buildRouletteTrack();
 
-        function triggerSpin() {
-            const isDemo = getDemoMode();
-            const isSkip = getSkipAnimation();
+            const track = document.getElementById('rouletteTrack');
+            const winningIndex = 32;
+            const winningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+            
+            const cardWidth = 107;
+            const targetOffset = (winningIndex * cardWidth) - 130;
 
-            if (isDailyActive) {
-                localStorage.setItem('catroll_last_daily', Date.now().toString());
-                checkDailyBonusTimer();
-            } else if (!isDemo) {
-                if (userBalance < currentPrice) {
-                    tg.showAlert(dict[currentLang].msgNoStars);
-                    return;
-                }
-                userBalance -= currentPrice;
-                saveUserData();
-            }
-
-            spinBtn.disabled = true;
-            currentWinItem = getRandomItem();
-
-            if (isSkip) {
-                spinBtn.disabled = false;
-                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-                finishSpinProcess(currentWinItem);
-                return;
-            }
-
-            if (activeMode === 'classic') {
-                spinClassic();
-            } else if (activeMode === 'wheel') {
-                spinWheel();
-            }
-        }
-
-        function spinClassic() {
-            track.style.transition = 'none';
-            track.style.transform = 'translateX(0px)';
             setTimeout(() => {
-                const itemWidth = 100;
-                const winnerIndex = 28;
-                const cards = track.children;
-                if (cards[winnerIndex]) {
-                    cards[winnerIndex].innerHTML = `<img src="${currentWinItem.image}"><div class="name">${currentWinItem.name}</div><div class="price-tag">${currentWinItem.price} ⭐</div>`;
-                }
-                const offset = -(winnerIndex * itemWidth - (track.parentElement.clientWidth / 2) + (itemWidth / 2));
                 track.style.transition = 'transform 5s cubic-bezier(0.1, 1, 0.1, 1)';
-                track.style.transform = `translateX(${offset}px)`;
-
-                setTimeout(() => {
-                    spinBtn.disabled = false;
-                    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-                    finishSpinProcess(currentWinItem);
-                }, 5200);
+                track.style.transform = `translateX(-${targetOffset}px)`;
             }, 50);
-        }
-
-        function spinWheel() {
-            const extraDegrees = Math.floor(Math.random() * 360) + 1800;
-            currentRotation += extraDegrees;
-            wheelTrack.style.transform = `rotate(${currentRotation}deg)`;
 
             setTimeout(() => {
-                spinBtn.disabled = false;
-                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-                finishSpinProcess(currentWinItem);
+                state.isSpinning = false;
+                state.inventory.push({ ...winningItem, uid: Date.now() });
+                renderInventory();
+                addFeedItem('You', winningItem.name);
+                showWinModal(winningItem);
             }, 5200);
         }
 
-        function finishSpinProcess(item) {
-            const tgUser = tg.initDataUnsafe?.user?.username || tg.initDataUnsafe?.user?.first_name || "player_" + Math.floor(Math.random()*899+100);
-            addFeedItem(tgUser, item.name, item.image);
-            showWinModal(item);
+        function selectCase(type, el) {
+            state.currentCase = type;
+            document.querySelectorAll('.case-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function spinWheel() {
+            if (state.isSpinning) return;
+            if (state.balance < 100) return alert(state.lang === 'RU' ? 'Недостаточно Stars!' : 'Not enough Stars!');
+
+            updateBalance(-100);
+            state.isSpinning = true;
+
+            const wheel = document.getElementById('wheelTrack');
+            const randomRotation = 1800 + Math.floor(Math.random() * 360);
+            wheel.style.transform = `rotate(${randomRotation}deg)`;
+
+            setTimeout(() => {
+                state.isSpinning = false;
+                const win = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+                state.inventory.push({ ...win, uid: Date.now() });
+                renderInventory();
+                showWinModal(win);
+            }, 5000);
         }
 
         function showWinModal(item) {
-            document.getElementById('sellBtn').disabled = false;
-            document.getElementById('keepBtn').disabled = false;
-            const isDemo = getDemoMode();
-
-            if (isDemo) {
-                document.getElementById('winTitle').innerText = `${item.name} ${dict[currentLang].demoSuffix}`;
-                document.getElementById('sellBtn').innerText = `${dict[currentLang].sellBtn(item.price)} ${dict[currentLang].demoSuffix}`;
-                document.getElementById('keepBtn').innerText = `${dict[currentLang].keepBtn} ${dict[currentLang].demoSuffix}`;
-            } else {
-                document.getElementById('winTitle').innerText = item.name;
-                document.getElementById('sellBtn').innerText = dict[currentLang].sellBtn(item.price);
-                document.getElementById('keepBtn').innerText = dict[currentLang].keepBtn;
-            }
-
-            document.getElementById('winIcon').innerHTML = `<img src="${item.image}">`;
-            document.getElementById('winPrice').innerText = `Price: ${item.price} ⭐`;
-            document.getElementById('winModal').style.display = 'flex';
+            document.getElementById('modalIcon').textContent = item.icon;
+            document.getElementById('modalItemName').textContent = item.name;
+            document.getElementById('modalItemPrice').textContent = `+${item.price} ⭐`;
+            document.getElementById('winModal').classList.add('active');
+            if (window.confetti) confetti({ particleCount: 50 });
         }
 
-        function closeWinModal() {
-            document.getElementById('winModal').style.display = 'none';
-            if (isDailyActive) {
-                isDailyActive = false;
-                showScreen('menuScreen');
-            }
+        function closeModal() {
+            document.getElementById('winModal').classList.remove('active');
         }
 
-        function sellItem(targetId, isInventory = false, invUniqueId = null) {
-            let itemToSell = null;
-            const isDemo = getDemoMode();
-
-            if (isInventory) {
-                const index = userInventory.findIndex(i => i.invId.toString() === invUniqueId.toString());
-                if (index !== -1) { itemToSell = userInventory[index]; userInventory.splice(index, 1); }
-            } else {
-                if (currentWinItem && currentWinItem.nft_id === targetId) {
-                    itemToSell = currentWinItem;
-                    currentWinItem = null;
-                }
-            }
-
-            if (itemToSell) {
-                if (!isDemo) {
-                    userBalance += itemToSell.price;
-                    saveUserData();
-                    if (isInventory) renderInventory();
-                    tg.showAlert(dict[currentLang].msgSold(itemToSell.name, itemToSell.price));
-                } else {
-                    tg.showAlert(dict[currentLang].msgDemoSold);
-                }
-            }
-            closeWinModal();
-        }
-
-        function sellModalItem() {
-            if (!currentWinItem) return;
-            sellItem(currentWinItem.nft_id, false);
-        }
-
-        function keepModalItem() {
-            if (!currentWinItem) return;
-            const isDemo = getDemoMode();
-
-            if (isDemo) {
-                currentWinItem = null;
-                closeWinModal();
-                tg.showAlert(dict[currentLang].msgDemoKept);
-                if (isDailyActive) { isDailyActive = false; showScreen('menuScreen'); }
-                return;
-            }
-
-            const itemToKeep = {...currentWinItem, invId: Date.now() + Math.random()};
-            currentWinItem = null;
-            userInventory.push(itemToKeep);
-            saveUserData();
-
-            closeWinModal();
-            tg.showAlert(dict[currentLang].msgKept);
-            if (isDailyActive) { isDailyActive = false; showScreen('menuScreen'); }
-        }
-
-        function renderInventory() {
+        function renderInventory(items = state.inventory) {
             const grid = document.getElementById('inventoryGrid');
-            const emptyMsg = document.getElementById('emptyInv');
-            const searchText = document.getElementById('searchInput').value.toLowerCase();
-            const sortBy = document.getElementById('sortSelect').value;
             grid.innerHTML = '';
 
-            let filtered = userInventory.filter(item => item.name.toLowerCase().includes(searchText));
-
-            if (sortBy === 'expensive') {
-                filtered.sort((a, b) => b.price - a.price);
-            } else if (sortBy === 'cheap') {
-                filtered.sort((a, b) => a.price - b.price);
-            } else {
-                filtered.reverse();
-            }
-
-            if (filtered.length === 0) {
-                emptyMsg.style.display = 'block';
+            if (items.length === 0) {
+                grid.innerHTML = `<div style="grid-column: span 2; text-align: center; color: var(--text-secondary); font-size: 13px; padding: 20px;">${translations[state.lang].emptyInv}</div>`;
                 return;
             }
 
-            emptyMsg.style.display = 'none';
-            filtered.forEach((item) => {
+            items.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'inventory-card';
                 card.innerHTML = `
-                    <img src="${item.image}">
+                    <div class="icon">${item.icon}</div>
                     <div class="name">${item.name}</div>
-                    <div class="price">+${item.price} ⭐</div>
-                    <button class="sell-btn" onclick="sellItem('${item.nft_id}', true, '${item.invId}')">Sell</button>
+                    <div class="price">${item.price} ⭐</div>
+                    <button class="sell-btn" onclick="sellItem(${item.uid})">${translations[state.lang].sell}</button>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        setLanguage(currentLang);
+        function sellItem(uid) {
+            const idx = state.inventory.findIndex(i => i.uid === uid);
+            if (idx !== -1) {
+                updateBalance(state.inventory[idx].price);
+                state.inventory.splice(idx, 1);
+                renderInventory();
+            }
+        }
+
+        function filterInventory(query) {
+            const filtered = state.inventory.filter(i => i.name.toLowerCase().includes(query.toLowerCase()));
+            renderInventory(filtered);
+        }
+
+        function sortInventory(type) {
+            let sorted = [...state.inventory];
+            if (type === 'expensive') sorted.sort((a, b) => b.price - a.price);
+            else sorted.reverse();
+            renderInventory(sorted);
+        }
+
+        function addFeedItem(user, itemName) {
+            const feed = document.getElementById('feedList');
+            const item = document.createElement('div');
+            item.className = 'feed-item';
+            
+            const isSelf = user === 'You';
+            const userSpan = isSelf ? `<span>${user}</span>` : `<span class="user-blur">${user}</span>`;
+
+            item.innerHTML = `${userSpan} <span class="item-name">${itemName}</span>`;
+            feed.prepend(item);
+        }
+
+        function initLiveFeed() {
+            const users = ['@alex_cat', '@crypto_king', '@pavel_d', '@durov_star', '@masha_nft'];
+            for(let i=0; i<4; i++) {
+                addFeedItem(users[i], itemsPool[i].name);
+            }
+        }
+
+        window.onload = function() {
+            buildRouletteTrack();
+            renderInventory();
+            initLiveFeed();
+        };
     </script>
 </body>
 </html>
