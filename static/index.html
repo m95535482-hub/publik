@@ -413,7 +413,7 @@
 
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10, 10, 14, 0.92); backdrop-filter: blur(22px);
-            border-top: 1px solid var(--card-border); padding: 10px 24px 14px 24px; display: flex; justify-space-around; align-items: center; z-index: 50;
+            border-top: 1px solid var(--card-border); padding: 10px 24px 14px 24px; display: flex; justify-content: space-around; align-items: center; z-index: 50;
         }
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-secondary); font-size: 10px; font-weight: 800; cursor: pointer; }
         .nav-item i { font-size: 19px; }
@@ -555,7 +555,6 @@
         <div class="inventory-grid" id="inventoryGrid"></div>
     </main>
 
-    <!-- Модальное окно выигрыша -->
     <div class="modal-overlay" id="winModal">
         <div class="modal-card">
             <h2 class="menu-title" data-i18n="winTitle">Поздравляем!</h2>
@@ -569,7 +568,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно вывода -->
     <div class="modal-overlay" id="withdrawModal">
         <div class="modal-card">
             <h2 class="menu-title" style="font-size: 20px;" data-i18n="withdrawTitle">Вывод подарка</h2>
@@ -593,6 +591,7 @@
         const TG = window.Telegram?.WebApp;
         if (TG) { TG.ready(); TG.expand(); }
 
+        // Жесткая привязка к УНИКАЛЬНОМУ Telegram ID пользователя
         const userId = TG?.initDataUnsafe?.user?.id || 1218168630;
         let state = {
             balance: 0,
@@ -673,12 +672,18 @@
             msgEl.style.color = 'var(--gold)';
             msgEl.textContent = state.lang === 'RU' ? 'Формирование счета...' : 'Creating invoice...';
 
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
+
             try {
                 const res = await fetch(`/api/create-invoice/${userId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ amount: amount })
+                    body: JSON.stringify({ amount: amount }),
+                    signal: controller.signal
                 });
+                clearTimeout(timeoutId);
+                
                 const data = await res.json();
                 
                 if (data.success && data.invoice_link) {
@@ -689,21 +694,20 @@
                                 msgEl.style.color = 'var(--green)';
                                 msgEl.textContent = state.lang === 'RU' ? 'Оплата прошла успешно!' : 'Payment successful!';
                                 setTimeout(loadUserData, 1500);
-                            } else if (status === 'cancelled') {
-                                msgEl.style.color = '#ff3b30';
-                                msgEl.textContent = state.lang === 'RU' ? 'Оплата отменена' : 'Payment cancelled';
                             } else {
                                 msgEl.style.color = '#ff3b30';
-                                msgEl.textContent = state.lang === 'RU' ? 'Ошибка при оплате' : 'Payment failed';
+                                msgEl.textContent = state.lang === 'RU' ? 'Оплата отменена' : 'Payment cancelled';
                             }
                         });
                     } else {
                         window.location.href = data.invoice_link;
                     }
+                } else {
+                    throw new Error('Server error');
                 }
             } catch (e) {
                 msgEl.style.color = '#ff3b30';
-                msgEl.textContent = 'Error';
+                msgEl.textContent = state.lang === 'RU' ? 'Ошибка связи с сервером' : 'Connection error';
             }
         }
 

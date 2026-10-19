@@ -19,6 +19,9 @@ app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# Стартовый тестовый баланс для бета-тестирования
+BETA_STARTING_BALANCE = 200000
+
 def init_db():
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
@@ -26,7 +29,7 @@ def init_db():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             user_id INTEGER PRIMARY KEY,
-            balance INTEGER DEFAULT 0
+            balance INTEGER DEFAULT 200000
         )
     """)
     
@@ -86,7 +89,7 @@ def process_successful_payment(message):
     
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
-    cursor.execute("INSERT OR IGNORE INTO users (user_id, balance) VALUES (?, 0)", (user_id,))
+    cursor.execute("INSERT OR IGNORE INTO users (user_id, balance) VALUES (?, ?)", (user_id, BETA_STARTING_BALANCE))
     cursor.execute("UPDATE users SET balance = balance + ? WHERE user_id = ?", (stars_amount, user_id))
     conn.commit()
     conn.close()
@@ -97,12 +100,17 @@ def process_successful_payment(message):
         print(f"Failed to send confirmation message: {e}")
 
 def run_bot():
+    try:
+        bot.remove_webhook()
+    except Exception as e:
+        print(f"Webhook remove error: {e}")
+        
     while True:
         try:
             bot.infinity_polling(skip_pending=True, timeout=10, long_polling_timeout=5)
         except Exception as e:
             print(f"Bot polling error: {e}")
-            time.sleep(3)
+            time.sleep(5)
 
 threading.Thread(target=run_bot, daemon=True).start()
 
@@ -134,7 +142,8 @@ def read_root():
 def get_user(user_id: int):
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
-    cursor.execute("INSERT OR IGNORE INTO users (user_id, balance) VALUES (?, 0)", (user_id,))
+    # При первом входе выставляем 200,000 ⭐
+    cursor.execute("INSERT OR IGNORE INTO users (user_id, balance) VALUES (?, ?)", (user_id, BETA_STARTING_BALANCE))
     conn.commit()
     cursor.execute("SELECT balance FROM users WHERE user_id = ?", (user_id,))
     balance = cursor.fetchone()[0]
@@ -152,7 +161,6 @@ def create_invoice(user_id: int, data: dict):
     prices = [LabeledPrice(label=f"{amount} Telegram Stars", amount=amount)]
     
     try:
-        # Исправлено: аргумент называется 'payload', а не 'invoice_payload'
         invoice_link = bot.create_invoice_link(
             title=f"Пополнение {amount} Stars",
             description=f"Пополнение баланса в CatRoll на {amount} звёзд",
