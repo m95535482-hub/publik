@@ -990,6 +990,7 @@
         ];
 
         let pendingWinItem = null;
+        let pendingIsDemo = false;
         let pendingWithdrawItem = null;
         let caseTimerId = null;
         let wheelTimerId = null;
@@ -1140,7 +1141,6 @@
             document.getElementById('casesBackBtn').style.opacity = '1';
             document.getElementById('casesBackBtn').style.pointerEvents = 'auto';
 
-            pendingWinItem = winningItem;
             showWinModal(winningItem, isDemo);
             addFeedItem('You', winningItem.name);
         }
@@ -1218,12 +1218,14 @@
             document.getElementById('wheelBackBtn').style.opacity = '1';
             document.getElementById('wheelBackBtn').style.pointerEvents = 'auto';
 
-            pendingWinItem = winningItem;
             showWinModal(winningItem, isDemo);
             addFeedItem('You', winningItem.name);
         }
 
-        function showWinModal(item, isDemo) {
+        function showWinModal(item, isDemo = false) {
+            pendingWinItem = item;
+            pendingIsDemo = isDemo;
+
             document.getElementById('modalIcon').textContent = item.icon;
             document.getElementById('modalItemName').textContent = item.name;
             document.getElementById('modalItemPrice').textContent = isDemo ? (state.lang === 'RU' ? '(Демо-режим)' : '(Demo Mode)') : `+${item.price} ⭐`;
@@ -1233,17 +1235,20 @@
         }
 
         function closeModal(action) {
-            const isDemo = document.getElementById('casesDemoToggle').checked || document.getElementById('wheelDemoToggle').checked;
-            if (pendingWinItem && !isDemo) {
+            if (pendingWinItem && !pendingIsDemo) {
                 if (action === 'claim') {
+                    // Добавление предмета в инвентарь
                     state.inventory.push({ ...pendingWinItem, uid: Date.now() + Math.random() });
                 } else if (action === 'sell') {
+                    // Продажа предмета
                     updateBalance(pendingWinItem.price);
                 }
                 renderInventory();
                 saveState();
             }
+            
             pendingWinItem = null;
+            pendingIsDemo = false;
             document.getElementById('winModal').classList.remove('active');
         }
 
@@ -1341,4 +1346,4 @@
         };
     </script>
 </body>
-</html>
+</html>>
