@@ -309,6 +309,7 @@
             font-weight: 600;
             cursor: pointer;
             white-space: nowrap;
+            transition: 0.2s;
         }
 
         .case-tab.active {
@@ -506,8 +507,8 @@
         <button class="back-btn" onclick="showScreen('menuScreen')">← Назад в меню</button>
 
         <div class="cases-selector">
-            <div class="case-tab active" onclick="switchCase('standard', 50)">Стандартный (50⭐)</div>
-            <div class="case-tab" onclick="switchCase('epic', 150)">Эпический (150⭐)</div>
+            <div class="case-tab active" onclick="switchCase(this, 'standard', 50)">Стандартный (50⭐)</div>
+            <div class="case-tab" onclick="switchCase(this, 'epic', 150)">Эпический (150⭐)</div>
         </div>
 
         <div class="case-container">
@@ -569,11 +570,11 @@
 
         let currentPrice = 50;
         
-        // 1. ЗАГРУЗКА БАЛАНСА: проверяем, есть ли сохранённый баланс в localStorage
+        // 1. ЗАГРУЗКА БАЛАНСА из localStorage (сохранение между входами)
         let savedBalance = localStorage.getItem('catroll_user_balance');
         let userBalance = savedBalance !== null ? parseInt(savedBalance) : 200000;
 
-        // 2. ЗАГРУЗКА ИНВЕНТАРЯ: проверяем, есть ли сохранённые предметы
+        // 2. ЗАГРУЗКА ИНВЕНТАРЯ из localStorage
         let savedInventory = localStorage.getItem('catroll_user_inventory');
         let userInventory = savedInventory !== null ? JSON.parse(savedInventory) : [];
 
@@ -597,14 +598,14 @@
         const balanceEl = document.getElementById('balance');
         const actionBox = document.getElementById('actionBox');
 
-        // Функция сохранения баланса и инвентаря
+        // Сохранение данных пользователя
         function saveUserData() {
             localStorage.setItem('catroll_user_balance', userBalance.toString());
             localStorage.setItem('catroll_user_inventory', JSON.stringify(userInventory));
             balanceEl.innerText = userBalance;
         }
 
-        // Обновляем отображение баланса сразу при запуске
+        // Первоначальное отображение баланса
         balanceEl.innerText = userBalance;
 
         function getRandomItem() {
@@ -657,9 +658,16 @@
             }
         }
 
-        function switchCase(type, price) {
+        // Переключение вкладок с подсветкой
+        function switchCase(element, type, price) {
             currentPrice = price;
             spinBtn.innerText = `Крутить (${price} ⭐)`;
+
+            document.querySelectorAll('.case-tab').forEach(tab => tab.classList.remove('active'));
+            if (element) {
+                element.classList.add('active');
+            }
+
             initClassicTrack();
         }
 
@@ -671,7 +679,7 @@
 
             spinBtn.disabled = true;
             userBalance -= currentPrice;
-            saveUserData(); // Сохраняем списание звёзд
+            saveUserData();
 
             currentWinItem = getRandomItem();
 
@@ -743,6 +751,7 @@
         function sellModalItem() {
             if (!currentWinItem) return;
 
+            // Блокировка и закрытие для исключения дюпа
             document.getElementById('sellBtn').disabled = true;
             document.getElementById('keepBtn').disabled = true;
             closeWinModal();
@@ -752,13 +761,14 @@
             currentWinItem = null;
 
             userBalance += priceToAdd;
-            saveUserData(); // Сохраняем пополнение
+            saveUserData();
             tg.showAlert(`Вы успешно продали "${itemName}" и получили +${priceToAdd} ⭐!`);
         }
 
         function keepModalItem() {
             if (!currentWinItem) return;
 
+            // Блокировка и закрытие для исключения дюпа
             document.getElementById('sellBtn').disabled = true;
             document.getElementById('keepBtn').disabled = true;
             closeWinModal();
@@ -767,7 +777,7 @@
             currentWinItem = null;
 
             userInventory.push(itemToKeep);
-            saveUserData(); // Сохраняем добавление предмета в инвентарь
+            saveUserData();
 
             tg.showAlert(`Предмет "${itemToKeep.name}" сохранен в ваш инвентарь!`);
             
@@ -808,11 +818,11 @@
                 const item = userInventory[index];
                 userBalance += item.price;
                 userInventory.splice(index, 1);
-                saveUserData(); // Сохраняем продажу предмета и баланс
+                saveUserData();
                 renderInventory();
                 tg.showAlert(`Предмет "${item.name}" продан за +${item.price} ⭐!`);
             }
         }
     </script>
-    </body>
+</body>
 </html>
