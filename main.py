@@ -1,303 +1,162 @@
-import asyncio
-import json
 import os
 import random
-import time
-from contextlib import asynccontextmanager
+import sqlite3
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
+import telebot
 
-from aiogram import Bot, Dispatcher, F, types
-from aiogram.filters import Command
-from aiogram.types import LabeledPrice
+# Токен вашего бота
+TOKEN = os.getenv("BOT_TOKEN", "ВАШ_ТОКЕН_БОТА")
+bot = telebot.TeleBot(TOKEN)
 
-# --- НАСТРОЙКИ БОТА И АДМИНКИ ---
-TOKEN = "8643024766:AAFkb8a0NzGGz6DJ2ksE2aqDwWsQbhTAybI"
-ADMIN_SECRET = "super_secret_key_123"
-ADMIN_ID = 0  # Укажите ваш Telegram ID для ограничений или 0 для открытого доступа
+app = FastAPI()
 
-bot = Bot(token=TOKEN)
-dp = Dispatcher()
+# Подключение статических файлов (фронтенд Mini App)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# --- ПУЛ ПРЕДМЕТОВ И БАЗА ДАННЫХ ---
-ITEMS_FILE = "items_db.json"
-DB_FILE = "database.json"
+# Инициализация базы данных SQLite
+def init_db():
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    
+    # Таблица подарков
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS gifts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            image_url TEXT NOT NULL,
+            anim_url TEXT NOT NULL,
+            price INTEGER NOT NULL
+        )
+    """)
+    
+    # Таблица инвентаря игроков
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS inventory (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            gift_name TEXT NOT NULL,
+            image_url TEXT NOT NULL,
+            anim_url TEXT NOT NULL
+        )
+    """)
+    
+    conn.commit()
+    conn.close()
 
-DEFAULT_ITEMS = [
-    {"id": 1, "name": "Star Pouch", "icon": "⭐", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f31f.png", "animation": "", "price": 30},
-    {"id": 2, "name": "Animated Gift Box", "icon": "🎁", "image": "https://images.emojiterra.com/google/android-11/512px/1f381.png", "animation": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3ZtOGlnczJmMXZmbWNkM3E1c296NmcxYmpxbW1ubGRyYjNtdXhzaSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/L1R16I0SVbipNMCxyP/giphy.gif", "price": 150},
-    {"id": 3, "name": "Rubber Duck", "icon": "🦆", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f986.png", "animation": "", "price": 120},
-    {"id": 4, "name": "Cyber Neon", "icon": "🚀", "image": "https://images.emojiterra.com/google/android-11/512px/1f680.png", "animation": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3F3OXFvNHZ3NnlvOHo5bWhhbXg5eWoxcTN4NTRuam55anE5b2V6byZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xT9IgzoKnwFNmISR8I/giphy.gif", "price": 500},
-    {"id": 5, "name": "Telegram Gem", "icon": "💎", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f48e.png", "animation": "", "price": 250},
-    {"id": 6, "name": "Golden Crown", "icon": "👑", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f451.png", "animation": "", "price": 800}
-]
+init_db()
 
-def load_items():
-    if os.path.exists(ITEMS_FILE):
-        try:
-            with open(ITEMS_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            return DEFAULT_ITEMS
-    return DEFAULT_ITEMS
 
-ITEMS_POOL = load_items()
-
-def save_items_to_disk():
-    with open(ITEMS_FILE, "w", encoding="utf-8") as f:
-        json.dump(ITEMS_POOL, f, ensure_ascii=False, indent=4)
-
-def add_new_item_to_pool(name: str, image: str, animation: str, price: int):
-    global ITEMS_POOL
-    new_id = len(ITEMS_POOL) + 1
-    new_item = {
-        "id": new_id,
-        "name": name,
-        "icon": "🎁",
-        "image": image,
-        "animation": animation,
-        "price": price
-    }
-    ITEMS_POOL.append(new_item)
-    save_items_to_disk()
-    return new_item
-
-def load_db():
-    if os.path.exists(DB_FILE):
-        try:
-            with open(DB_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            return {}
-    return {}
-
-users_db = load_db()
-
-def save_db():
-    with open(DB_FILE, "w", encoding="utf-8") as f:
-        json.dump(users_db, f, ensure_ascii=False, indent=4)
-
-# --- LIFESPAN (Автоматический запуск бота при старте FastAPI) ---
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    asyncio.create_task(dp.start_polling(bot))
-    yield
-
-app = FastAPI(title="CatRoll Secure Backend", lifespan=lifespan)
-
-# --- МОДЕЛИ ЗАПРОСОВ ---
-class UserRequest(BaseModel):
-    user_id: str
-
-class SpinRequest(BaseModel):
-    user_id: str
-    case_type: str = "starter"
-    is_demo: bool = False
-
-class InventoryAction(BaseModel):
-    user_id: str
-    action: str
-    item: dict
-
-class SellItemRequest(BaseModel):
-    user_id: str
-    uid: float
-
-class NewItemRequest(BaseModel):
-    name: str
-    image: str
-    animation: str = ""
-    price: int = 100
-    admin_secret: str
-
-def get_weighted_random_item(items):
-    if not items:
+# Вспомогательная функция выдачи случайного подарка игроку
+def give_random_gift(user_id: int):
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT name, image_url, anim_url FROM gifts")
+    gifts = cursor.fetchall()
+    
+    if not gifts:
+        conn.close()
         return None
-    animated_items = [item for item in items if item.get("animation")]
-    regular_items = [item for item in items if not item.get("animation")]
-
-    if animated_items and regular_items:
-        if random.random() < 0.7:  # 70% шанс для теста
-            return random.choice(animated_items)
-        else:
-            return random.choice(regular_items)
-    return random.choice(items)
-
-# --- API МАРШРУТЫ ДЛЯ МИНИ-ПРИЛОЖЕНИЯ ---
-@app.get("/")
-def serve_frontend():
-    return FileResponse("index.html")
-
-@app.post("/api/init")
-def init_user(data: UserRequest):
-    uid = data.user_id
-    if uid not in users_db:
-        users_db[uid] = {"balance": 200000, "inventory": [], "last_bonus": 0}
-        save_db()
-    return users_db[uid]
-
-@app.post("/api/spin-case")
-def spin_case(data: SpinRequest):
-    uid = data.user_id
-    if uid not in users_db:
-        users_db[uid] = {"balance": 200000, "inventory": [], "last_bonus": 0}
-
-    cost = 100
-    if not data.is_demo and users_db[uid]["balance"] < cost:
-        raise HTTPException(status_code=400, detail="Недостаточно звезд!")
-
-    if not data.is_demo:
-        users_db[uid]["balance"] -= cost
-
-    if not ITEMS_POOL:
-        raise HTTPException(status_code=500, detail="Items pool is empty")
     
-    winning_item = get_weighted_random_item(ITEMS_POOL)
-    save_db()
-    return {"balance": users_db[uid]["balance"], "item": winning_item}
-
-@app.post("/api/spin-wheel")
-def spin_wheel(data: SpinRequest):
-    uid = data.user_id
-    if uid not in users_db:
-        users_db[uid] = {"balance": 200000, "inventory": [], "last_bonus": 0}
-
-    cost = 50
-    if not data.is_demo and users_db[uid]["balance"] < cost:
-        raise HTTPException(status_code=400, detail="Недостаточно звезд!")
-
-    if not data.is_demo:
-        users_db[uid]["balance"] -= cost
-
-    if not ITEMS_POOL:
-        raise HTTPException(status_code=500, detail="Items pool is empty")
+    chosen = random.choice(gifts)
+    gift_name, image_url, anim_url = chosen
     
-    winning_item = get_weighted_random_item(ITEMS_POOL)
-    save_db()
-    return {"balance": users_db[uid]["balance"], "item": winning_item}
-
-@app.post("/api/inventory-action")
-def inventory_action(data: InventoryAction):
-    uid = data.user_id
-    if uid not in users_db:
-        users_db[uid] = {"balance": 200000, "inventory": [], "last_bonus": 0}
+    cursor.execute(
+        "INSERT INTO inventory (user_id, gift_name, image_url, anim_url) VALUES (?, ?, ?, ?)",
+        (user_id, gift_name, image_url, anim_url)
+    )
+    conn.commit()
+    conn.close()
     
-    user = users_db[uid]
-    if data.action == "claim":
-        user["inventory"].append({**data.item, "uid": time.time() * 1000 + random.random()})
-
-    save_db()
-    return {"balance": user["balance"], "inventory": user["inventory"]}
-
-@app.post("/api/sell-inventory-item")
-def sell_inventory_item(data: SellItemRequest):
-    uid = data.user_id
-    if uid not in users_db:
-        users_db[uid] = {"balance": 200000, "inventory": [], "last_bonus": 0}
-    
-    user = users_db[uid]
-    idx = next((i for i, item in enumerate(user["inventory"]) if item["uid"] == data.uid), -1)
-    if idx != -1:
-        item = user["inventory"].pop(idx)
-        user["balance"] += item.get("price", 100)
-
-    save_db()
-    return {"balance": user["balance"], "inventory": user["inventory"]}
-
-@app.post("/api/add-item")
-def api_add_item(data: NewItemRequest):
-    if data.admin_secret != ADMIN_SECRET:
-        raise HTTPException(status_code=403, detail="Неверный секретный ключ!")
-    
-    item = add_new_item_to_pool(data.name, data.image, data.animation, data.price)
-    return {"status": "success", "added_item": item, "total_items": len(ITEMS_POOL)}
+    return gift_name
 
 
-# --- ЛОГИКА TELEGRAM БОТА ---
-@dp.message(Command("start"))
-async def cmd_start(message: types.Message):
-    await message.answer(
-        "👋 Привет! Это панель управления CatRoll.\n\n"
-        "🛠 <b>Добавить предмет в рулетку:</b>\n"
-        "<code>/add Название | Ссылка_картинка | Ссылка_анимация_mp4 | Цена</code>\n\n"
-        "⭐ <b>Купить звездный подарок (15 звёзд):</b>\n"
-        "/buy",
-        parse_mode="HTML"
+# --- Команды Telegram Бота ---
+
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    bot.reply_to(
+        message, 
+        "Привет! Добро пожаловать в игру.\n\n"
+        "• `/buy` — получить бесплатный подарок в инвентарь (тестовый режим)\n"
+        "• `/add Название | Ссылка_на_фото | Ссылка_на_анимацию | Цена` — добавить новый предмет (для админа)",
+        parse_mode="Markdown"
     )
 
-@dp.message(Command("add"))
-async def cmd_add_item(message: types.Message):
-    if ADMIN_ID != 0 and message.from_user.id != ADMIN_ID:
-        await message.answer("❌ У вас нет прав для добавления предметов.")
-        return
-
-    args = message.text.replace("/add", "").strip()
-    parts = [p.strip() for p in args.split("|")]
-
-    if len(parts) < 4:
-        await message.answer(
-            "⚠️ Неверный формат!\n"
-            "Используйте: <code>/add Название | Картинка | Анимация | Цена</code>",
-            parse_mode="HTML"
-        )
-        return
-
-    name, image, animation, price_str = parts[0], parts[1], parts[2], parts[3]
-
-    try:
-        price = int(price_str)
-    except ValueError:
-        await message.answer("⚠️ Цена должна быть целым числом!")
-        return
-
-    try:
-        item = add_new_item_to_pool(name, image, animation, price)
-        await message.answer(
-            f"✅ <b>Предмет успешно добавлен в игру!</b>\n\n"
-            f"🎁 <b>Название:</b> {item['name']}\n"
-            f"💰 <b>Цена:</b> {item['price']} ⭐\n"
-            f"📦 <b>Всего предметов в пуле:</b> {len(ITEMS_POOL)}",
-            parse_mode="HTML"
-        )
-    except Exception as e:
-        await message.answer(f"❌ Ошибка при добавлении: {e}")
-
-# Команда для отправки счета на оплату за Telegram Stars (XTR)
-@dp.message(Command("buy"))
-async def cmd_buy(message: types.Message):
-    prices = [LabeledPrice(label="Подарок в CatRoll", amount=15)]
-    await message.bot.send_invoice(
-        chat_id=message.chat.id,
-        title="Покупка подарка",
-        description="Случайный подарок в рулетке CatRoll за 15 Telegram Stars",
-        payload="gift_case_15",
-        currency="XTR",
-        prices=prices
-    )
-
-@dp.pre_checkout_query()
-async def process_pre_checkout_query(pre_checkout_query: types.PreCheckoutQuery):
-    await pre_checkout_query.bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True)
-
-# Автоматическая обработка успешного платежа и выдача подарка в инвентарь
-@dp.message(F.successful_payment)
-async def success_payment(message: types.Message):
-    uid = str(message.from_user.id)
-    if uid not in users_db:
-        users_db[uid] = {"balance": 200000, "inventory": [], "last_bonus": 0}
+@bot.message_handler(commands=['buy'])
+def handle_buy_free(message):
+    """Тестовая команда без оплаты звёздами"""
+    user_id = message.from_user.id
+    gift_name = give_random_gift(user_id)
     
-    if ITEMS_POOL:
-        won_item = random.choice(ITEMS_POOL)
-        item_with_uid = {**won_item, "uid": time.time() * 1000 + random.random()}
-        users_db[uid]["inventory"].append(item_with_uid)
-        save_db()
-        
-        await message.answer(
-            f"🎉 <b>Оплата прошла успешно!</b>\n\n"
-            f"🎁 Вы получили подарок: <b>{won_item['name']}</b>\n"
-            f"Он уже добавлен в ваш инвентарь в игре!",
-            parse_mode="HTML"
-        )
+    if not gift_name:
+        bot.send_message(message.chat.id, "❌ В базе данных пока нет доступных подарков. Добавьте их через `/add`.")
     else:
-        await message.answer("🎉 Оплата прошла успешно, но пул предметов пуст!")
+        bot.send_message(
+            message.chat.id, 
+            f"🎉 Вы бесплатно получили подарок: **{gift_name}**!\n"
+            f"Он уже добавлен в ваш инвентарь в Mini App.",
+            parse_mode="Markdown"
+        )
+
+@bot.message_handler(commands=['add'])
+def handle_add_gift(message):
+    """Добавление нового подарка в базу данных"""
+    try:
+        text = message.text.replace('/add', '').strip()
+        parts = [p.strip() for p in text.split('|')]
+        
+        if len(parts) != 4:
+            bot.reply_to(message, "⚠️ Неверный формат!\nИспользуйте: `/add Название | Ссылка_на_картинку | Ссылка_на_анимацию | Цена`")
+            return
+            
+        name, image_url, anim_url, price = parts[0], parts[1], parts[2], int(parts[3])
+        
+        conn = sqlite3.connect("database.db")
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO gifts (name, image_url, anim_url, price) VALUES (?, ?, ?, ?)",
+            (name, image_url, anim_url, price)
+        )
+        conn.commit()
+        conn.close()
+        
+        bot.reply_to(message, f"✅ Подарок **{name}** успешно добавлен в игру!", parse_mode="Markdown")
+    except Exception as e:
+        bot.reply_to(message, f"❌ Ошибка при добавлении: {e}")
+
+
+# --- API Маршруты для Mini App ---
+
+@app.get("/")
+def read_root():
+    return FileResponse("static/index.html")
+
+@app.get("/api/gifts")
+def get_gifts():
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, name, image_url, anim_url, price FROM gifts")
+    rows = cursor.fetchall()
+    conn.close()
+    
+    return [
+        {"id": r[0], "name": r[1], "image_url": r[2], "anim_url": r[3], "price": r[4]}
+        for r in rows
+    ]
+
+@app.get("/api/inventory/{user_id}")
+def get_inventory(user_id: int):
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, gift_name, image_url, anim_url FROM inventory WHERE user_id = ?", (user_id,))
+    rows = cursor.fetchall()
+    conn.close()
+    
+    return [
+        {"id": r[0], "gift_name": r[1], "image_url": r[2], "anim_url": r[3]}
+        for r in rows
+    ]
