@@ -7,14 +7,17 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg-color: #0b0b0d;
-            --card-bg: #16161a;
+            --bg-color: #08080a;
+            --card-bg: rgba(22, 22, 28, 0.75);
+            --card-border: rgba(255, 255, 255, 0.08);
             --accent-color: #ffffff;
-            --border-color: #26262e;
-            --text-secondary: #8a8a9e;
-            --gold: #f39c12;
+            --text-secondary: #8e8e9f;
+            --gold: #ffb800;
+            --gold-glow: rgba(255, 184, 0, 0.25);
             --green: #2ecc71;
-            --red: #e74c3c;
+            --green-glow: rgba(46, 204, 113, 0.25);
+            --purple-accent: #6c5ce7;
+            --purple-glow: rgba(108, 92, 231, 0.35);
         }
 
         * {
@@ -22,143 +25,172 @@
             margin: 0;
             padding: 0;
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(108, 92, 231, 0.15) 0%, transparent 60%),
+                radial-gradient(circle at 100% 100%, rgba(255, 184, 0, 0.05) 0%, transparent 50%);
             color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
             padding: 16px;
-            padding-bottom: 80px;
+            padding-bottom: 90px;
         }
 
+        /* Шапка */
         .header {
             width: 100%;
             max-width: 360px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
 
         .logo {
             font-size: 20px;
-            font-weight: 800;
+            font-weight: 900;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             letter-spacing: -0.5px;
         }
 
-        /* Минималистичный геометрический знак вместо эмодзи кота */
         .logo-icon {
-            width: 24px;
-            height: 24px;
-            background: linear-gradient(135deg, #ffffff, #777788);
-            border-radius: 6px;
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 13px;
-            color: #000;
+            font-size: 15px;
+            color: #fff;
             font-weight: 900;
-            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 15px var(--purple-glow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
 
         .lang-btn, .inventory-btn-top {
             background: var(--card-bg);
-            border: 1px solid var(--border-color);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
             color: #fff;
-            padding: 6px 10px;
-            border-radius: 20px;
+            padding: 8px 12px;
+            border-radius: 14px;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .lang-btn:active, .inventory-btn-top:active {
+            transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.1);
         }
 
         .balance-pill {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 6px 12px;
-            border-radius: 20px;
+            background: rgba(255, 184, 0, 0.1);
+            border: 1px solid rgba(255, 184, 0, 0.3);
+            padding: 7px 14px;
+            border-radius: 14px;
             font-size: 14px;
-            font-weight: 700;
+            font-weight: 800;
             display: flex;
             align-items: center;
             gap: 6px;
+            color: var(--gold);
+            box-shadow: 0 4px 15px var(--gold-glow);
         }
 
+        /* Экраны */
         .screen {
             width: 100%;
             max-width: 360px;
             display: none;
             flex-direction: column;
             align-items: center;
+            animation: fadeIn 0.3s ease;
         }
 
         .screen.active {
             display: flex;
         }
 
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .menu-title {
-            font-size: 22px;
-            font-weight: 800;
-            margin: 10px 0 6px 0;
+            font-size: 24px;
+            font-weight: 900;
+            margin: 10px 0 4px 0;
             text-align: center;
+            letter-spacing: -0.5px;
         }
 
         .menu-subtitle {
             font-size: 13px;
             color: var(--text-secondary);
-            margin-bottom: 20px;
+            margin-bottom: 22px;
             text-align: center;
         }
 
+        /* Карточки режимов */
         .mode-card {
             width: 100%;
             background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 18px;
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 22px;
+            padding: 16px;
             margin-bottom: 12px;
             cursor: pointer;
-            transition: transform 0.15s, border-color 0.2s;
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
             display: flex;
             align-items: center;
             gap: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
         }
 
         .mode-card:active {
-            transform: scale(0.98);
-            border-color: #ffffff;
+            transform: scale(0.97);
+            border-color: rgba(255, 255, 255, 0.25);
         }
 
         .mode-card.inventory-main-card {
-            border-color: #333344;
-            background: #121217;
+            background: linear-gradient(135deg, rgba(22, 22, 30, 0.8), rgba(15, 15, 20, 0.9));
+        }
+
+        .daily-bonus-card {
+            background: linear-gradient(135deg, rgba(108, 92, 231, 0.25), rgba(22, 22, 28, 0.8));
+            border: 1px solid rgba(108, 92, 231, 0.4);
+            box-shadow: 0 8px 25px var(--purple-glow);
         }
 
         .mode-icon {
-            font-size: 28px;
-            background: #111115;
-            width: 54px;
-            height: 54px;
+            width: 52px;
+            height: 52px;
             border-radius: 16px;
+            background: rgba(255, 255, 255, 0.05);
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid var(--border-color);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             flex-shrink: 0;
         }
 
@@ -166,48 +198,51 @@
             width: 32px;
             height: 32px;
             object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
         }
 
         .mode-info h3 {
-            font-size: 15px;
-            font-weight: 700;
+            font-size: 16px;
+            font-weight: 800;
         }
 
         .mode-info p {
             font-size: 12px;
             color: var(--text-secondary);
-            margin-top: 4px;
-        }
-
-        .daily-bonus-card {
-            background: linear-gradient(135deg, #1f1f2e, #16161a);
-            border-color: #4a4ae2;
+            margin-top: 3px;
         }
 
         .back-btn {
             align-self: flex-start;
-            background: none;
-            border: none;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 8px 14px;
             color: var(--text-secondary);
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 13px;
+            font-weight: 700;
             cursor: pointer;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            margin-bottom: 16px;
+            transition: all 0.2s;
         }
 
+        .back-btn:active {
+            transform: scale(0.95);
+            color: #fff;
+        }
+
+        /* Настройки */
         .settings-panel {
             width: 100%;
             background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 10px 14px;
-            margin-bottom: 12px;
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
         }
 
         .toggle-row {
@@ -215,19 +250,19 @@
             justify-content: space-between;
             align-items: center;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text-secondary);
         }
 
         .toggle-row span {
-            color: #fff;
+            color: #e1e1e6;
         }
 
         .switch {
             position: relative;
             display: inline-block;
-            width: 36px;
-            height: 20px;
+            width: 40px;
+            height: 22px;
         }
 
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -236,56 +271,101 @@
             position: absolute;
             cursor: pointer;
             top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #26262e;
+            background-color: #1f1f28;
             transition: .3s;
             border-radius: 20px;
+            border: 1px solid var(--card-border);
         }
 
         .slider:before {
             position: absolute;
             content: "";
-            height: 14px;
-            width: 14px;
-            left: 3px;
-            bottom: 3px;
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
             background-color: white;
             transition: .3s;
             border-radius: 50%;
         }
 
         input:checked + .slider { background-color: var(--green); }
-        input:checked + .slider:before { transform: translateX(16px); }
+        input:checked + .slider:before { transform: translateX(18px); }
 
+        /* Табы кейсов */
+        .cases-selector {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            margin-bottom: 16px;
+        }
+
+        .case-tab {
+            flex: 1;
+            text-align: center;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-secondary);
+            padding: 10px;
+            border-radius: 14px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .case-tab.active {
+            background: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Рулетка (Классика) */
         .case-container {
             width: 100%;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
+            background: rgba(14, 14, 18, 0.9);
+            border: 1px solid var(--card-border);
             border-radius: 24px;
-            padding: 20px;
+            padding: 18px;
             position: relative;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8), 0 10px 30px rgba(0,0,0,0.5);
             margin-bottom: 16px;
         }
 
         .roulette-wrapper {
             position: relative;
             width: 100%;
-            height: 110px;
+            height: 115px;
             overflow: hidden;
-            border-radius: 16px;
-            background: #0d0d10;
-            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            background: #09090c;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.9);
         }
 
+        /* Неоновый индикатор рулетки */
         .pointer {
             position: absolute;
             top: 0; left: 50%;
             transform: translateX(-50%);
             width: 3px; height: 100%;
-            background: #ff3b30;
+            background: linear-gradient(to bottom, #ff3b30, #ff9500);
+            box-shadow: 0 0 12px #ff3b30, 0 0 20px #ff3b30;
             z-index: 10;
         }
+
+        .pointer::before, .pointer::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0; height: 0;
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+        }
+        .pointer::before { top: 0; border-top: 10px solid #ff3b30; }
+        .pointer::after { bottom: 0; border-bottom: 10px solid #ff3b30; }
 
         .roulette-track {
             display: flex;
@@ -298,72 +378,126 @@
 
         .item-card {
             min-width: 90px;
-            height: 90px;
+            height: 95px;
             margin: 0 5px;
-            background: #1c1c22;
-            border-radius: 12px;
+            background: linear-gradient(145deg, #16161e, #111116);
+            border-radius: 14px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border: 1px solid var(--border-color);
-            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
-        .item-card img { width: 44px; height: 44px; object-fit: contain; }
-        .item-card .name { font-size: 9px; color: var(--text-secondary); margin-top: 2px; font-weight: 600; text-align: center; }
-        .item-card .price-tag { font-size: 10px; color: var(--gold); font-weight: 700; margin-top: 2px; }
+        .item-card img { 
+            width: 44px; 
+            height: 44px; 
+            object-fit: contain; 
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
+        }
 
-        .cases-selector {
+        .item-card .name { 
+            font-size: 9px; 
+            color: var(--text-secondary); 
+            margin-top: 4px; 
+            font-weight: 700; 
+            text-align: center; 
+        }
+
+        .item-card .price-tag { 
+            font-size: 10px; 
+            color: var(--gold); 
+            font-weight: 800; 
+            margin-top: 2px; 
+        }
+
+        /* Колесо Фортуны */
+        .wheel-box {
+            position: relative; 
+            width: 250px; 
+            height: 250px; 
+            margin: 10px 0 20px 0;
             display: flex;
-            gap: 8px;
-            width: 100%;
-            margin-bottom: 12px;
-            overflow-x: auto;
+            align-items: center;
+            justify-content: center;
         }
 
-        .case-tab {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            padding: 8px 14px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: 0.2s;
+        .wheel-pointer {
+            position: absolute; 
+            top: -12px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: 0; height: 0; 
+            border-left: 12px solid transparent; 
+            border-right: 12px solid transparent; 
+            border-top: 22px solid #ff3b30; 
+            filter: drop-shadow(0 2px 8px rgba(255, 59, 48, 0.8));
+            z-index: 20;
         }
 
-        .case-tab.active { background: #ffffff; color: #000000; border-color: #ffffff; }
+        .wheel {
+            width: 100%; 
+            height: 100%; 
+            border-radius: 50%; 
+            border: 6px solid #1c1c24; 
+            position: relative; 
+            overflow: hidden; 
+            transition: transform 5s cubic-bezier(0.1, 1, 0.1, 1); 
+            box-shadow: 0 0 30px rgba(0,0,0,0.8), inset 0 0 15px rgba(0,0,0,0.8);
+            background: conic-gradient(
+                #181822 0deg 51.4deg, 
+                #222230 51.4deg 102.8deg, 
+                #181822 102.8deg 154.2deg, 
+                #222230 154.2deg 205.6deg, 
+                #181822 205.6deg 257deg, 
+                #222230 257deg 308.4deg, 
+                #181822 308.4deg 360deg
+            );
+        }
 
+        /* Центр колеса */
+        .wheel-center-cap {
+            position: absolute;
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #2a2a36, #121218);
+            border: 2px solid var(--purple-accent);
+            border-radius: 50%;
+            z-index: 15;
+            box-shadow: 0 0 15px var(--purple-glow);
+        }
+
+        /* Инвентарь */
         .inventory-controls {
             width: 100%;
             display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
+            gap: 10px;
+            margin-bottom: 16px;
         }
 
         .search-input {
             flex: 1;
             background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 8px 12px;
-            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            padding: 10px 14px;
+            border-radius: 14px;
             color: #fff;
             font-size: 13px;
             outline: none;
+            backdrop-filter: blur(10px);
         }
 
         .sort-select {
             background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 8px 10px;
-            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            padding: 10px 12px;
+            border-radius: 14px;
             color: #fff;
             font-size: 13px;
             outline: none;
             cursor: pointer;
+            backdrop-filter: blur(10px);
         }
 
         .inventory-grid {
@@ -371,65 +505,81 @@
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
             width: 100%;
-            margin-top: 4px;
         }
 
         .inventory-card {
             background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
             padding: 14px;
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
-        .inventory-card img { width: 48px; height: 48px; object-fit: contain; margin-bottom: 6px; }
-        .inventory-card .name { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
-        .inventory-card .price { font-size: 11px; color: var(--gold); font-weight: 600; margin-bottom: 8px; }
+        .inventory-card img { 
+            width: 52px; height: 52px; 
+            object-fit: contain; 
+            margin-bottom: 8px; 
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+        }
+
+        .inventory-card .name { font-size: 12px; font-weight: 800; margin-bottom: 2px; }
+        .inventory-card .price { font-size: 11px; color: var(--gold); font-weight: 800; margin-bottom: 10px; }
         .inventory-card .sell-btn {
-            background: #22222a;
-            border: 1px solid var(--border-color);
+            background: rgba(46, 204, 113, 0.12);
+            border: 1px solid rgba(46, 204, 113, 0.3);
             color: var(--green);
-            padding: 6px 10px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 700;
+            padding: 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 800;
             cursor: pointer;
             width: 100%;
+            transition: all 0.2s;
+        }
+
+        .inventory-card .sell-btn:active {
+            transform: scale(0.95);
+            background: var(--green);
+            color: #000;
         }
 
         .empty-inv {
             color: var(--text-secondary);
             font-size: 13px;
-            margin-top: 30px;
+            margin-top: 40px;
             text-align: center;
         }
 
+        /* Лента побед */
         .live-feed {
             width: 100%;
             background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 12px;
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 14px;
             margin-top: 16px;
         }
 
         .live-feed-title {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-secondary);
-            margin-bottom: 8px;
-            font-weight: 700;
+            margin-bottom: 10px;
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
         }
 
         .feed-list {
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            max-height: 120px;
+            gap: 8px;
+            max-height: 130px;
             overflow-y: auto;
         }
 
@@ -438,76 +588,122 @@
             align-items: center;
             justify-content: space-between;
             font-size: 12px;
-            background: #111115;
-            padding: 6px 10px;
-            border-radius: 10px;
-            border: 1px solid #1f1f26;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
         }
 
-        .feed-user { color: var(--text-secondary); font-family: monospace; }
-        .feed-user .blurred { filter: blur(4px); user-select: none; color: #aaa; }
-        .feed-prize { color: var(--gold); font-weight: 600; display: flex; align-items: center; gap: 4px; }
-        .feed-prize img { width: 14px; height: 14px; object-fit: contain; }
+        .feed-user { color: var(--text-secondary); font-family: monospace; font-weight: 600; }
+        .feed-user .blurred { filter: blur(4px); user-select: none; color: #888; }
+        .feed-prize { color: var(--gold); font-weight: 700; display: flex; align-items: center; gap: 6px; }
+        .feed-prize img { width: 16px; height: 16px; object-fit: contain; }
 
+        /* Нижняя плавающая кнопка */
         .actions {
             width: 100%;
             max-width: 360px;
             position: fixed;
-            bottom: 16px;
+            bottom: 20px;
             padding: 0 16px;
             z-index: 50;
         }
 
         .spin-btn {
             width: 100%;
-            background: var(--accent-color);
-            color: #000;
+            background: #ffffff;
+            color: #000000;
             border: none;
-            padding: 15px;
-            border-radius: 16px;
-            font-size: 15px;
-            font-weight: 700;
+            padding: 16px;
+            border-radius: 18px;
+            font-size: 16px;
+            font-weight: 900;
             cursor: pointer;
-            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 6px 25px rgba(255, 255, 255, 0.25);
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
-        .spin-btn:active { transform: scale(0.98); }
-        .spin-btn:disabled { background: #333; color: #666; cursor: not-allowed; }
+        .spin-btn:active { transform: scale(0.97); }
+        .spin-btn:disabled { 
+            background: #22222c; 
+            color: #555566; 
+            box-shadow: none; 
+            cursor: not-allowed; 
+        }
 
+        /* Модалка выигрыша */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
             display: none;
             align-items: center;
             justify-content: center;
             z-index: 100;
             padding: 20px;
+            animation: fadeIn 0.2s ease;
         }
 
         .modal-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 24px;
+            background: linear-gradient(145deg, #1c1c26, #12121a);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 28px;
+            padding: 28px;
             width: 100%;
             max-width: 320px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 30px var(--purple-glow);
+            animation: modalScale 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .win-icon img { width: 72px; height: 72px; object-fit: contain; margin-bottom: 8px; }
-        .win-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
-        .win-price { font-size: 16px; color: var(--gold); font-weight: 700; margin-bottom: 20px; }
+        @keyframes modalScale {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .win-icon img { 
+            width: 80px; height: 80px; 
+            object-fit: contain; 
+            margin-bottom: 12px; 
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.5));
+        }
+
+        .win-title { font-size: 22px; font-weight: 900; margin-bottom: 4px; }
+        .win-price { font-size: 16px; color: var(--gold); font-weight: 800; margin-bottom: 24px; }
 
         .modal-btns { display: flex; flex-direction: column; gap: 10px; }
-        .btn-sell { background: var(--green); color: #fff; border: none; padding: 14px; border-radius: 14px; font-size: 15px; font-weight: 700; cursor: pointer; }
-        .btn-keep { background: #22222a; color: #fff; border: 1px solid var(--border-color); padding: 14px; border-radius: 14px; font-size: 15px; font-weight: 600; cursor: pointer; }
+        .btn-sell { 
+            background: var(--green); 
+            color: #000; 
+            border: none; 
+            padding: 15px; 
+            border-radius: 16px; 
+            font-size: 15px; 
+            font-weight: 900; 
+            cursor: pointer; 
+            box-shadow: 0 4px 20px var(--green-glow);
+            transition: transform 0.15s;
+        }
+        .btn-sell:active { transform: scale(0.96); }
+
+        .btn-keep { 
+            background: rgba(255, 255, 255, 0.06); 
+            color: #fff; 
+            border: 1px solid var(--card-border); 
+            padding: 15px; 
+            border-radius: 16px; 
+            font-size: 15px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: transform 0.15s;
+        }
+        .btn-keep:active { transform: scale(0.96); }
     </style>
 </head>
 <body>
 
-    <!-- Шапка с названием CatRoll и знаком ❖ -->
+    <!-- Шапка -->
     <div class="header">
         <div class="logo" onclick="showScreen('menuScreen')">
             <div class="logo-icon">❖</div> CatRoll
@@ -619,10 +815,10 @@
             </div>
         </div>
 
-        <div class="wheel-box" style="position:relative; width:240px; height:240px; margin:10px 0 20px 0;">
-            <div class="wheel-pointer" style="position:absolute; top:-12px; left:50%; transform:translateX(-50%); width:0; height:0; border-left:12px solid transparent; border-right:12px solid transparent; border-top:20px solid #ff3b30; z-index:20;"></div>
-            <div class="wheel" id="wheelTrack" style="width:100%; height:100%; border-radius:50%; border:4px solid var(--border-color); position:relative; overflow:hidden; transition: transform 5s cubic-bezier(0.1, 1, 0.1, 1); background:conic-gradient(#1e1e24 0deg 51.4deg, #2a2a34 51.4deg 102.8deg, #1e1e24 102.8deg 154.2deg, #2a2a34 154.2deg 205.6deg, #1e1e24 205.6deg 257deg, #2a2a34 257deg 308.4deg, #1e1e24 308.4deg 360deg);">
-            </div>
+        <div class="wheel-box">
+            <div class="wheel-pointer"></div>
+            <div class="wheel-center-cap"></div>
+            <div class="wheel" id="wheelTrack"></div>
         </div>
     </div>
 
@@ -966,8 +1162,8 @@
                 label.style.top = '50%';
                 label.style.left = '50%';
                 label.style.transformOrigin = '0 0';
-                label.style.transform = `rotate(${index * 51.4}deg) translate(65px, -15px)`;
-                label.innerHTML = `<img src="${item.image}" style="width:26px; height:26px; object-fit:contain;">`;
+                label.style.transform = `rotate(${index * 51.4}deg) translate(68px, -15px)`;
+                label.innerHTML = `<img src="${item.image}" style="width:28px; height:28px; object-fit:contain; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">`;
                 wheelTrack.appendChild(label);
             });
         }
@@ -1175,4 +1371,4 @@
         setLanguage(currentLang);
     </script>
 </body>
-</html>>
+</html>
