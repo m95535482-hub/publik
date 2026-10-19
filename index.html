@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CatRoll — Cases & NFT</title>
-    <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- FontAwesome & Canvas Confetti -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
@@ -24,7 +22,6 @@
             --green-glow: rgba(46, 204, 113, 0.35);
             --purple-accent: #6c5ce7;
             --purple-bright: #a29bfe;
-            --red-glow: rgba(255, 59, 48, 0.5);
         }
 
         * {
@@ -104,11 +101,6 @@
             font-weight: 800;
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-
-        .lang-btn:active {
-            transform: scale(0.94);
-            background: rgba(255, 255, 255, 0.15);
         }
 
         .balance-pill {
@@ -215,10 +207,7 @@
             font-weight: 700;
             cursor: pointer;
             margin-bottom: 16px;
-            transition: all 0.2s;
         }
-
-        .back-btn:active { transform: scale(0.95); color: #fff; }
 
         .controls-row {
             display: flex;
@@ -263,10 +252,7 @@
         .slider:before {
             position: absolute;
             content: "";
-            height: 16px;
-            width: 16px;
-            left: 3px;
-            bottom: 2px;
+            height: 16px; width: 16px; left: 3px; bottom: 2px;
             background-color: white;
             transition: .3s;
             border-radius: 50%;
@@ -278,364 +264,124 @@
         .skip-btn-mini {
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #fff;
-            padding: 5px 10px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
+            color: #fff; padding: 5px 10px; border-radius: 10px; font-size: 11px; font-weight: 700; cursor: pointer;
         }
 
         .cases-selector {
-            display: flex;
-            gap: 8px;
-            width: 100%;
-            margin-bottom: 16px;
+            display: flex; gap: 8px; width: 100%; margin-bottom: 16px;
         }
 
         .case-tab {
-            flex: 1;
-            text-align: center;
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            color: var(--text-secondary);
-            padding: 10px;
-            border-radius: 14px;
-            font-size: 13px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all 0.25s;
+            flex: 1; text-align: center; background: var(--card-bg); border: 1px solid var(--card-border);
+            color: var(--text-secondary); padding: 10px; border-radius: 14px; font-size: 13px; font-weight: 800; cursor: pointer;
         }
-
-        .case-tab.active {
-            background: linear-gradient(135deg, #ffffff, #dcdde1);
-            color: #000000;
-            border-color: #ffffff;
-            box-shadow: 0 4px 18px rgba(255, 255, 255, 0.3);
-        }
+        .case-tab.active { background: linear-gradient(135deg, #ffffff, #dcdde1); color: #000; border-color: #fff; }
 
         .case-container {
-            width: 100%;
-            background: rgba(12, 12, 18, 0.95);
-            border: 1px solid var(--card-border);
-            border-radius: 24px;
-            padding: 18px;
-            position: relative;
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.95), 0 10px 30px rgba(0,0,0,0.6);
-            margin-bottom: 18px;
+            width: 100%; background: rgba(12, 12, 18, 0.95); border: 1px solid var(--card-border);
+            border-radius: 24px; padding: 18px; position: relative; margin-bottom: 18px;
         }
 
         .roulette-wrapper {
-            position: relative;
-            width: 100%;
-            height: 120px;
-            overflow: hidden;
-            border-radius: 18px;
-            background: #060608;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative; width: 100%; height: 120px; overflow: hidden; border-radius: 18px; background: #060608; border: 1px solid rgba(255,255,255,0.08);
         }
 
         .pointer {
-            position: absolute;
-            top: 0; left: 50%;
-            transform: translateX(-50%);
-            width: 4px; height: 100%;
-            background: linear-gradient(to bottom, #ff3b30, #ff9500);
-            box-shadow: 0 0 16px #ff3b30;
-            z-index: 10;
-            border-radius: 2px;
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 4px; height: 100%;
+            background: linear-gradient(to bottom, #ff3b30, #ff9500); box-shadow: 0 0 16px #ff3b30; z-index: 10; border-radius: 2px;
         }
-
-        .pointer::before, .pointer::after {
-            content: '';
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0; height: 0;
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-        }
-        .pointer::before { top: 0; border-top: 12px solid #ff3b30; }
-        .pointer::after { bottom: 0; border-bottom: 12px solid #ff3b30; }
+        .pointer::before { content: ''; position: absolute; left: -6px; top: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 12px solid #ff3b30; }
 
         .roulette-track {
-            display: flex;
-            align-items: center;
-            position: absolute;
-            left: 0; top: 0;
-            height: 100%;
+            display: flex; align-items: center; position: absolute; left: 0; top: 0; height: 100%;
             transition: transform 5s cubic-bezier(0.1, 1, 0.1, 1);
         }
 
         .item-card {
-            min-width: 95px;
-            height: 100px;
-            margin: 0 6px;
-            background: linear-gradient(145deg, #181824, #101018);
-            border-radius: 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            min-width: 95px; height: 100px; margin: 0 6px; background: linear-gradient(145deg, #181824, #101018);
+            border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center;
             border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 6px 14px rgba(0,0,0,0.4);
         }
-
         .item-card .icon { font-size: 34px; }
         .item-card .name { font-size: 10px; color: var(--text-secondary); margin-top: 6px; font-weight: 700; text-align: center; }
         .item-card .price-tag { font-size: 11px; color: var(--gold); font-weight: 800; margin-top: 2px; }
 
+        /* КОЛЕСО ФОРТУНЫ СЕКТОРАМИ ПО КРУГУ */
         .wheel-box {
-            position: relative; 
-            width: 260px; 
-            height: 260px; 
-            margin: 10px 0 22px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: relative; width: 260px; height: 260px; margin: 10px 0 22px 0;
+            display: flex; align-items: center; justify-content: center;
         }
-
         .wheel-pointer {
-            position: absolute; 
-            top: -14px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            width: 0; height: 0; 
-            border-left: 14px solid transparent; 
-            border-right: 14px solid transparent; 
-            border-top: 24px solid #ff3b30; 
-            filter: drop-shadow(0 4px 14px rgba(255, 59, 48, 0.95));
-            z-index: 20;
+            position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 0; height: 0;
+            border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 24px solid #ff3b30;
+            filter: drop-shadow(0 4px 14px rgba(255, 59, 48, 0.95)); z-index: 20;
         }
-
         .wheel {
-            width: 100%; 
-            height: 100%; 
-            border-radius: 50%; 
-            border: 7px solid #1a1a26; 
-            position: relative; 
-            overflow: hidden; 
-            transition: transform 5s cubic-bezier(0.1, 1, 0.1, 1); 
-            box-shadow: 0 0 40px rgba(0,0,0,0.9);
+            width: 100%; height: 100%; border-radius: 50%; border: 7px solid #1a1a26; position: relative; overflow: hidden;
+            transition: transform 5s cubic-bezier(0.1, 1, 0.1, 1); box-shadow: 0 0 40px rgba(0,0,0,0.9);
         }
-
         .wheel-slice {
-            position: absolute;
-            width: 50%;
-            height: 50%;
-            top: 0;
-            left: 50%;
-            transform-origin: 0% 100%;
-            pointer-events: none;
-            display: flex;
-            justify-content: center;
+            position: absolute; width: 50%; height: 50%; top: 0; left: 50%; transform-origin: 0% 100%; pointer-events: none; display: flex; justify-content: center;
         }
-
         .wheel-slice-content {
-            position: absolute;
-            left: 50%;
-            top: 30%;
-            transform: translate(-50%, -50%) rotate(calc(var(--item-angle) * 1deg));
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 60px;
-            text-align: center;
+            position: absolute; left: 50%; top: 28%; transform: translate(-50%, -50%) rotate(calc(var(--item-angle) * 1deg));
+            display: flex; flex-direction: column; align-items: center; justify-content: center; width: 50px; text-align: center;
         }
-
         .wheel-center-cap {
-            position: absolute;
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #2c2c3d, #121218);
-            border: 3px solid var(--purple-accent);
-            border-radius: 50%;
-            z-index: 15;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 16px;
+            position: absolute; width: 48px; height: 48px; background: linear-gradient(135deg, #2c2c3d, #121218);
+            border: 3px solid var(--purple-accent); border-radius: 50%; z-index: 15; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px;
         }
 
         .action-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, var(--purple-accent), var(--purple-bright));
-            border: none;
-            border-radius: 18px;
-            color: #fff;
-            font-weight: 900;
-            font-size: 16px;
-            cursor: pointer;
+            width: 100%; padding: 15px; background: linear-gradient(135deg, var(--purple-accent), var(--purple-bright));
+            border: none; border-radius: 18px; color: #fff; font-weight: 900; font-size: 16px; cursor: pointer;
             box-shadow: 0 8px 25px var(--accent-glow);
-            transition: all 0.25s;
         }
-
         .action-btn:active { transform: scale(0.96); opacity: 0.9; }
 
-        .inventory-controls {
-            width: 100%;
-            display: flex;
-            gap: 10px;
-            margin-bottom: 16px;
-        }
-
+        .inventory-controls { width: 100%; display: flex; gap: 10px; margin-bottom: 16px; }
         .search-input, .sort-select {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            padding: 12px 14px;
-            border-radius: 14px;
-            color: #fff;
-            font-size: 13px;
-            outline: none;
-            backdrop-filter: blur(14px);
+            background: var(--card-bg); border: 1px solid var(--card-border); padding: 12px 14px; border-radius: 14px; color: #fff; font-size: 13px; outline: none;
         }
         .search-input { flex: 1; }
 
-        .inventory-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            width: 100%;
-        }
-
+        .inventory-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%; }
         .inventory-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--card-border);
-            border-radius: 20px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
+            background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 16px;
+            display: flex; flex-direction: column; align-items: center; text-align: center;
         }
-
         .inventory-card .icon { font-size: 42px; margin-bottom: 8px; }
         .inventory-card .name { font-size: 13px; font-weight: 800; margin-bottom: 3px; }
         .inventory-card .price { font-size: 12px; color: var(--gold); font-weight: 800; margin-bottom: 10px; }
 
-        .inventory-actions {
-            display: flex;
-            gap: 6px;
-            width: 100%;
-        }
-
+        .inventory-actions { display: flex; gap: 6px; width: 100%; }
         .sell-btn, .withdraw-btn {
-            padding: 8px 4px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 800;
-            cursor: pointer;
-            flex: 1;
-            border: 1px solid;
-            transition: all 0.2s;
+            padding: 8px 4px; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer; flex: 1; border: 1px solid;
         }
-        .sell-btn {
-            background: rgba(46, 204, 113, 0.15);
-            border-color: rgba(46, 204, 113, 0.4);
-            color: var(--green);
-        }
-        .withdraw-btn {
-            background: rgba(108, 92, 231, 0.15);
-            border-color: rgba(108, 92, 231, 0.4);
-            color: var(--purple-bright);
-        }
-        .withdraw-btn:disabled {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.1);
-            color: var(--text-secondary);
-            cursor: not-allowed;
-        }
+        .sell-btn { background: rgba(46, 204, 113, 0.15); border-color: rgba(46, 204, 113, 0.4); color: var(--green); }
+        .withdraw-btn { background: rgba(108, 92, 231, 0.15); border-color: rgba(108, 92, 231, 0.4); color: var(--purple-bright); }
+        .withdraw-btn:disabled { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: var(--text-secondary); cursor: not-allowed; }
 
-        .live-feed {
-            width: 100%;
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 22px;
-            padding: 16px;
-            margin-top: 16px;
-        }
-
-        .live-feed-title {
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-            font-weight: 800;
-            text-transform: uppercase;
-        }
-
-        .feed-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            max-height: 135px;
-            overflow-y: auto;
-        }
-
-        .feed-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 12px;
-            color: var(--text-secondary);
-            background: rgba(0,0,0,0.25);
-            padding: 8px 12px;
-            border-radius: 12px;
-        }
+        .live-feed { width: 100%; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 22px; padding: 16px; margin-top: 16px; }
+        .live-feed-title { font-size: 11px; color: var(--text-secondary); margin-bottom: 12px; font-weight: 800; text-transform: uppercase; }
+        .feed-list { display: flex; flex-direction: column; gap: 8px; max-height: 135px; overflow-y: auto; }
+        .feed-item { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--text-secondary); background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 12px; }
 
         .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(14px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            padding: 20px;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(14px);
+            display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px;
         }
-
         .modal-overlay.active { display: flex; }
-
         .modal-card {
-            background: linear-gradient(145deg, #181824, #0f0f16);
-            border: 1px solid var(--card-border);
-            border-radius: 28px;
-            padding: 24px;
-            width: 100%;
-            max-width: 320px;
-            text-align: center;
+            background: linear-gradient(145deg, #181824, #0f0f16); border: 1px solid var(--card-border); border-radius: 28px; padding: 24px; width: 100%; max-width: 320px; text-align: center;
         }
-
         .modal-icon { font-size: 64px; margin: 14px 0; }
 
         .bottom-nav {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            background: rgba(10, 10, 14, 0.92);
-            backdrop-filter: blur(22px);
-            border-top: 1px solid var(--card-border);
-            padding: 10px 24px 14px 24px;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 50;
+            position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10, 10, 14, 0.92); backdrop-filter: blur(22px);
+            border-top: 1px solid var(--card-border); padding: 10px 24px 14px 24px; display: flex; justify-content: space-around; align-items: center; z-index: 50;
         }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            color: var(--text-secondary);
-            font-size: 10px;
-            font-weight: 800;
-            cursor: pointer;
-        }
-
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-secondary); font-size: 10px; font-weight: 800; cursor: pointer; }
         .nav-item i { font-size: 19px; }
         .nav-item.active { color: var(--purple-bright); }
     </style>
@@ -644,15 +390,11 @@
 
     <header class="header">
         <div class="logo" onclick="switchScreen('main-screen')">
-            <div class="logo-icon">🐾</div>
-            CatRoll
+            <div class="logo-icon">🐾</div> CatRoll
         </div>
         <div class="header-actions">
             <button class="lang-btn" onclick="toggleLanguage()" id="langBtn">🌐 RU</button>
-            <div class="balance-pill">
-                <i class="fa-solid fa-star"></i>
-                <span id="userBalance">200,000</span>
-            </div>
+            <div class="balance-pill"><i class="fa-solid fa-star"></i><span id="userBalance">200,000</span></div>
         </div>
     </header>
 
@@ -663,10 +405,7 @@
         <div class="mode-card daily-bonus-card" onclick="claimDailyBonus()">
             <div class="mode-icon">🎁</div>
             <div class="mode-info">
-                <h3>
-                    <span data-i18n="dailyTitle">Ежедневный Бонус</span>
-                    <span class="timer-badge" id="bonusTimer">Готово</span>
-                </h3>
+                <h3><span data-i18n="dailyTitle">Ежедневный Бонус</span><span class="timer-badge" id="bonusTimer">Готово</span></h3>
                 <p data-i18n="dailySub">Забери бесплатные Stars прямо сейчас</p>
             </div>
         </div>
@@ -702,18 +441,12 @@
     </main>
 
     <main id="cases-screen" class="screen">
-        <button class="back-btn" id="casesBackBtn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
+        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
         <h1 class="menu-title" data-i18n="casesHeader">Открытие кейсов</h1>
         <p class="menu-subtitle" data-i18n="casesSubHeader">Испытай удачу в рулетке</p>
 
         <div class="controls-row">
-            <label class="toggle-label">
-                <span>Демо-режим</span>
-                <div class="toggle-switch">
-                    <input type="checkbox" id="casesDemoToggle">
-                    <span class="slider"></span>
-                </div>
-            </label>
+            <label class="toggle-label"><span>Демо-режим</span><div class="toggle-switch"><input type="checkbox" id="casesDemoToggle"><span class="slider"></span></div></label>
             <button class="skip-btn-mini" onclick="skipCaseAnimation()" data-i18n="skipBtn">Пропустить</button>
         </div>
 
@@ -724,28 +457,19 @@
         </div>
 
         <div class="case-container">
-            <div class="roulette-wrapper">
-                <div class="pointer"></div>
-                <div class="roulette-track" id="rouletteTrack"></div>
-            </div>
+            <div class="roulette-wrapper"><div class="pointer"></div><div class="roulette-track" id="rouletteTrack"></div></div>
         </div>
 
-        <button class="action-btn" id="spinCasesBtn" onclick="spinRoulette()" data-i18n="spinBtn">Крутить Кейс</button>
+        <button class="action-btn" onclick="spinRoulette()" data-i18n="spinBtn">Крутить Кейс</button>
     </main>
 
     <main id="wheel-screen" class="screen">
-        <button class="back-btn" id="wheelBackBtn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
+        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
         <h1 class="menu-title" data-i18n="wheelHeader">Колесо Фортуны</h1>
         <p class="menu-subtitle" data-i18n="wheelCost">Стоимость вращения: 100 ⭐</p>
 
         <div class="controls-row">
-            <label class="toggle-label">
-                <span>Демо-режим</span>
-                <div class="toggle-switch">
-                    <input type="checkbox" id="wheelDemoToggle">
-                    <span class="slider"></span>
-                </div>
-            </label>
+            <label class="toggle-label"><span>Демо-режим</span><div class="toggle-switch"><input type="checkbox" id="wheelDemoToggle"><span class="slider"></span></div></label>
             <button class="skip-btn-mini" onclick="skipWheelAnimation()" data-i18n="skipBtn">Пропустить</button>
         </div>
 
@@ -755,7 +479,7 @@
             <div class="wheel-center-cap">🐾</div>
         </div>
 
-        <button class="action-btn" id="spinWheelBtn" onclick="spinWheel()" data-i18n="spinWheelBtn">Вращать Колесо</button>
+        <button class="action-btn" onclick="spinWheel()" data-i18n="spinWheelBtn">Вращать Колесо</button>
     </main>
 
     <main id="inventory-screen" class="screen">
@@ -793,7 +517,7 @@
         <div class="modal-card">
             <h2 class="menu-title" style="font-size: 20px;" data-i18n="withdrawTitle">Вывод подарка</h2>
             <div class="modal-icon" id="withdrawModalIcon" style="font-size: 48px; margin: 10px 0;">📦</div>
-            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;" data-i18n="withdrawDesc">Вы хотите заказать вывод этого подарка?</p>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;" data-i18n="withdrawDesc">Запросить вывод этого подарка администратору?</p>
             <div style="display: flex; gap: 10px;">
                 <button class="action-btn" onclick="closeWithdrawModal(false)" style="background: rgba(255,59,48,0.2); color: #ff3b30; border: 1px solid rgba(255,59,48,0.4);" data-i18n="rejectBtn">Отклонить</button>
                 <button class="action-btn" onclick="closeWithdrawModal(true)" data-i18n="confirmBtn">Подтвердить</button>
@@ -802,22 +526,10 @@
     </div>
 
     <nav class="bottom-nav">
-        <div class="nav-item active" onclick="switchScreen('main-screen')">
-            <i class="fa-solid fa-house"></i>
-            <span data-i18n="navHome">Главная</span>
-        </div>
-        <div class="nav-item" onclick="switchScreen('cases-screen')">
-            <i class="fa-solid fa-box-open"></i>
-            <span data-i18n="navCases">Кейсы</span>
-        </div>
-        <div class="nav-item" onclick="switchScreen('wheel-screen')">
-            <i class="fa-solid fa-spinner"></i>
-            <span data-i18n="navWheel">Колесо</span>
-        </div>
-        <div class="nav-item" onclick="switchScreen('inventory-screen')">
-            <i class="fa-solid fa-bag-shopping"></i>
-            <span data-i18n="navInv">Инвентарь</span>
-        </div>
+        <div class="nav-item active" onclick="switchScreen('main-screen')"><i class="fa-solid fa-house"></i><span data-i18n="navHome">Главная</span></div>
+        <div class="nav-item" onclick="switchScreen('cases-screen')"><i class="fa-solid fa-box-open"></i><span data-i18n="navCases">Кейсы</span></div>
+        <div class="nav-item" onclick="switchScreen('wheel-screen')"><i class="fa-solid fa-spinner"></i><span data-i18n="navWheel">Колесо</span></div>
+        <div class="nav-item" onclick="switchScreen('inventory-screen')"><i class="fa-solid fa-bag-shopping"></i><span data-i18n="navInv">Инвентарь</span></div>
     </nav>
 
     <script>
@@ -831,7 +543,7 @@
             currentCase: 'starter',
             isSpinning: false,
             lang: localStorage.getItem('catroll_lang') || 'RU',
-            lastBonusTime: 0
+            lastBonusTime: parseInt(localStorage.getItem('catroll_bonus')) || 0
         };
 
         const translations = {
@@ -884,6 +596,7 @@
 
         let pendingWinItem = null;
         let selectedItemIdForWithdraw = null;
+        let currentWheelRotation = 0;
 
         async function loadInventoryFromServer() {
             try {
@@ -893,7 +606,7 @@
                     id: item.id,
                     name: item.gift_name,
                     icon: item.image_url,
-                    price: 100, // дефолтная цена или подтянуть из бэка
+                    price: 100,
                     status: item.status
                 }));
                 renderInventory();
@@ -930,9 +643,33 @@
         }
 
         function claimDailyBonus() {
+            const now = Date.now();
+            const cooldown = 24 * 60 * 60 * 1000;
+            if (now - state.lastBonusTime < cooldown) return;
+
+            state.lastBonusTime = now;
+            localStorage.setItem('catroll_bonus', state.lastBonusTime);
             updateBalance(50);
             if (window.confetti) confetti({ particleCount: 60, spread: 70 });
             showWinModal({ name: state.lang === 'RU' ? 'Ежедневный Бонус' : 'Daily Bonus', icon: '🎁', price: 50 }, false);
+            startBonusTimer();
+        }
+
+        function startBonusTimer() {
+            const timerEl = document.getElementById('bonusTimer');
+            if(!timerEl) return;
+            setInterval(() => {
+                const cooldown = 24 * 60 * 60 * 1000;
+                const diff = cooldown - (Date.now() - state.lastBonusTime);
+                if (diff <= 0) {
+                    timerEl.textContent = translations[state.lang].ready;
+                } else {
+                    const hrs = Math.floor(diff / (1000 * 60 * 60));
+                    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const secs = Math.floor((diff % (1000 * 60)) / 1000);
+                    timerEl.textContent = `${hrs}h ${mins}m ${secs}s`;
+                }
+            }, 1000);
         }
 
         function updateBalance(amount) {
@@ -948,4 +685,198 @@
             buildRouletteTrack();
         }
 
-        function buildRouletteTrack
+        function buildRouletteTrack() {
+            const track = document.getElementById('rouletteTrack');
+            if(!track) return;
+            track.style.transition = 'none';
+            track.style.transform = 'translateX(0px)';
+            track.innerHTML = '';
+            for (let i = 0; i < 45; i++) {
+                const item = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `<div class="icon">${item.icon}</div><div class="name">${item.name}</div><div class="price-tag">${item.price} ⭐</div>`;
+                track.appendChild(card);
+            }
+        }
+
+        async function spinRoulette() {
+            if (state.isSpinning) return;
+            state.isSpinning = true;
+            buildRouletteTrack();
+
+            const track = document.getElementById('rouletteTrack');
+            const winningIndex = 32;
+            const winningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+            
+            const cards = track.children;
+            if (cards[winningIndex]) {
+                cards[winningIndex].querySelector('.icon').textContent = winningItem.icon;
+                cards[winningIndex].querySelector('.name').textContent = winningItem.name;
+                cards[winningIndex].querySelector('.price-tag').textContent = `${winningItem.price} ⭐`;
+            }
+
+            setTimeout(() => {
+                track.style.transition = 'transform 5s cubic-bezier(0.1, 1, 0.1, 1)';
+                track.style.transform = `translateX(-${(winningIndex * 107) - 130}px)`;
+            }, 50);
+
+            setTimeout(async () => {
+                state.isSpinning = false;
+                pendingWinItem = winningItem;
+                showWinModal(winningItem, false);
+                await fetch(`/api/roll/${userId}`, { method: 'POST' });
+            }, 5050);
+        }
+
+        function skipCaseAnimation() {
+            if (!state.isSpinning) return;
+            state.isSpinning = false;
+            pendingWinItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+            showWinModal(pendingWinItem, false);
+        }
+
+        function buildWheel() {
+            const wheel = document.getElementById('wheelTrack');
+            if(!wheel) return;
+            wheel.innerHTML = '';
+            const count = itemsPool.length;
+            const sliceAngle = 360 / count;
+            const colors = ['#181826', '#232334', '#1f1f30', '#2a2a40', '#1c1c2b', '#252538', '#1e1e2d', '#28283d'];
+
+            itemsPool.forEach((item, index) => {
+                const slice = document.createElement('div');
+                slice.className = 'wheel-slice';
+                slice.style.transform = `rotate(${index * sliceAngle}deg)`;
+                slice.style.backgroundColor = colors[index % colors.length];
+                slice.innerHTML = `<div class="wheel-slice-content" style="--item-angle:${sliceAngle/2}deg"><span>${item.icon}</span><span style="font-size:7px;color:#fff">${item.name}</span></div>`;
+                wheel.appendChild(slice);
+            });
+        }
+
+        function spinWheel() {
+            if (state.isSpinning) return;
+            state.isSpinning = true;
+            const winningIndex = Math.floor(Math.random() * itemsPool.length);
+            const winningItem = itemsPool[winningIndex];
+            const segmentAngle = 360 / itemsPool.length;
+
+            currentWheelRotation += 1800 + (360 - (winningIndex * segmentAngle + segmentAngle / 2));
+            document.getElementById('wheelTrack').style.transform = `rotate(${currentWheelRotation}deg)`;
+
+            setTimeout(async () => {
+                state.isSpinning = false;
+                pendingWinItem = winningItem;
+                showWinModal(winningItem, false);
+                await fetch(`/api/roll/${userId}`, { method: 'POST' });
+            }, 5000);
+        }
+
+        function skipWheelAnimation() {
+            if (!state.isSpinning) return;
+            state.isSpinning = false;
+            pendingWinItem = itemsPool[0];
+            showWinModal(pendingWinItem, false);
+        }
+
+        function showWinModal(item, isDemo) {
+            document.getElementById('modalIcon').textContent = item.icon;
+            document.getElementById('modalItemName').textContent = item.name;
+            document.getElementById('modalItemPrice').textContent = `+${item.price} ⭐`;
+            document.getElementById('winModal').classList.add('active');
+            if (window.confetti && !isDemo) confetti({ particleCount: 50 });
+        }
+
+        async function closeModal(action) {
+            document.getElementById('winModal').classList.remove('active');
+            if (action === 'claim') {
+                await loadInventoryFromServer();
+            } else if (action === 'sell' && pendingWinItem) {
+                updateBalance(pendingWinItem.price);
+            }
+            pendingWinItem = null;
+        }
+
+        function openWithdrawModal(itemId) {
+            selectedItemIdForWithdraw = itemId;
+            document.getElementById('withdrawModal').classList.add('active');
+        }
+
+        async function closeWithdrawModal(confirmed) {
+            document.getElementById('withdrawModal').classList.remove('active');
+            if (confirmed && selectedItemIdForWithdraw) {
+                try {
+                    const res = await fetch(`/api/withdraw/${selectedItemIdForWithdraw}`, { method: 'POST' });
+                    const data = await res.json();
+                    alert(data.message || "Request sent!");
+                    loadInventoryFromServer();
+                } catch(e) { alert("Error sending request."); }
+            }
+            selectedItemIdForWithdraw = null;
+        }
+
+        function renderInventory() {
+            const grid = document.getElementById('inventoryGrid');
+            if(!grid) return;
+            grid.innerHTML = '';
+
+            if (state.inventory.length === 0) {
+                grid.innerHTML = `<div style="grid-column: span 2; text-align: center; color: var(--text-secondary); font-size: 13px; padding: 20px;">${translations[state.lang].emptyInv}</div>`;
+                return;
+            }
+
+            state.inventory.forEach(item => {
+                const isRequested = item.status === 'withdraw_requested';
+                const card = document.createElement('div');
+                card.className = 'inventory-card';
+                card.innerHTML = `
+                    <div class="icon">${item.icon}</div>
+                    <div class="name">${item.name}</div>
+                    <div class="price">${isRequested ? translations[state.lang].pending : `${item.price} ⭐`}</div>
+                    <div class="inventory-actions">
+                        <button class="sell-btn" ${isRequested ? 'disabled' : ''} onclick="sellItem(${item.id})">${translations[state.lang].sell}</button>
+                        <button class="withdraw-btn" ${isRequested ? 'disabled' : ''} onclick="openWithdrawModal(${item.id})">${isRequested ? '⏳' : translations[state.lang].withdraw}</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function sellItem(itemId) {
+            state.inventory = state.inventory.filter(i => i.id !== itemId);
+            renderInventory();
+        }
+
+        function filterInventory(query) {
+            const filtered = state.inventory.filter(i => i.name.toLowerCase().includes(query.toLowerCase()));
+            const grid = document.getElementById('inventoryGrid');
+            grid.innerHTML = '';
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'inventory-card';
+                card.innerHTML = `
+                    <div class="icon">${item.icon}</div><div class="name">${item.name}</div><div class="price">${item.price} ⭐</div>
+                    <div class="inventory-actions">
+                        <button class="sell-btn" onclick="sellItem(${item.id})">${translations[state.lang].sell}</button>
+                        <button class="withdraw-btn" onclick="openWithdrawModal(${item.id})">${translations[state.lang].withdraw}</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function sortInventory(type) {
+            if (type === 'expensive') state.inventory.sort((a, b) => b.price - a.price);
+            renderInventory();
+        }
+
+        window.onload = function() {
+            buildRouletteTrack();
+            buildWheel();
+            loadInventoryFromServer();
+            startBonusTimer();
+            if (state.lang === 'EN') toggleLanguage();
+        };
+    </script>
+</body>
+</html>
