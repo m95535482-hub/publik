@@ -317,8 +317,8 @@
             border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center;
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
-        .item-card img { width: 50px; height: 50px; object-fit: contain; }
-        .item-card .name { font-size: 9px; color: var(--text-secondary); margin-top: 4px; font-weight: 700; text-align: center; }
+        .item-card .item-icon-wrap { font-size: 32px; color: #a29bfe; margin-bottom: 2px; display: flex; align-items: center; justify-content: center; }
+        .item-card .name { font-size: 9px; color: var(--text-secondary); margin-top: 2px; font-weight: 700; text-align: center; }
         .item-card .price-tag { font-size: 11px; color: var(--gold); font-weight: 800; margin-top: 2px; }
 
         .wheel-box {
@@ -341,7 +341,7 @@
             position: absolute; left: 50%; top: 28%; transform: translate(-50%, -50%) rotate(calc(var(--item-angle) * 1deg));
             display: flex; flex-direction: column; align-items: center; justify-content: center; width: 50px; text-align: center;
         }
-        .wheel-slice-content img { width: 34px; height: 34px; object-fit: contain; }
+        .wheel-slice-content i { font-size: 20px; color: var(--purple-bright); }
         .wheel-center-cap {
             position: absolute; width: 48px; height: 48px; background: linear-gradient(135deg, #2c2c3d, #121218);
             border: 3px solid var(--purple-accent); border-radius: 50%; z-index: 15; display: flex; align-items: center; justify-content: center; color: var(--purple-bright); font-size: 16px;
@@ -402,7 +402,7 @@
             background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 16px;
             display: flex; flex-direction: column; align-items: center; text-align: center;
         }
-        .inventory-card img { width: 64px; height: 64px; object-fit: contain; margin-bottom: 8px; }
+        .inventory-card .item-icon-wrap { font-size: 42px; color: var(--purple-bright); margin-bottom: 8px; display: flex; align-items: center; justify-content: center; }
         .inventory-card .name { font-size: 13px; font-weight: 800; margin-bottom: 3px; }
         .inventory-card .price { font-size: 12px; color: var(--gold); font-weight: 800; margin-bottom: 10px; }
 
@@ -418,7 +418,7 @@
         .live-feed-title { font-size: 11px; color: var(--text-secondary); margin-bottom: 12px; font-weight: 800; text-transform: uppercase; }
         .feed-list { display: flex; flex-direction: column; gap: 8px; max-height: 135px; overflow-y: auto; }
         .feed-item { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--text-secondary); background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 12px; }
-        .feed-item img { width: 18px; height: 18px; object-fit: contain; vertical-align: middle; margin-right: 4px; }
+        .feed-item i { color: var(--purple-bright); margin-right: 4px; }
 
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(14px);
@@ -429,15 +429,14 @@
             background: linear-gradient(145deg, #181824, #0f0f16); border: 1px solid var(--card-border); border-radius: 28px; padding: 24px; width: 100%; max-width: 320px; text-align: center;
         }
         
-        /* Стили для картинки в модалке (соответствуют советам вашего друга) */
-        .win-image {
-            width: 120px;
-            height: 120px;
-            object-fit: cover;
-            border-radius: 15px;
+        .win-image-box {
+            font-size: 64px;
+            color: var(--purple-bright);
             margin: 15px auto;
-            display: block;
-            filter: drop-shadow(0 4px 15px rgba(108, 92, 231, 0.4));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            filter: drop-shadow(0 4px 15px rgba(108, 92, 231, 0.5));
         }
 
         .bottom-nav {
@@ -587,9 +586,9 @@
     <div class="modal-overlay" id="winModal">
         <div class="modal-card">
             <h2 class="menu-title" data-i18n="winTitle">Congratulations!</h2>
-            <img id="win-modal-img" class="win-image" src="" alt="Gift">
-            <h3 id="modalItemName" style="font-size: 18px; margin-bottom: 6px;">Item</h3>
-            <p id="modalItemPrice" style="color: var(--gold); font-weight: 800; font-size: 14px; margin-bottom: 20px;">0 ⭐</p>
+            <div class="win-image-box" id="win-modal-icon"><i class="fa-solid fa-book-bookmark"></i></div>
+            <h3 id="modalItemName" style="font-size: 18px; margin-bottom: 6px;">Timeless Book</h3>
+            <p id="modalItemPrice" style="color: var(--gold); font-weight: 800; font-size: 14px; margin-bottom: 20px;">30 ⭐</p>
             <div style="display: flex; gap: 10px;">
                 <button class="action-btn" onclick="closeModal('sell')" style="background: rgba(46,204,113,0.2); color: var(--green); border: 1px solid rgba(46,204,113,0.4);" data-i18n="sellBtnModal">Sell</button>
                 <button class="action-btn" onclick="closeModal('claim')" data-i18n="claimBtn">To Collection</button>
@@ -600,7 +599,7 @@
     <div class="modal-overlay" id="withdrawModal">
         <div class="modal-card">
             <h2 class="menu-title" style="font-size: 20px;" data-i18n="withdrawTitle">Item Withdrawal</h2>
-            <img id="withdraw-modal-img" class="win-image" src="" alt="Gift">
+            <div class="win-image-box" style="font-size: 48px;"><i class="fa-solid fa-book-bookmark"></i></div>
             <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;" data-i18n="withdrawDesc">Request withdrawal of this reward from admin?</p>
             <div style="display: flex; gap: 10px;">
                 <button class="action-btn" onclick="closeWithdrawModal(false)" style="background: rgba(255,59,48,0.2); color: #ff3b30; border: 1px solid rgba(255,59,48,0.4);" data-i18n="rejectBtn">Reject</button>
@@ -671,16 +670,16 @@
             }
         };
 
-        // Используем прямую и рабочую ссылку на графику книги Timeless Book с ценой 30 ⭐ везде
+        // Главный приз — Timeless Book за 30 ⭐ везде
         const itemsPool = [
-            { id: 1, name: 'Timeless Book', icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png', price: 30 },
-            { id: 2, name: 'Timeless Book', icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png', price: 30 },
-            { id: 3, name: 'Timeless Book', icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png', price: 30 },
-            { id: 4, name: 'Timeless Book', icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png', price: 30 },
-            { id: 5, name: 'Timeless Book', icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png', price: 30 },
-            { id: 6, name: 'Timeless Book', icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png', price: 30 },
-            { id: 7, name: 'Timeless Book', icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png', price: 30 },
-            { id: 8, name: 'Timeless Book', icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png', price: 30 }
+            { id: 1, name: 'Timeless Book', icon: 'fa-book-bookmark', price: 30 },
+            { id: 2, name: 'Timeless Book', icon: 'fa-book-bookmark', price: 30 },
+            { id: 3, name: 'Timeless Book', icon: 'fa-book-bookmark', price: 30 },
+            { id: 4, name: 'Timeless Book', icon: 'fa-book-bookmark', price: 30 },
+            { id: 5, name: 'Timeless Book', icon: 'fa-book-bookmark', price: 30 },
+            { id: 6, name: 'Timeless Book', icon: 'fa-book-bookmark', price: 30 },
+            { id: 7, name: 'Timeless Book', icon: 'fa-book-bookmark', price: 30 },
+            { id: 8, name: 'Timeless Book', icon: 'fa-book-bookmark', price: 30 }
         ];
 
         let pendingWinItem = null;
@@ -751,7 +750,7 @@
                 state.inventory = data.map(item => ({
                     id: item.id,
                     name: 'Timeless Book',
-                    icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png',
+                    icon: 'fa-book-bookmark',
                     price: 30,
                     status: item.status
                 }));
@@ -796,7 +795,7 @@
             state.lastBonusTime = now;
             localStorage.setItem('catroll_bonus', state.lastBonusTime);
             if (window.confetti) confetti({ particleCount: 60, spread: 70 });
-            showWinModal({ name: 'Timeless Book', icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png', price: 30 }, false);
+            showWinModal({ name: 'Timeless Book', icon: 'fa-book-bookmark', price: 30 }, false);
             startBonusTimer();
         }
 
@@ -827,7 +826,7 @@
                 const slice = document.createElement('div');
                 slice.className = 'wheel-slice';
                 slice.style.transform = `rotate(${angle}deg)`;
-                slice.innerHTML = `<div class="wheel-slice-content" style="--item-angle: ${sliceAngle / 2}"><img src="${item.icon}" alt="gift"></div>`;
+                slice.innerHTML = `<div class="wheel-slice-content" style="--item-angle: ${sliceAngle / 2}"><i class="fa-solid ${item.icon}"></i></div>`;
                 track.appendChild(slice);
             });
         }
@@ -840,7 +839,7 @@
             track.innerHTML = '';
             for(let i=0; i<50; i++) {
                 const randItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
-                track.innerHTML += `<div class="item-card"><img src="${randItem.icon}" alt="gift"><div class="name">${randItem.name}</div><div class="price-tag">${randItem.price} ⭐</div></div>`;
+                track.innerHTML += `<div class="item-card"><div class="item-icon-wrap"><i class="fa-solid ${randItem.icon}"></i></div><div class="name">${randItem.name}</div><div class="price-tag">${randItem.price} ⭐</div></div>`;
             }
         }
 
@@ -879,7 +878,7 @@
                 
                 currentWinningItem = {
                     name: 'Timeless Book',
-                    icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png',
+                    icon: 'fa-book-bookmark',
                     price: 30
                 };
 
@@ -898,7 +897,7 @@
             initRouletteTrack();
             const cards = track.querySelectorAll('.item-card');
             
-            cards[30].querySelector('img').src = currentWinningItem.icon;
+            cards[30].querySelector('.item-icon-wrap').innerHTML = `<i class="fa-solid ${currentWinningItem.icon}"></i>`;
             cards[30].querySelector('.name').textContent = currentWinningItem.name;
             cards[30].querySelector('.price-tag').textContent = currentWinningItem.price + ' ⭐';
 
@@ -954,7 +953,7 @@
                 
                 currentWinningItem = {
                     name: 'Timeless Book',
-                    icon: 'https://cdn4.iconfinder.com/data/icons/retro-gaming-solid/64/book-spell-magic-fantasy-ancient-512.png',
+                    icon: 'fa-book-bookmark',
                     price: 30
                 };
 
@@ -970,7 +969,7 @@
                 return;
             }
 
-            const index = 0; // Всегда книга
+            const index = 0;
             const sliceAngle = 360 / itemsPool.length;
             
             currentWheelRotation += 1800 + (360 - (index * sliceAngle + sliceAngle / 2));
@@ -1001,7 +1000,7 @@
 
         function showWinModal(item, isReal) {
             pendingWinItem = item;
-            document.getElementById('win-modal-img').src = item.icon;
+            document.getElementById('win-modal-icon').innerHTML = `<i class="fa-solid ${item.icon}"></i>`;
             document.getElementById('modalItemName').textContent = item.name;
             document.getElementById('modalItemPrice').textContent = `${item.price} ⭐`;
             document.getElementById('winModal').classList.add('active');
@@ -1031,7 +1030,7 @@
                 const isRequested = item.status === 'withdraw_requested';
                 grid.innerHTML += `
                     <div class="inventory-card" data-id="${item.id}">
-                        <img src="${item.icon}" alt="gift">
+                        <div class="item-icon-wrap"><i class="fa-solid ${item.icon}"></i></div>
                         <div class="name">${item.name}</div>
                         <div class="price">${item.price} ⭐</div>
                         <div class="inventory-actions">
@@ -1061,7 +1060,6 @@
 
         function promptWithdraw(itemId, icon) {
             selectedItemIdForWithdraw = itemId;
-            document.getElementById('withdraw-modal-img').src = icon;
             document.getElementById('withdrawModal').classList.add('active');
         }
 
@@ -1100,7 +1098,7 @@
         function addFeedItem(item) {
             const list = document.getElementById('feedList');
             if (!list) return;
-            list.innerHTML = `<div class="feed-item"><span>User won ${item.name}</span><span style="color:var(--gold)"><img src="${item.icon}" alt=""> ${item.price} ⭐</span></div>` + list.innerHTML;
+            list.innerHTML = `<div class="feed-item"><span>User won ${item.name}</span><span style="color:var(--gold)"><i class="fa-solid ${item.icon}"></i> ${item.price} ⭐</span></div>` + list.innerHTML;
         }
 
         if (state.lang === 'RU') toggleLanguage();
