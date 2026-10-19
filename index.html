@@ -232,6 +232,73 @@
 
         .back-btn:active { transform: scale(0.95); color: #fff; }
 
+        .controls-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 14px;
+            background: var(--card-bg);
+            padding: 10px 14px;
+            border-radius: 14px;
+            border: 1px solid var(--card-border);
+        }
+
+        .toggle-label {
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 22px;
+        }
+
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255,255,255,0.15);
+            transition: .3s;
+            border-radius: 22px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 2px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider { background-color: var(--purple-accent); }
+        input:checked + .slider:before { transform: translateX(18px); }
+
+        .skip-btn-mini {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .skip-btn-mini:active { background: rgba(255,255,255,0.2); }
+
         .cases-selector {
             display: flex;
             gap: 8px;
@@ -368,14 +435,30 @@
             transition: transform 5s cubic-bezier(0.1, 1, 0.1, 1); 
             box-shadow: 0 0 40px rgba(0,0,0,0.9), inset 0 0 20px rgba(0,0,0,0.9);
             will-change: transform;
-            background: conic-gradient(
-                #181826 0deg 60deg, 
-                #232334 60deg 120deg, 
-                #181826 120deg 180deg, 
-                #232334 180deg 240deg, 
-                #181826 240deg 300deg, 
-                #232334 300deg 360deg
-            );
+        }
+
+        .wheel-slice {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            top: 0;
+            left: 50%;
+            transform-origin: 0% 100%;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 18px;
+            pointer-events: none;
+        }
+
+        .wheel-slice-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            /* Rotate content back and shift it properly into the slice center */
+            transform: rotate(calc(var(--slice-angle) / 2)) translateY(4px);
+            transform-origin: center top;
         }
 
         .wheel-center-cap {
@@ -410,6 +493,7 @@
         }
 
         .action-btn:active { transform: scale(0.96); opacity: 0.9; }
+        .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .inventory-controls {
             width: 100%;
@@ -620,11 +704,12 @@
             <button class="lang-btn" onclick="toggleLanguage()" id="langBtn">🌐 RU</button>
             <div class="balance-pill">
                 <i class="fa-solid fa-star"></i>
-                <span id="userBalance">1,250</span>
+                <span id="userBalance">200,000</span>
             </div>
         </div>
     </header>
 
+    <!-- MAIN SCREEN -->
     <main id="main-screen" class="screen active">
         <h1 class="menu-title" data-i18n="mainTitle">Выбирай режим</h1>
         <p class="menu-subtitle" data-i18n="mainSub">Крути рулетку, испытывай удачу и забирай NFT</p>
@@ -670,10 +755,22 @@
         </div>
     </main>
 
+    <!-- CASES SCREEN -->
     <main id="cases-screen" class="screen">
-        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
+        <button class="back-btn" id="casesBackBtn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
         <h1 class="menu-title" data-i18n="casesHeader">Открытие кейсов</h1>
         <p class="menu-subtitle" data-i18n="casesSubHeader">Испытай удачу в рулетке</p>
+
+        <div class="controls-row">
+            <label class="toggle-label">
+                <span>Демо-режим</span>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="casesDemoToggle">
+                    <span class="slider"></span>
+                </div>
+            </label>
+            <button class="skip-btn-mini" onclick="skipCaseAnimation()" data-i18n="skipBtn">Пропустить анимацию</button>
+        </div>
 
         <div class="cases-selector">
             <div class="case-tab active" onclick="selectCase('starter', this)">Starter (50 ⭐)</div>
@@ -691,10 +788,22 @@
         <button class="action-btn" id="spinCasesBtn" onclick="spinRoulette()" data-i18n="spinBtn">Крутить Кейс</button>
     </main>
 
+    <!-- WHEEL SCREEN -->
     <main id="wheel-screen" class="screen">
-        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
+        <button class="back-btn" id="wheelBackBtn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
         <h1 class="menu-title" data-i18n="wheelHeader">Колесо Фортуны</h1>
         <p class="menu-subtitle" data-i18n="wheelCost">Стоимость вращения: 100 ⭐</p>
+
+        <div class="controls-row">
+            <label class="toggle-label">
+                <span>Демо-режим</span>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="wheelDemoToggle">
+                    <span class="slider"></span>
+                </div>
+            </label>
+            <button class="skip-btn-mini" onclick="skipWheelAnimation()" data-i18n="skipBtn">Пропустить анимацию</button>
+        </div>
 
         <div class="wheel-box">
             <div class="wheel-pointer"></div>
@@ -705,10 +814,11 @@
         <button class="action-btn" id="spinWheelBtn" onclick="spinWheel()" data-i18n="spinWheelBtn">Вращать Колесо</button>
     </main>
 
+    <!-- INVENTORY SCREEN -->
     <main id="inventory-screen" class="screen">
         <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
         <h1 class="menu-title" data-i18n="invHeader">Инвентарь</h1>
-        <p class="menu-subtitle" data-i18n="invSubHeader">Ваши предметы и предметы для продажи</p>
+        <p class="menu-subtitle" data-i18n="invSubHeader">Ваши предметы и подарки</p>
 
         <div class="inventory-controls">
             <input type="text" class="search-input" id="searchInput" placeholder="Поиск..." oninput="filterInventory(this.value)">
@@ -721,17 +831,19 @@
         <div class="inventory-grid" id="inventoryGrid"></div>
     </main>
 
+    <!-- WIN MODAL -->
     <div class="modal-overlay" id="winModal">
         <div class="modal-card">
             <h2 class="menu-title" data-i18n="winTitle">Поздравляем!</h2>
             <div class="modal-icon" id="modalIcon">🎁</div>
             <h3 id="modalItemName" style="font-size: 18px; margin-bottom: 6px;">Предмет</h3>
             <p id="modalItemPrice" style="color: var(--gold); font-weight: 800; font-size: 14px; margin-bottom: 20px;">0 ⭐</p>
-            <button class="action-btn" onclick="closeModal()" data-i18n="claimBtn">Забрать</button>
+            <button class="action-btn" onclick="closeModal()" data-i18n="claimBtn">Забрать в инвентарь</button>
         </div>
     </div>
 
-    <nav class="bottom-nav">
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav" id="bottomNav">
         <div class="nav-item active" onclick="switchScreen('main-screen')">
             <i class="fa-solid fa-house"></i>
             <span data-i18n="navHome">Главная</span>
@@ -754,14 +866,25 @@
         const TG = window.Telegram?.WebApp;
         if (TG) { TG.ready(); TG.expand(); }
 
+        // Determine unique user key if available through Telegram initDataUnsafe, otherwise fallback to device storage
+        const userId = TG?.initDataUnsafe?.user?.id || 'default_user';
+        const STORAGE_PREFIX = `catroll_${userId}_`;
+
         let state = {
-            balance: 1250,
-            inventory: [],
+            balance: parseInt(localStorage.getItem(STORAGE_PREFIX + 'balance')) || 200000,
+            inventory: JSON.parse(localStorage.getItem(STORAGE_PREFIX + 'inventory')) || [],
             currentCase: 'starter',
             isSpinning: false,
-            lang: 'RU',
-            lastBonusTime: 0
+            lang: localStorage.getItem('catroll_lang') || 'RU',
+            lastBonusTime: parseInt(localStorage.getItem(STORAGE_PREFIX + 'bonus')) || 0
         };
+
+        function saveState() {
+            localStorage.setItem(STORAGE_PREFIX + 'balance', state.balance);
+            localStorage.setItem(STORAGE_PREFIX + 'inventory', JSON.stringify(state.inventory));
+            localStorage.setItem('catroll_lang', state.lang);
+            localStorage.setItem(STORAGE_PREFIX + 'bonus', state.lastBonusTime);
+        }
 
         const translations = {
             RU: {
@@ -780,15 +903,16 @@
                 casesHeader: "Открытие кейсов",
                 casesSubHeader: "Испытай удачу в рулетке",
                 spinBtn: "Крутить Кейс",
+                skipBtn: "Пропустить",
                 wheelHeader: "Колесо Фортуны",
                 wheelCost: "Стоимость вращения: 100 ⭐",
                 spinWheelBtn: "Вращать Колесо",
                 invHeader: "Инвентарь",
-                invSubHeader: "Ваши предметы и предметы для продажи",
+                invSubHeader: "Ваши предметы и подарки",
                 sortNew: "Сначала новые",
                 sortExp: "Сначала дорогие",
                 winTitle: "Поздравляем!",
-                claimBtn: "Забрать",
+                claimBtn: "Забрать в инвентарь",
                 navHome: "Главная",
                 navCases: "Кейсы",
                 navWheel: "Колесо",
@@ -814,15 +938,16 @@
                 casesHeader: "Case Opening",
                 casesSubHeader: "Try your luck in roulette",
                 spinBtn: "Spin Case",
+                skipBtn: "Skip",
                 wheelHeader: "Wheel of Fortune",
                 wheelCost: "Spin cost: 100 ⭐",
                 spinWheelBtn: "Spin Wheel",
                 invHeader: "Inventory",
-                invSubHeader: "Your items available for sale",
+                invSubHeader: "Your items & gifts",
                 sortNew: "Newest first",
                 sortExp: "Expensive first",
                 winTitle: "Congratulations!",
-                claimBtn: "Claim",
+                claimBtn: "Claim to Inventory",
                 navHome: "Home",
                 navCases: "Cases",
                 navWheel: "Wheel",
@@ -840,10 +965,23 @@
             { id: 3, name: 'Rubber Duck', icon: '🦆', price: 120 },
             { id: 4, name: 'Telegram Gem', icon: '💎', price: 250 },
             { id: 5, name: 'Rocket Gift', icon: '🚀', price: 450 },
-            { id: 6, name: 'Golden Crown', icon: '👑', price: 800 }
+            { id: 6, name: 'Golden Crown', icon: '👑', price: 800 },
+            { id: 7, name: 'Cyber Cat NFT', icon: '🐱', price: 1500 },
+            { id: 8, name: 'Diamond Diamond', icon: '💠', price: 2500 }
         ];
 
+        let pendingWinItem = null;
+        let caseTimerId = null;
+        let wheelTimerId = null;
+
+        function updateBalance(amount) {
+            state.balance += amount;
+            document.getElementById('userBalance').textContent = state.balance.toLocaleString();
+            saveState();
+        }
+
         function switchScreen(screenId) {
+            if (state.isSpinning) return; // Locked during active animation
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
 
@@ -866,30 +1004,25 @@
 
             document.getElementById('searchInput').placeholder = t.searchPlaceholder;
             renderInventory();
-        }
-
-        function updateBalance(amount) {
-            state.balance += amount;
-            document.getElementById('userBalance').textContent = state.balance.toLocaleString();
+            saveState();
         }
 
         function claimDailyBonus() {
             const now = Date.now();
             const cooldown = 24 * 60 * 60 * 1000;
 
-            if (now - state.lastBonusTime < cooldown) {
-                return;
-            }
+            if (now - state.lastBonusTime < cooldown) return;
 
             state.lastBonusTime = now;
             updateBalance(50);
             if (window.confetti) confetti({ particleCount: 60, spread: 70 });
-            showWinModal({ name: state.lang === 'RU' ? 'Ежедневный Бонус' : 'Daily Bonus', icon: '🎁', price: 50 });
+            showWinModal({ name: state.lang === 'RU' ? 'Ежедневный Бонус' : 'Daily Bonus', icon: '🎁', price: 50 }, false);
             startBonusTimer();
         }
 
         function startBonusTimer() {
             const timerEl = document.getElementById('bonusTimer');
+            if(!timerEl) return;
             setInterval(() => {
                 const cooldown = 24 * 60 * 60 * 1000;
                 const diff = cooldown - (Date.now() - state.lastBonusTime);
@@ -905,8 +1038,17 @@
             }, 1000);
         }
 
+        function selectCase(caseType, el) {
+            if (state.isSpinning) return;
+            state.currentCase = caseType;
+            document.querySelectorAll('.case-tab').forEach(tab => tab.classList.remove('active'));
+            el.classList.add('active');
+            buildRouletteTrack();
+        }
+
         function buildRouletteTrack() {
             const track = document.getElementById('rouletteTrack');
+            if(!track) return;
             track.style.transition = 'none';
             track.style.transform = 'translateX(0px)';
             track.innerHTML = '';
@@ -927,16 +1069,30 @@
         function spinRoulette() {
             if (state.isSpinning) return;
             const cost = state.currentCase === 'starter' ? 50 : state.currentCase === 'rare' ? 250 : 1000;
-            if (state.balance < cost) return alert(state.lang === 'RU' ? 'Недостаточно Stars!' : 'Not enough Stars!');
+            const isDemo = document.getElementById('casesDemoToggle').checked;
 
-            updateBalance(-cost);
+            if (!isDemo && state.balance < cost) {
+                return alert(state.lang === 'RU' ? 'Недостаточно Stars!' : 'Not enough Stars!');
+            }
+
+            if (!isDemo) updateBalance(-cost);
             state.isSpinning = true;
+            document.getElementById('casesBackBtn').style.opacity = '0.3';
+            document.getElementById('casesBackBtn').style.pointerEvents = 'none';
+
             buildRouletteTrack();
 
             const track = document.getElementById('rouletteTrack');
             const winningIndex = 32;
             const winningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
             
+            const cards = track.children;
+            if (cards[winningIndex]) {
+                cards[winningIndex].querySelector('.icon').textContent = winningItem.icon;
+                cards[winningIndex].querySelector('.name').textContent = winningItem.name;
+                cards[winningIndex].querySelector('.price-tag').textContent = `${winningItem.price} ⭐`;
+            }
+
             const cardWidth = 107;
             const targetOffset = (winningIndex * cardWidth) - 130;
 
@@ -945,55 +1101,149 @@
                 track.style.transform = `translateX(-${targetOffset}px)`;
             }, 50);
 
-            setTimeout(() => {
-                state.isSpinning = false;
-                state.inventory.push({ ...winningItem, uid: Date.now() });
-                renderInventory();
-                addFeedItem('You', winningItem.name);
-                showWinModal(winningItem);
-            }, 5200);
+            caseTimerId = setTimeout(() => {
+                finalizeCaseSpin(winningItem, isDemo);
+            }, 5050);
         }
 
-        function selectCase(type, el) {
-            state.currentCase = type;
-            document.querySelectorAll('.case-tab').forEach(t => t.classList.remove('active'));
-            el.classList.add('active');
+        function skipCaseAnimation() {
+            if (!state.isSpinning) return;
+            clearTimeout(caseTimerId);
+            const track = document.getElementById('rouletteTrack');
+            track.style.transition = 'none';
+            const winningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+            finalizeCaseSpin(winningItem, document.getElementById('casesDemoToggle').checked);
+        }
+
+        function finalizeCaseSpin(winningItem, isDemo) {
+            state.isSpinning = false;
+            document.getElementById('casesBackBtn').style.opacity = '1';
+            document.getElementById('casesBackBtn').style.pointerEvents = 'auto';
+
+            if (!isDemo) {
+                pendingWinItem = winningItem;
+                showWinModal(winningItem, true);
+            } else {
+                showWinModal(winningItem, false);
+            }
+            addFeedItem('You', winningItem.name);
+        }
+
+        let currentWheelRotation = 0;
+
+        function buildWheel() {
+            const wheel = document.getElementById('wheelTrack');
+            if(!wheel) return;
+            wheel.innerHTML = '';
+            const count = itemsPool.length;
+            const sliceAngle = 360 / count;
+
+            // Background colors for segments
+            const sliceColors = ['#181826', '#232334', '#1f1f30', '#2a2a40', '#1c1c2b', '#252538', '#1e1e2d', '#28283d'];
+
+            itemsPool.forEach((item, index) => {
+                const slice = document.createElement('div');
+                slice.className = 'wheel-slice';
+                const rotation = index * sliceAngle;
+                
+                // Set slice color and rotation
+                slice.style.transform = `rotate(${rotation}deg)`;
+                slice.style.backgroundColor = sliceColors[index % sliceColors.length];
+                slice.style.setProperty('--slice-angle', `${sliceAngle}deg`);
+                
+                // Create visible icon and label element with proper transform container
+                const content = document.createElement('div');
+                content.className = 'wheel-slice-content';
+                content.innerHTML = `
+                    <span style="font-size: 20px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));">${item.icon}</span>
+                    <span style="font-size: 8px; color: #fff; font-weight: 700; max-width: 45px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</span>
+                `;
+                slice.appendChild(content);
+                wheel.appendChild(slice);
+            });
         }
 
         function spinWheel() {
             if (state.isSpinning) return;
-            if (state.balance < 100) return alert(state.lang === 'RU' ? 'Недостаточно Stars!' : 'Not enough Stars!');
+            const isDemo = document.getElementById('wheelDemoToggle').checked;
 
-            updateBalance(-100);
+            if (!isDemo && state.balance < 100) {
+                return alert(state.lang === 'RU' ? 'Недостаточно Stars!' : 'Not enough Stars!');
+            }
+
+            if (!isDemo) updateBalance(-100);
             state.isSpinning = true;
+            document.getElementById('wheelBackBtn').style.opacity = '0.3';
+            document.getElementById('wheelBackBtn').style.pointerEvents = 'none';
 
             const wheel = document.getElementById('wheelTrack');
-            const randomRotation = 1800 + Math.floor(Math.random() * 360);
-            wheel.style.transform = `rotate(${randomRotation}deg)`;
+            const segmentAngle = 360 / itemsPool.length;
+            const winningIndex = Math.floor(Math.random() * itemsPool.length);
+            const winningItem = itemsPool[winningIndex];
 
-            setTimeout(() => {
-                state.isSpinning = false;
-                const win = itemsPool[Math.floor(Math.random() * itemsPool.length)];
-                state.inventory.push({ ...win, uid: Date.now() });
-                renderInventory();
-                showWinModal(win);
+            const extraSpins = 5 * 360;
+            const targetSegmentAngle = winningIndex * segmentAngle + (segmentAngle / 2);
+            const targetRotation = currentWheelRotation + extraSpins + (360 - (currentWheelRotation % 360)) + (360 - targetSegmentAngle);
+            
+            currentWheelRotation = targetRotation;
+            wheel.style.transform = `rotate(${currentWheelRotation}deg)`;
+
+            wheelTimerId = setTimeout(() => {
+                finalizeWheelSpin(winningItem, isDemo);
             }, 5000);
         }
 
-        function showWinModal(item) {
+        function skipWheelAnimation() {
+            if (!state.isSpinning) return;
+            clearTimeout(wheelTimerId);
+            const winningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+            finalizeWheelSpin(winningItem, document.getElementById('wheelDemoToggle').checked);
+        }
+
+        function finalizeWheelSpin(winningItem, isDemo) {
+            state.isSpinning = false;
+            document.getElementById('wheelBackBtn').style.opacity = '1';
+            document.getElementById('wheelBackBtn').style.pointerEvents = 'auto';
+
+            if (!isDemo) {
+                pendingWinItem = winningItem;
+                showWinModal(winningItem, true);
+            } else {
+                showWinModal(winningItem, false);
+            }
+            addFeedItem('You', winningItem.name);
+        }
+
+        function showWinModal(item, canClaim) {
             document.getElementById('modalIcon').textContent = item.icon;
             document.getElementById('modalItemName').textContent = item.name;
             document.getElementById('modalItemPrice').textContent = `+${item.price} ⭐`;
+            
+            const claimBtn = document.querySelector('#winModal .action-btn');
+            if (canClaim) {
+                claimBtn.style.display = 'block';
+                claimBtn.textContent = translations[state.lang].claimBtn;
+            } else {
+                claimBtn.style.display = 'none';
+            }
+
             document.getElementById('winModal').classList.add('active');
             if (window.confetti) confetti({ particleCount: 50 });
         }
 
         function closeModal() {
+            if (pendingWinItem) {
+                state.inventory.push({ ...pendingWinItem, uid: Date.now() + Math.random() });
+                pendingWinItem = null;
+                renderInventory();
+                saveState();
+            }
             document.getElementById('winModal').classList.remove('active');
         }
 
         function renderInventory(items = state.inventory) {
             const grid = document.getElementById('inventoryGrid');
+            if(!grid) return;
             grid.innerHTML = '';
 
             if (items.length === 0) {
@@ -1020,6 +1270,7 @@
                 updateBalance(state.inventory[idx].price);
                 state.inventory.splice(idx, 1);
                 renderInventory();
+                saveState();
             }
         }
 
@@ -1037,6 +1288,7 @@
 
         function addFeedItem(user, itemName) {
             const feed = document.getElementById('feedList');
+            if (!feed) return;
             const item = document.createElement('div');
             item.className = 'feed-item';
             
@@ -1056,8 +1308,11 @@
 
         window.onload = function() {
             buildRouletteTrack();
+            buildWheel();
             renderInventory();
             initLiveFeed();
+            startBonusTimer();
+            document.getElementById('userBalance').textContent = state.balance.toLocaleString();
         };
     </script>
 </body>
