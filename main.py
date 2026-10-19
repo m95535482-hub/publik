@@ -19,7 +19,6 @@ app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Стартовый тестовый баланс для бета-тестирования
 BETA_STARTING_BALANCE = 200000
 
 def init_db():
@@ -50,6 +49,7 @@ def init_db():
             gift_name TEXT NOT NULL,
             image_url TEXT NOT NULL,
             anim_url TEXT NOT NULL,
+            price INTEGER NOT NULL,
             status TEXT DEFAULT 'in_inventory'
         )
     """)
@@ -74,8 +74,6 @@ def init_db():
     conn.close()
 
 init_db()
-
-# --- ОБРАБОТЧИКИ ОПЛАТЫ TELEGRAM STARS ---
 
 @bot.pre_checkout_query_handler(func=lambda query: True)
 def process_pre_checkout_query(pre_checkout_query):
@@ -114,26 +112,6 @@ def run_bot():
 
 threading.Thread(target=run_bot, daemon=True).start()
 
-def give_random_gift(user_id: int):
-    conn = sqlite3.connect("database.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT name, image_url, anim_url FROM gifts")
-    gifts = cursor.fetchall()
-    if not gifts:
-        conn.close()
-        return None
-    chosen = random.choice(gifts)
-    gift_name, image_url, anim_url = chosen
-    cursor.execute(
-        "INSERT INTO inventory (user_id, gift_name, image_url, anim_url) VALUES (?, ?, ?, ?)",
-        (user_id, gift_name, image_url, anim_url)
-    )
-    conn.commit()
-    conn.close()
-    return gift_name
-
-# --- API ЭНДПОИНТЫ ---
-
 @app.get("/")
 def read_root():
     return FileResponse("static/index.html")
@@ -142,7 +120,6 @@ def read_root():
 def get_user(user_id: int):
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
-    # При первом входе выставляем 200,000 ⭐
     cursor.execute("INSERT OR IGNORE INTO users (user_id, balance) VALUES (?, ?)", (user_id, BETA_STARTING_BALANCE))
     conn.commit()
     cursor.execute("SELECT balance FROM users WHERE user_id = ?", (user_id,))
@@ -187,17 +164,74 @@ def get_gifts():
 def get_inventory(user_id: int):
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT id, gift_name, image_url, anim_url, status FROM inventory WHERE user_id = ?", (user_id,))
+    cursor.execute("SELECT id, gift_name, image_url, anim_url, price, status FROM inventory WHERE user_id = ?", (user_id,))
     rows = cursor.fetchall()
     conn.close()
-    return [{"id": r[0], "gift_name": r[1], "image_url": r[2], "anim_url": r[3], "status": r[4]} for r in rows]
+    return [{"id": r[0], "gift_name": r[1], "image_url": r[2], "anim_url": r[3], "price": r[4], "status": r[5]} for r in rows]
 
+# Прокрутка кейса / колеса с реальным списанием и добавлением в инвентарь
 @app.post("/api/roll/{user_id}")
-def api_roll(user_id: int):
-    gift_name = give_random_gift(user_id)
-    if not gift_name:
+def api_roll(user_id: int, data: dict):
+    cost = data.get("cost", 50)
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT balance FROM users WHERE user_id = ?", (user_id,))
+    row = cursor.fetchone()
+    current_balance = row[0] if row else 0
+    
+    if current_balance < cost:
+        conn.close()
+        raise HTTPException(status_code=400, detail="Insufficient balance")
+        
+    cursor.execute("SELECT name, image_url, anim_url, price FROM gifts")
+    gifts = cursor.fetchall()
+    if not gifts:
+        conn.close()
         raise HTTPException(status_code=400, detail="No gifts available")
-    return {"gift_name": gift_name}
+        
+    chosen = random.choice(gifts)
+    gift_name, image_url, anim_url, gift_price = chosen
+    
+    # Списываем стоимость прокрута и добавляем предмет в инвентарь
+    cursor.execute("UPDATE users SET balance = balance - ? WHERE user_id = ?", (cost, user_id))
+    cursor.execute(
+        "INSERT INTO inventory (user_id, gift_name, image_url, anim_url, price) VALUES (?, ?, ?, ?, ?)",
+        (user_id, gift_name, image_url, anim_url, gift_price)
+    )
+    conn.commit()
+    cursor.execute("SELECT balance FROM users WHERE user_id = ?", (user_id,))
+    new_balance = cursor.fetchone()[0]
+    conn.close()
+    
+    return {"success": True, "gift": {"name": gift_name, "icon": image_url, "price": gift_price}, "balance": new_balance}
+
+# Продажа предмета из инвентаря (возврат стоимости в звёздах на баланс)
+@app.post("/api/sell/{item_id}")
+def sell_item(item_id: int):
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT user_id, price, status FROM inventory WHERE id = ?", (item_id,))
+    row = cursor.fetchone()
+    
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Item not found")
+        
+    user_id, price, status = row
+    if status == 'withdraw_requested':
+        conn.close()
+        raise HTTPException(status_code=400, detail="Cannot sell requested item")
+        
+    cursor.execute("DELETE FROM inventory WHERE id = ?", (item_id,))
+    cursor.execute("UPDATE users SET balance = balance + ? WHERE user_id = ?", (price, user_id))
+    conn.commit()
+    
+    cursor.execute("SELECT balance FROM users WHERE user_id = ?", (user_id,))
+    new_balance = cursor.fetchone()[0]
+    conn.close()
+    
+    return {"success": True, "balance": new_balance}
 
 @app.post("/api/withdraw/{item_id}")
 def withdraw_item(item_id: int):
@@ -246,7 +280,6 @@ def withdraw_item(item_id: int):
             error_message += f"Username error: {e2}"
 
     if not success:
-        print(f"Failed to send notification to admin. {error_message}")
         raise HTTPException(status_code=500, detail=f"Telegram notification error: {error_message}")
         
     return {"message": "Success! The withdrawal request has been sent to the admin."}

@@ -262,11 +262,19 @@
         input:checked + .slider { background-color: var(--purple-accent); }
         input:checked + .slider:before { transform: translateX(18px); }
 
+        /* Кнопка скипа приведена к единому стилю элементов интерфейса */
         .skip-btn-mini {
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #fff; padding: 5px 10px; border-radius: 10px; font-size: 11px; font-weight: 700; cursor: pointer;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
         }
+        .skip-btn-mini:active { transform: scale(0.95); background: rgba(255,255,255,0.15); }
 
         .cases-selector {
             display: flex; gap: 8px; width: 100%; margin-bottom: 16px;
@@ -500,7 +508,7 @@
     <main id="cases-screen" class="screen">
         <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
         <h1 class="menu-title" data-i18n="casesHeader">Открытие кейсов</h1>
-        <p class="menu-subtitle" data-i18n="casesSubHeader">Испытай удачу в рулетке</p>
+        <p class="menu-subtitle" id="caseCostSubtitle">Стоимость кейса: 50 ⭐</p>
 
         <div class="controls-row">
             <label class="toggle-label"><span data-i18n="demoMode">Демо-режим</span><div class="toggle-switch"><input type="checkbox" id="casesDemoToggle"><span class="slider"></span></div></label>
@@ -508,9 +516,9 @@
         </div>
 
         <div class="cases-selector">
-            <div class="case-tab active" onclick="selectCase('starter', this)">Starter (50 ⭐)</div>
-            <div class="case-tab" onclick="selectCase('rare', this)">Rare (250 ⭐)</div>
-            <div class="case-tab" onclick="selectCase('legend', this)">Royal (1000 ⭐)</div>
+            <div class="case-tab active" onclick="selectCase('starter', 50, this)">Starter (50 ⭐)</div>
+            <div class="case-tab" onclick="selectCase('rare', 250, this)">Rare (250 ⭐)</div>
+            <div class="case-tab" onclick="selectCase('legend', 1000, this)">Royal (1000 ⭐)</div>
         </div>
 
         <div class="case-container">
@@ -591,12 +599,11 @@
         const TG = window.Telegram?.WebApp;
         if (TG) { TG.ready(); TG.expand(); }
 
-        // Жесткая привязка к УНИКАЛЬНОМУ Telegram ID пользователя
         const userId = TG?.initDataUnsafe?.user?.id || 1218168630;
         let state = {
             balance: 0,
             inventory: [],
-            currentCase: 'starter',
+            currentCaseCost: 50,
             isSpinning: false,
             lang: localStorage.getItem('catroll_lang') || 'RU',
             lastBonusTime: parseInt(localStorage.getItem('catroll_bonus')) || 0
@@ -657,6 +664,7 @@
         let pendingWinItem = null;
         let selectedItemIdForWithdraw = null;
         let currentWheelRotation = 0;
+        let lastWonItemId = null;
 
         async function loadUserData() {
             try {
@@ -719,7 +727,7 @@
                     id: item.id,
                     name: item.gift_name,
                     icon: item.image_url,
-                    price: 100,
+                    price: item.price,
                     status: item.status
                 }));
                 renderInventory();
@@ -809,18 +817,46 @@
             }
         }
 
-        function selectCase(caseType, el) {
+        function selectCase(caseType, cost, el) {
             document.querySelectorAll('.case-tab').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
-            state.currentCase = caseType;
+            state.currentCaseCost = cost;
+            document.getElementById('caseCostSubtitle').textContent = state.lang === 'RU' ? `Стоимость кейса: ${cost} ⭐` : `Case cost: ${cost} ⭐`;
             initRouletteTrack();
         }
 
         async function spinRoulette() {
             if (state.isSpinning) return;
+            const isDemo = document.getElementById('casesDemoToggle').checked;
+
+            if (!isDemo && state.balance < state.currentCaseCost) {
+                alert(state.lang === 'RU' ? 'Недостаточно звёзд на балансе!' : 'Insufficient balance!');
+                return;
+            }
+
             state.isSpinning = true;
             const track = document.getElementById('rouletteTrack');
-            const winningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+            
+            let winningItem;
+            if (isDemo) {
+                winningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+            } else {
+                try {
+                    const res = await fetch(`/api/roll/${userId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ cost: state.currentCaseCost })
+                    });
+                    const data = await res.json();
+                    winningItem = data.gift;
+                    state.balance = data.balance;
+                    document.getElementById('userBalance').textContent = state.balance.toLocaleString();
+                } catch(e) {
+                    state.isSpinning = false;
+                    alert('Error');
+                    return;
+                }
+            }
             
             track.style.transition = 'none';
             initRouletteTrack();
@@ -837,13 +873,8 @@
                 state.isSpinning = false;
                 if (window.confetti) confetti({ particleCount: 80, spread: 90 });
                 
-                try {
-                    await fetch(`/api/roll/${userId}`, { method: 'POST' });
-                    loadUserData();
-                    loadInventoryFromServer();
-                } catch(e) {}
-
-                showWinModal(winningItem, true);
+                await loadInventoryFromServer();
+                showWinModal(winningItem, !isDemo);
                 addFeedItem(winningItem);
             }, 5000);
         }
@@ -859,10 +890,39 @@
 
         async function spinWheel() {
             if (state.isSpinning) return;
+            const isDemo = document.getElementById('wheelDemoToggle').checked;
+            const wheelCost = 100;
+
+            if (!isDemo && state.balance < wheelCost) {
+                alert(state.lang === 'RU' ? 'Недостаточно звёзд на балансе!' : 'Insufficient balance!');
+                return;
+            }
+
             state.isSpinning = true;
             const wheel = document.getElementById('wheelTrack');
-            const winningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
-            const index = itemsPool.findIndex(i => i.id === winningItem.id);
+
+            let winningItem;
+            if (isDemo) {
+                winningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+            } else {
+                try {
+                    const res = await fetch(`/api/roll/${userId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ cost: wheelCost })
+                    });
+                    const data = await res.json();
+                    winningItem = data.gift;
+                    state.balance = data.balance;
+                    document.getElementById('userBalance').textContent = state.balance.toLocaleString();
+                } catch(e) {
+                    state.isSpinning = false;
+                    alert('Error');
+                    return;
+                }
+            }
+
+            const index = itemsPool.findIndex(i => i.name === winningItem.name);
             const sliceAngle = 360 / itemsPool.length;
             
             currentWheelRotation += 1440 + (360 - (index * sliceAngle + sliceAngle / 2));
@@ -872,13 +932,8 @@
                 state.isSpinning = false;
                 if (window.confetti) confetti({ particleCount: 80, spread: 90 });
                 
-                try {
-                    await fetch(`/api/roll/${userId}`, { method: 'POST' });
-                    loadUserData();
-                    loadInventoryFromServer();
-                } catch(e) {}
-
-                showWinModal(winningItem, true);
+                await loadInventoryFromServer();
+                showWinModal(winningItem, !isDemo);
                 addFeedItem(winningItem);
             }, 5000);
         }
@@ -892,6 +947,13 @@
 
         function showWinModal(item, isReal) {
             pendingWinItem = item;
+            // Если предмет реальный, берем его ID из последнего элемента инвентаря
+            if (isReal && state.inventory.length > 0) {
+                lastWonItemId = state.inventory[state.inventory.length - 1].id;
+            } else {
+                lastWonItemId = null;
+            }
+
             document.getElementById('modalIcon').textContent = item.icon;
             document.getElementById('modalItemName').textContent = item.name;
             document.getElementById('modalItemPrice').textContent = `${item.price} ⭐`;
@@ -900,7 +962,12 @@
 
         async function closeModal(action) {
             document.getElementById('winModal').classList.remove('active');
+            if (action === 'sell' && lastWonItemId) {
+                await sellItem(lastWonItemId, false);
+            }
+            loadUserData();
             loadInventoryFromServer();
+            lastWonItemId = null;
         }
 
         function renderInventory() {
@@ -916,12 +983,12 @@
             state.inventory.forEach(item => {
                 const isRequested = item.status === 'withdraw_requested';
                 grid.innerHTML += `
-                    <div class="inventory-card">
+                    <div class="inventory-card" data-id="${item.id}">
                         <div class="icon">${item.icon}</div>
                         <div class="name">${item.name}</div>
                         <div class="price">${item.price} ⭐</div>
                         <div class="inventory-actions">
-                            <button class="sell-btn" onclick="sellItem(${item.id})">${translations[state.lang].sell}</button>
+                            <button class="sell-btn" onclick="sellItem(${item.id}, true)">${translations[state.lang].sell}</button>
                             <button class="withdraw-btn" ${isRequested ? 'disabled' : ''} onclick="promptWithdraw(${item.id}, '${item.icon}')">
                                 ${isRequested ? translations[state.lang].pending : translations[state.lang].withdraw}
                             </button>
@@ -929,6 +996,20 @@
                     </div>
                 `;
             });
+        }
+
+        async function sellItem(itemId, updateUI = true) {
+            try {
+                const res = await fetch(`/api/sell/${itemId}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    state.balance = data.balance;
+                    document.getElementById('userBalance').textContent = state.balance.toLocaleString();
+                    if (updateUI) loadInventoryFromServer();
+                }
+            } catch(e) {
+                alert('Sell error');
+            }
         }
 
         function promptWithdraw(itemId, icon) {
@@ -952,10 +1033,6 @@
             selectedItemIdForWithdraw = null;
         }
 
-        async function sellItem(itemId) {
-            loadInventoryFromServer();
-        }
-
         function filterInventory(query) {
             const cards = document.querySelectorAll('.inventory-card');
             cards.forEach(card => {
@@ -973,11 +1050,11 @@
             renderInventory();
         }
 
-        function addFeedItem(item) {
+        fn = addFeedItem = function(item) {
             const list = document.getElementById('feedList');
             if (!list) return;
             list.innerHTML = `<div class="feed-item"><span>User won ${item.name}</span><span style="color:var(--gold)">${item.icon} ${item.price} ⭐</span></div>` + list.innerHTML;
-        }
+        };
 
         if (state.lang === 'EN') toggleLanguage();
         initWheel();
