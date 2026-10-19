@@ -53,6 +53,23 @@ class SellItemRequest(BaseModel):
     user_id: str
     uid: float
 
+def get_weighted_random_item(items):
+    if not items:
+        return None
+    
+    # Разделяем на анимированные и обычные
+    animated_items = [item for item in items if item.get("animation")]
+    regular_items = [item for item in items if not item.get("animation")]
+
+    # Если есть и те, и другие, делаем повышенный шанс (70%) на анимации для тестов
+    if animated_items and regular_items:
+        if random.random() < 0.7:  # 70% шанс на анимированный подарок
+            return random.choice(animated_items)
+        else:
+            return random.choice(regular_items)
+            
+    return random.choice(items)
+
 @app.get("/")
 def serve_frontend():
     return FileResponse("index.html")
@@ -89,7 +106,7 @@ def spin_case(data: SpinRequest):
     if not ITEMS_POOL:
         raise HTTPException(status_code=500, detail="Items pool is empty")
     
-    winning_item = random.choice(ITEMS_POOL)
+    winning_item = get_weighted_random_item(ITEMS_POOL)
     save_db()
     return {"balance": users_db[uid]["balance"], "item": winning_item}
 
@@ -113,7 +130,7 @@ def spin_wheel(data: SpinRequest):
     if not ITEMS_POOL:
         raise HTTPException(status_code=500, detail="Items pool is empty")
     
-    winning_item = random.choice(ITEMS_POOL)
+    winning_item = get_weighted_random_item(ITEMS_POOL)
     save_db()
     return {"balance": users_db[uid]["balance"], "item": winning_item}
 
