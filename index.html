@@ -1235,21 +1235,27 @@
         }
 
         function closeModal(action) {
-            if (pendingWinItem && !pendingIsDemo) {
+            if (!pendingWinItem) return;
+
+            const itemToProcess = pendingWinItem;
+            const isDemo = pendingIsDemo;
+
+            // Мгновенно сбрасываем, чтобы исключить дюп при повторных кликах
+            pendingWinItem = null;
+            pendingIsDemo = false;
+
+            // Сразу закрываем модальное окно
+            document.getElementById('winModal').classList.remove('active');
+
+            if (!isDemo) {
                 if (action === 'claim') {
-                    // Добавление предмета в инвентарь
-                    state.inventory.push({ ...pendingWinItem, uid: Date.now() + Math.random() });
+                    state.inventory.push({ ...itemToProcess, uid: Date.now() + Math.random() });
                 } else if (action === 'sell') {
-                    // Продажа предмета
-                    updateBalance(pendingWinItem.price);
+                    updateBalance(itemToProcess.price);
                 }
                 renderInventory();
                 saveState();
             }
-            
-            pendingWinItem = null;
-            pendingIsDemo = false;
-            document.getElementById('winModal').classList.remove('active');
         }
 
         function openWithdrawModal(uid) {
@@ -1346,4 +1352,4 @@
         };
     </script>
 </body>
-</html>>
+</html>
