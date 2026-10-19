@@ -149,7 +149,7 @@
             padding: 10px;
             overflow: hidden;
         }
-        .case-item-box img, .case-item-box video {
+        .case-item-box img {
             width: 50px;
             height: 50px;
             object-fit: contain;
@@ -205,6 +205,34 @@
         }
         input:checked + .slider { background-color: var(--accent-color); }
         input:checked + .slider:before { transform: translateX(24px); }
+
+        /* Модальное окно победы */
+        #win-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 17, 23, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+        .win-modal-content {
+            background: var(--card-bg);
+            border: 2px solid #2a2e39;
+            border-radius: 20px;
+            padding: 25px;
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .win-modal-content img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -257,6 +285,17 @@
         </div>
     </div>
 
+    <!-- Модальное окно выигрыша -->
+    <div id="win-modal">
+        <div class="win-modal-content">
+            <h3 style="margin-top: 0; color: var(--gold);">Поздравляем с выигрышем!</h3>
+            <img id="win-modal-img" src="" alt="gift">
+            <h4 id="win-modal-name" style="margin: 5px 0 15px 0;">Название</h4>
+            <button class="btn" style="margin-top: 5px;" onclick="claimPrize()">В инвентарь</button>
+            <button class="btn" style="background-color: #ff4757; margin-top: 10px;" onclick="sellPrizeDirectly()">Продать (+<span id="win-modal-price">0</span> ⭐)</button>
+        </div>
+    </div>
+
     <nav>
         <button class="active" onclick="switchTab('cases', this)">Кейсы</button>
         <button onclick="switchTab('wheel', this)">Колесо</button>
@@ -268,7 +307,8 @@
         if (tg) tg.expand();
 
         const userId = tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : "test_user_123";
-        
+        let lastWonItem = null;
+
         let localItemsPool = [
             {"id": 1, "name": "Star Pouch", "icon": "⭐", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f31f.png", "animation": "", "price": 30},
             {"id": 2, "name": "Animated Gift Box", "icon": "🎁", "image": "https://images.emojiterra.com/google/android-11/512px/1f381.png", "animation": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3ZtOGlnczJmMXZmbWNkM3E1c296NmcxYmpxbW1ubGRyYjNtdXhzaSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/L1R16I0SVbipNMCxyP/giphy.gif", "price": 150},
@@ -296,11 +336,8 @@
         }
 
         function renderMedia(item) {
-            // Если есть анимация (гифка), показываем её, иначе обычную картинку
-            if (item.animation) {
-                return `<img src="${item.animation}" alt="${item.name}" style="object-fit: contain;">`;
-            }
-            return `<img src="${item.image || ''}" alt="${item.name}" onerror="this.style.display='none'">`;
+            let mediaSrc = item.animation || item.image || '';
+            return `<img src="${mediaSrc}" alt="${item.name}" style="object-fit: contain;" onerror="this.style.display='none'">`;
         }
 
         function buildRouletteTracks() {
@@ -340,12 +377,15 @@
             track.style.transition = 'none';
             track.style.transform = 'translateX(0px)';
 
-            setTimeout(() => {
-                const itemWidth = 126; 
-                const offset = (targetIndex * itemWidth) - 150; 
-                track.style.transition = 'transform 4s cubic-bezier(0.1, 0.8, 0.2, 1)';
-                track.style.transform = `translateX(-${offset}px)`;
-            }, 50);
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    const itemWidth = 126; 
+                    const offset = (targetIndex * itemWidth) - 150; 
+                    track.style.transition = 'transform 4s cubic-bezier(0.1, 0.8, 0.2, 1)';
+                    track.style.transform = `translateX(-${offset}px)`;
+                    setTimeout(resolve, 4100);
+                }, 50);
+            });
         }
 
         async function spinCase() {
@@ -362,13 +402,13 @@
                 const data = await response.json();
                 if (response.ok) {
                     await animateRoulette('case-track', data.item);
-                    setTimeout(async () => {
-                        document.getElementById('user-balance').innerText = data.balance;
-                        if (!isDemo) {
-                            await addToInventory(data.item);
-                        }
-                        btn.disabled = false;
-                    }, 4100);
+                    document.getElementById('user-balance').innerText = data.balance;
+                    btn.disabled = false;
+
+                    if (!isDemo) {
+                        lastWonItem = data.item;
+                        showWinModal(data.item);
+                    }
                 } else {
                     alert(data.detail || "Ошибка");
                     btn.disabled = false;
@@ -393,13 +433,13 @@
                 const data = await response.json();
                 if (response.ok) {
                     await animateRoulette('wheel-track', data.item);
-                    setTimeout(async () => {
-                        document.getElementById('user-balance').innerText = data.balance;
-                        if (!isDemo) {
-                            await addToInventory(data.item);
-                        }
-                        btn.disabled = false;
-                    }, 4100);
+                    document.getElementById('user-balance').innerText = data.balance;
+                    btn.disabled = false;
+
+                    if (!isDemo) {
+                        lastWonItem = data.item;
+                        showWinModal(data.item);
+                    }
                 } else {
                     alert(data.detail || "Ошибка");
                     btn.disabled = false;
@@ -410,12 +450,24 @@
             }
         }
 
-        async function addToInventory(item) {
+        function showWinModal(item) {
+            document.getElementById('win-modal-img').src = item.animation || item.image || '';
+            document.getElementById('win-modal-name').innerText = item.name;
+            document.getElementById('win-modal-price').innerText = item.price || 100;
+            document.getElementById('win-modal').style.display = 'flex';
+        }
+
+        function closeWinModal() {
+            document.getElementById('win-modal').style.display = 'none';
+        }
+
+        async function claimPrize() {
+            if (!lastWonItem) return;
             try {
                 const response = await fetch('/api/inventory-action', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: userId, action: "claim", item: item })
+                    body: JSON.stringify({ user_id: userId, action: "claim", item: lastWonItem })
                 });
                 const data = await response.json();
                 if (response.ok) {
@@ -423,8 +475,39 @@
                     updateInventoryUI(data.inventory);
                 }
             } catch (e) {
-                console.error("Inventory error:", e);
+                console.error("Claim error:", e);
             }
+            closeWinModal();
+        }
+
+        async function sellPrizeDirectly() {
+            if (!lastWonItem) return;
+            // Сначала добавляем во временный инвентарь для получения uid, затем сразу продаем
+            try {
+                const resp1 = await fetch('/api/inventory-action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, action: "claim", item: lastWonItem })
+                });
+                const data1 = await resp1.json();
+                if (resp1.ok && data1.inventory.length > 0) {
+                    // Берем последний добавленный предмет (его uid)
+                    const addedItem = data1.inventory[data1.inventory.length - 1];
+                    const resp2 = await fetch('/api/sell-inventory-item', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: userId, uid: addedItem.uid })
+                    });
+                    const data2 = await resp2.json();
+                    if (resp2.ok) {
+                        document.getElementById('user-balance').innerText = data2.balance;
+                        updateInventoryUI(data2.inventory);
+                    }
+                }
+            } catch (e) {
+                console.error("Sell direct error:", e);
+            }
+            closeWinModal();
         }
 
         async function sellItem(uid) {
