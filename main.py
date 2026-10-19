@@ -7,14 +7,11 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-# Импортируем наш массив и функцию из Items_poll.py
 from Items_poll import ITEMS_POOL, fetch_and_update_items_pool
 
-# Настройки для TonAPI
 TONAPI_KEY = "ТВОЙ_ТОКЕН_TONAPI"
 COLLECTION_ADDRESS = "АДРЕС_КОЛЛЕКЦИИ_В_TON"
 
-# Загружаем данные из TonAPI при старте сервера через lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await fetch_and_update_items_pool(TONAPI_KEY, COLLECTION_ADDRESS)
@@ -72,35 +69,6 @@ def init_user(data: UserRequest):
         save_db()
     return users_db[uid]
 
-@app.post("/api/bonus")
-def claim_bonus(data: UserRequest):
-    uid = data.user_id
-    if uid not in users_db:
-        users_db[uid] = {
-            "balance": 200000,
-            "inventory": [],
-            "last_bonus": 0,
-        }
-
-    now = time.time() * 1000
-    cooldown = 24 * 60 * 60 * 1000
-
-    if now - users_db[uid].get("last_bonus", 0) < cooldown:
-        raise HTTPException(status_code=400, detail="Cooldown active")
-
-    users_db[uid]["last_bonus"] = now
-
-    if not ITEMS_POOL:
-        raise HTTPException(status_code=500, detail="Items pool is empty")
-    winning_item = random.choice(ITEMS_POOL)
-    save_db()
-
-    return {
-        "balance": users_db[uid]["balance"],
-        "last_bonus": now,
-        "item": winning_item
-    }
-
 @app.post("/api/spin-case")
 def spin_case(data: SpinRequest):
     uid = data.user_id
@@ -110,6 +78,13 @@ def spin_case(data: SpinRequest):
             "inventory": [],
             "last_bonus": 0,
         }
+
+    cost = 100  # Стоимость прокрутки кейса
+    if not data.is_demo and users_db[uid]["balance"] < cost:
+        raise HTTPException(status_code=400, detail="Недостаточно звезд для прокрутки!")
+
+    if not data.is_demo:
+        users_db[uid]["balance"] -= cost
 
     if not ITEMS_POOL:
         raise HTTPException(status_code=500, detail="Items pool is empty")
@@ -127,6 +102,13 @@ def spin_wheel(data: SpinRequest):
             "inventory": [],
             "last_bonus": 0,
         }
+
+    cost = 50  # Стоимость прокрутки колеса
+    if not data.is_demo and users_db[uid]["balance"] < cost:
+        raise HTTPException(status_code=400, detail="Недостаточно звезд для прокрутки!")
+
+    if not data.is_demo:
+        users_db[uid]["balance"] -= cost
 
     if not ITEMS_POOL:
         raise HTTPException(status_code=500, detail="Items pool is empty")
@@ -148,8 +130,6 @@ def inventory_action(data: InventoryAction):
     user = users_db[uid]
     if data.action == "claim":
         user["inventory"].append({**data.item, "uid": time.time() * 1000 + random.random()})
-    elif data.action == "sell":
-        user["balance"] += data.item.get("price", 0)
 
     save_db()
     return {"balance": user["balance"], "inventory": user["inventory"]}
@@ -168,7 +148,7 @@ def sell_inventory_item(data: SellItemRequest):
     idx = next((i for i, item in enumerate(user["inventory"]) if item["uid"] == data.uid), -1)
     if idx != -1:
         item = user["inventory"].pop(idx)
-        user["balance"] += item.get("price", 0)
+        user["balance"] += item.get("price", 100)  # Пополняем банк при продаже
 
     save_db()
     return {"balance": user["balance"], "inventory": user["inventory"]}
