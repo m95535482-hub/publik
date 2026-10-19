@@ -9,11 +9,12 @@ import telebot
 
 TOKEN = os.getenv("BOT_TOKEN", "123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ")
 
+# Данные администратора: ID и юзернейм для подстраховки
+ADMIN_ID = 1218168630
+ADMIN_USERNAME = "Bruhki"
+
 bot = telebot.TeleBot(TOKEN)
 app = FastAPI()
-
-# Переменная для автоматического хранения ID администратора
-ADMIN_ID = None
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -60,7 +61,7 @@ def init_db():
 
 init_db()
 
-# Запуск бота в фоновом потоке, чтобы он слушал входящие сообщения (например, /start)
+# Запуск бота в фоновом потоке
 def run_bot():
     try:
         bot.infinity_polling(skip_pending=True)
@@ -89,19 +90,13 @@ def give_random_gift(user_id: int):
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    global ADMIN_ID
-    if message.from_user.username and message.from_user.username.lower() == "bruhki":
-        ADMIN_ID = message.from_user.id
-        print(f"✅ Администратор авторизован! ID: {ADMIN_ID}")
-        bot.reply_to(message, "👑 Вы успешно авторизованы как администратор CatRoll!")
-    else:
-        bot.reply_to(
-            message, 
-            "Welcome to CatRoll Mini App!\n\n"
-            "• Type `/buy` to get a test gift into your inventory.\n"
-            "• Open the Mini App using the menu button to check your inventory and request withdrawals!",
-            parse_mode="Markdown"
-        )
+    bot.reply_to(
+        message, 
+        "Welcome to CatRoll Mini App!\n\n"
+        "• Type `/buy` to get a test gift into your inventory.\n"
+        "• Open the Mini App using the menu button to check your inventory and request withdrawals!",
+        parse_mode="Markdown"
+    )
 
 @bot.message_handler(commands=['buy'])
 def handle_buy_free(message):
@@ -147,7 +142,6 @@ def api_roll(user_id: int):
 
 @app.post("/api/withdraw/{item_id}")
 def withdraw_item(item_id: int):
-    global ADMIN_ID
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
     cursor.execute("SELECT user_id, gift_name, status FROM inventory WHERE id = ?", (item_id,))
@@ -167,24 +161,35 @@ def withdraw_item(item_id: int):
     conn.commit()
     conn.close()
     
-    if not ADMIN_ID:
-        raise HTTPException(status_code=500, detail="Admin ID is not set. Please send /start to your bot from @Bruhki first.")
+    success = False
+    error_message = ""
     
+    text_msg = (
+        f"🎁 **GIFT WITHDRAWAL REQUEST!**\n\n"
+        f"👤 **Winner ID:** `{user_id}`\n"
+        f"🏆 **Gift:** `{gift_name}`\n"
+        f"🆔 **Item ID in DB:** `{item_id}`\n\n"
+        f"👉 Open the user's profile and send them this gift manually in Telegram!"
+    )
+
+    # Попытка 1: отправить по числовому ID
     try:
-        user_info = bot.get_chat(user_id)
-        username = f"@{user_info.username}" if user_info.username else f"ID: `{user_id}`"
-        
-        bot.send_message(
-            ADMIN_ID,
-            f"🎁 **GIFT WITHDRAWAL REQUEST!**\n\n"
-            f"👤 **Winner:** {username}\n"
-            f"🏆 **Gift:** `{gift_name}`\n"
-            f"🆔 **Item ID in DB:** `{item_id}`\n\n"
-            f"👉 Open the user's profile and send them this gift manually in Telegram!",
-            parse_mode="Markdown"
-        )
-    except Exception as e:
-        print(f"Failed to send notification to admin: {e}")
-        raise HTTPException(status_code=500, detail=f"Telegram error: {str(e)}")
+        bot.send_message(ADMIN_ID, text_msg, parse_mode="Markdown")
+        success = True
+    except Exception as e1:
+        error_message += f"ID error: {e1}; "
+
+    # Попытка 2: если по ID не вышло, пробуем через юзернейм
+    if not success:
+        try:
+            admin_chat = bot.get_chat(ADMIN_USERNAME)
+            bot.send_message(admin_chat.id, text_msg, parse_mode="Markdown")
+            success = True
+        except Exception as e2:
+            error_message += f"Username error: {e2}"
+
+    if not success:
+        print(f"Failed to send notification to admin via both ID and Username. {error_message}")
+        raise HTTPException(status_code=500, detail=f"Telegram notification error: {error_message}")
         
     return {"message": "Success! The withdrawal request has been sent to the admin."}
