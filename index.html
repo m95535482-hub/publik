@@ -98,9 +98,9 @@
         .item-card .name { font-size: 10px; color: var(--text-secondary); margin-top: 6px; font-weight: 700; text-align: center; }
         .item-card .price-tag { font-size: 11px; color: var(--gold); font-weight: 800; margin-top: 2px; }
 
-        /* Колесо Фортуны */
-        .wheel-box { position: relative; width: 290px; height: 290px; margin: 10px 0 22px 0; display: flex; align-items: center; justify-content: center; }
-        .wheel-pointer { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 26px solid #ff3b30; z-index: 30; filter: drop-shadow(0 4px 14px rgba(255,59,48,0.95)); }
+        /* Идеальное Колесо Фортуны */
+        .wheel-box { position: relative; width: 280px; height: 280px; margin: 10px 0 22px 0; display: flex; align-items: center; justify-content: center; }
+        .wheel-pointer { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 26px solid #ff3b30; z-index: 30; filter: drop-shadow(0 4px 14px rgba(255,59,48,0.95)); }
         
         .wheel-container-outer {
             width: 100%;
@@ -112,34 +112,39 @@
             position: relative;
         }
 
-        .wheel { width: 100%; height: 100%; border-radius: 50%; background: #111; position: relative; overflow: hidden; transition: transform 5s cubic-bezier(0.1, 1, 0.1, 1); }
-        
-        .wheel-slice { 
-            position: absolute; 
-            width: 50%; 
-            height: 50%; 
-            top: 0; 
-            left: 50%; 
-            transform-origin: 0% 100%; 
-            pointer-events: none; 
-            display: flex; 
-            justify-content: center;
-            border-left: 1px solid rgba(255,255,255,0.1);
+        .wheel { 
+            width: 100%; 
+            height: 100%; 
+            border-radius: 50%; 
+            position: relative; 
+            overflow: hidden; 
+            transition: transform 5s cubic-bezier(0.1, 1, 0.1, 1);
+            background: conic-gradient(
+                #1a1a1a 0deg 45deg, #3a3a3a 45deg 90deg,
+                #1a1a1a 90deg 135deg, #3a3a3a 135deg 180deg,
+                #1a1a1a 180deg 225deg, #3a3a3a 225deg 270deg,
+                #1a1a1a 270deg 315deg, #3a3a3a 315deg 360deg
+            );
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
         }
         
-        .wheel-slice-content { 
+        .wheel-item-node { 
             position: absolute; 
+            top: 50%; 
             left: 50%; 
-            top: 38px; 
-            transform: translateX(-50%) rotate(45deg); 
+            width: 40px;
+            height: 100px;
+            margin-top: -50px;
+            margin-left: -20px;
+            transform-origin: 50% 50%;
+            pointer-events: none; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            text-align: center; 
-            width: 60px;
+            padding-top: 10px;
         }
 
-        .wheel-center-cap { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 54px; height: 54px; background: radial-gradient(circle, #ffe600 0%, #b8860b 100%); border: 3px solid #fff; border-radius: 50%; z-index: 25; display: flex; align-items: center; justify-content: center; color: #000; font-size: 20px; box-shadow: 0 0 15px rgba(0,0,0,0.6); }
+        .wheel-center-cap { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; background: radial-gradient(circle, #ffe600 0%, #b8860b 100%); border: 3px solid #fff; border-radius: 50%; z-index: 25; display: flex; align-items: center; justify-content: center; color: #000; font-size: 18px; box-shadow: 0 0 15px rgba(0,0,0,0.6); }
 
         .action-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--purple-accent), var(--purple-bright)); border: none; border-radius: 18px; color: #fff; font-weight: 900; font-size: 16px; cursor: pointer; box-shadow: 0 8px 25px var(--accent-glow); }
         .action-btn:active { transform: scale(0.96); }
@@ -576,25 +581,20 @@
             wheel.innerHTML = '';
             const count = itemsPool.length;
             const sliceAngle = 360 / count;
-            const twoColors = ['#1a1a1a', '#3a3a3a'];
 
             itemsPool.forEach((item, index) => {
-                const slice = document.createElement('div');
-                slice.className = 'wheel-slice';
-                const rotation = index * sliceAngle;
+                const node = document.createElement('div');
+                node.className = 'wheel-item-node';
                 
-                slice.style.transform = `rotate(${rotation}deg) skewY(${90 - sliceAngle}deg)`;
-                slice.style.backgroundColor = twoColors[index % 2];
+                const angle = index * sliceAngle + (sliceAngle / 2);
+                node.style.transform = `rotate(${angle}deg) translateY(-72px)`;
                 
-                const content = document.createElement('div');
-                content.className = 'wheel-slice-content';
-                content.innerHTML = `
-                    <span style="font-size: 21px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.9));">${item.icon}</span>
-                    <span style="font-size: 8px; color: #fff; font-weight: 700; margin-top: 2px; text-shadow: 0 1px 2px rgba(0,0,0,0.9);">${item.name}</span>
+                node.innerHTML = `
+                    <span style="font-size: 20px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.9));">${item.icon}</span>
+                    <span style="font-size: 8px; color: #fff; font-weight: 700; margin-top: 3px; text-shadow: 0 1px 2px rgba(0,0,0,0.9); white-space: nowrap;">${item.name}</span>
                 `;
                 
-                slice.appendChild(content);
-                wheel.appendChild(slice);
+                wheel.appendChild(node);
             });
         }
 

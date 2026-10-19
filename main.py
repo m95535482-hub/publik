@@ -78,7 +78,7 @@ def claim_bonus(data: UserRequest):
     now = time.time() * 1000
     cooldown = 24 * 60 * 60 * 1000
     
-    # Жесткая проверка защиты от обхода таймера на сервере
+    # Жесткая серверная проверка 24-часового кулдауна
     if now - users_db[uid].get("last_bonus", 0) < cooldown:
         raise HTTPException(status_code=400, detail="Cooldown active")
 
