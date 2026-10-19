@@ -262,19 +262,24 @@
         input:checked + .slider { background-color: var(--purple-accent); }
         input:checked + .slider:before { transform: translateX(18px); }
 
-        /* Кнопка скипа приведена к единому стилю элементов интерфейса */
+        /* Единый элегантный стиль для кнопок «Пропустить» */
         .skip-btn-mini {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #fff;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-secondary);
             padding: 6px 12px;
             border-radius: 12px;
             font-size: 12px;
             font-weight: 700;
             cursor: pointer;
-            transition: 0.2s;
+            transition: all 0.2s;
         }
-        .skip-btn-mini:active { transform: scale(0.95); background: rgba(255,255,255,0.15); }
+        .skip-btn-mini:hover, .skip-btn-mini:active {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: scale(0.96);
+        }
 
         .cases-selector {
             display: flex; gap: 8px; width: 100%; margin-bottom: 16px;
@@ -303,7 +308,7 @@
 
         .roulette-track {
             display: flex; align-items: center; position: absolute; left: 0; top: 0; height: 100%;
-            transition: transform 5s cubic-bezier(0.1, 1, 0.1, 1);
+            will-change: transform;
         }
 
         .item-card {
@@ -326,7 +331,7 @@
         }
         .wheel {
             width: 100%; height: 100%; border-radius: 50%; border: 7px solid #1a1a26; position: relative; overflow: hidden;
-            transition: transform 5s cubic-bezier(0.1, 1, 0.1, 1); box-shadow: 0 0 40px rgba(0,0,0,0.9);
+            will-change: transform; box-shadow: 0 0 40px rgba(0,0,0,0.9);
         }
         .wheel-slice {
             position: absolute; width: 50%; height: 50%; top: 0; left: 50%; transform-origin: 0% 100%; pointer-events: none; display: flex; justify-content: center;
@@ -665,6 +670,9 @@
         let selectedItemIdForWithdraw = null;
         let currentWheelRotation = 0;
         let lastWonItemId = null;
+        let rouletteTimeout = null;
+        let wheelTimeout = null;
+        let currentWinningItem = null;
 
         async function loadUserData() {
             try {
@@ -810,14 +818,17 @@
         function initRouletteTrack() {
             const track = document.getElementById('rouletteTrack');
             if (!track) return;
+            track.style.transition = 'none';
+            track.style.transform = 'translateX(0px)';
             track.innerHTML = '';
-            for(let i=0; i<30; i++) {
+            for(let i=0; i<35; i++) {
                 const randItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
                 track.innerHTML += `<div class="item-card"><div class="icon">${randItem.icon}</div><div class="name">${randItem.name}</div><div class="price-tag">${randItem.price} ⭐</div></div>`;
             }
         }
 
         function selectCase(caseType, cost, el) {
+            if (state.isSpinning) return;
             document.querySelectorAll('.case-tab').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
             state.currentCaseCost = cost;
@@ -837,9 +848,8 @@
             state.isSpinning = true;
             const track = document.getElementById('rouletteTrack');
             
-            let winningItem;
             if (isDemo) {
-                winningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+                currentWinningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
             } else {
                 try {
                     const res = await fetch(`/api/roll/${userId}`, {
@@ -848,7 +858,7 @@
                         body: JSON.stringify({ cost: state.currentCaseCost })
                     });
                     const data = await res.json();
-                    winningItem = data.gift;
+                    currentWinningItem = data.gift;
                     state.balance = data.balance;
                     document.getElementById('userBalance').textContent = state.balance.toLocaleString();
                 } catch(e) {
@@ -858,34 +868,35 @@
                 }
             }
             
-            track.style.transition = 'none';
             initRouletteTrack();
             const cards = track.querySelectorAll('.item-card');
-            cards[15].querySelector('.icon').textContent = winningItem.icon;
-            cards[15].querySelector('.name').textContent = winningItem.name;
-            cards[15].querySelector('.price-tag').textContent = winningItem.price + ' ⭐';
+            // Устанавливаем выигрышный предмет на 18 позицию для красивого центрирования
+            cards[18].querySelector('.icon').textContent = currentWinningItem.icon;
+            cards[18].querySelector('.name').textContent = currentWinningItem.name;
+            cards[18].querySelector('.price-tag').textContent = currentWinningItem.price + ' ⭐';
 
-            track.style.transition = 'transform 5s cubic-bezier(0.1, 1, 0.1, 1)';
-            const offset = (15 * 107) - 120 + Math.random() * 60;
+            // Плавная кривая анимации без рывков
+            track.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.85, 0.35, 1.05)';
+            const offset = (18 * 107) - 130 + Math.random() * 40;
             track.style.transform = `translateX(-${offset}px)`;
 
-            setTimeout(async () => {
+            rouletteTimeout = setTimeout(async () => {
                 state.isSpinning = false;
                 if (window.confetti) confetti({ particleCount: 80, spread: 90 });
-                
                 await loadInventoryFromServer();
-                showWinModal(winningItem, !isDemo);
-                addFeedItem(winningItem);
-            }, 5000);
+                showWinModal(currentWinningItem, !isDemo);
+                addFeedItem(currentWinningItem);
+            }, 4500);
         }
 
         function skipCaseAnimation() {
             if (!state.isSpinning) return;
+            clearTimeout(rouletteTimeout);
             const track = document.getElementById('rouletteTrack');
             track.style.transition = 'none';
             state.isSpinning = false;
-            const winningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
-            showWinModal(winningItem, true);
+            showWinModal(currentWinningItem, true);
+            addFeedItem(currentWinningItem);
         }
 
         async function spinWheel() {
@@ -901,9 +912,8 @@
             state.isSpinning = true;
             const wheel = document.getElementById('wheelTrack');
 
-            let winningItem;
             if (isDemo) {
-                winningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+                currentWinningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
             } else {
                 try {
                     const res = await fetch(`/api/roll/${userId}`, {
@@ -912,7 +922,7 @@
                         body: JSON.stringify({ cost: wheelCost })
                     });
                     const data = await res.json();
-                    winningItem = data.gift;
+                    currentWinningItem = data.gift;
                     state.balance = data.balance;
                     document.getElementById('userBalance').textContent = state.balance.toLocaleString();
                 } catch(e) {
@@ -922,32 +932,34 @@
                 }
             }
 
-            const index = itemsPool.findIndex(i => i.name === winningItem.name);
+            const index = itemsPool.findIndex(i => i.name === currentWinningItem.name);
             const sliceAngle = 360 / itemsPool.length;
             
-            currentWheelRotation += 1440 + (360 - (index * sliceAngle + sliceAngle / 2));
+            currentWheelRotation += 1800 + (360 - (index * sliceAngle + sliceAngle / 2));
+            wheel.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.85, 0.35, 1.05)';
             wheel.style.transform = `rotate(${currentWheelRotation}deg)`;
 
-            setTimeout(async () => {
+            wheelTimeout = setTimeout(async () => {
                 state.isSpinning = false;
                 if (window.confetti) confetti({ particleCount: 80, spread: 90 });
-                
                 await loadInventoryFromServer();
-                showWinModal(winningItem, !isDemo);
-                addFeedItem(winningItem);
-            }, 5000);
+                showWinModal(currentWinningItem, !isDemo);
+                addFeedItem(currentWinningItem);
+            }, 4500);
         }
 
         function skipWheelAnimation() {
             if (!state.isSpinning) return;
+            clearTimeout(wheelTimeout);
+            const wheel = document.getElementById('wheelTrack');
+            wheel.style.transition = 'none';
             state.isSpinning = false;
-            const winningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
-            showWinModal(winningItem, true);
+            showWinModal(currentWinningItem, true);
+            addFeedItem(currentWinningItem);
         }
 
         function showWinModal(item, isReal) {
             pendingWinItem = item;
-            // Если предмет реальный, берем его ID из последнего элемента инвентаря
             if (isReal && state.inventory.length > 0) {
                 lastWonItemId = state.inventory[state.inventory.length - 1].id;
             } else {
@@ -1050,11 +1062,11 @@
             renderInventory();
         }
 
-        fn = addFeedItem = function(item) {
+        function addFeedItem(item) {
             const list = document.getElementById('feedList');
             if (!list) return;
             list.innerHTML = `<div class="feed-item"><span>User won ${item.name}</span><span style="color:var(--gold)">${item.icon} ${item.price} ⭐</span></div>` + list.innerHTML;
-        };
+        }
 
         if (state.lang === 'EN') toggleLanguage();
         initWheel();
