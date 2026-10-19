@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 app = FastAPI(title="CatRoll Secure Backend")
 
+# Временное хранилище в памяти (в будущем можно подключить базу данных)
 users_db = {}
 
 ITEMS_POOL = [
@@ -27,11 +28,12 @@ class UserRequest(BaseModel):
 class SpinRequest(BaseModel):
     user_id: str
     case_type: str = "starter"
+    is_demo: bool = False
 
 
-class InventoryActionRequest(BaseModel):
+class InventoryAction(BaseModel):
     user_id: str
-    action: str
+    action: str  # 'claim' или 'sell'
     item: dict
 
 
@@ -49,7 +51,11 @@ def serve_frontend():
 def init_user(data: UserRequest):
     uid = data.user_id
     if uid not in users_db:
-        users_db[uid] = {"balance": 200000, "inventory": [], "last_bonus": 0}
+        users_db[uid] = {
+            "balance": 200000,
+            "inventory": [],
+            "last_bonus": 0,
+        }
     return users_db[uid]
 
 
@@ -58,9 +64,12 @@ def claim_bonus(data: UserRequest):
     uid = data.user_id
     if uid not in users_db:
         raise HTTPException(status_code=404, detail="User not found")
+
     now = time.time() * 1000
-    if now - users_db[uid]["last_bonus"] < 24 * 60 * 60 * 1000:
+    cooldown = 24 * 60 * 60 * 1000
+    if now - users_db[uid]["last_bonus"] < cooldown:
         raise HTTPException(status_code=400, detail="Cooldown active")
+
     users_db[uid]["last_bonus"] = now
     users_db[uid]["balance"] += 50
     return {
@@ -74,32 +83,41 @@ def spin_case(data: SpinRequest):
     uid = data.user_id
     if uid not in users_db:
         raise HTTPException(status_code=404, detail="User not found")
+
     costs = {"starter": 50, "rare": 250, "legend": 1000}
     cost = costs.get(data.case_type, 50)
-    if users_db[uid]["balance"] < cost:
-        raise HTTPException(status_code=400, detail="Not enough stars")
-    users_db[uid]["balance"] -= cost
+
+    if not data.is_demo:
+        if users_db[uid]["balance"] < cost:
+            raise HTTPException(status_code=400, detail="Not enough stars")
+        users_db[uid]["balance"] -= cost
+
     winning_item = random.choice(ITEMS_POOL)
     return {"balance": users_db[uid]["balance"], "item": winning_item}
 
 
 @app.post("/api/spin-wheel")
-def spin_wheel(data: UserRequest):
+def spin_wheel(data: SpinRequest):
     uid = data.user_id
     if uid not in users_db:
         raise HTTPException(status_code=404, detail="User not found")
-    if users_db[uid]["balance"] < 100:
-        raise HTTPException(status_code=400, detail="Not enough stars")
-    users_db[uid]["balance"] -= 100
+
+    cost = 100
+    if not data.is_demo:
+        if users_db[uid]["balance"] < cost:
+            raise HTTPException(status_code=400, detail="Not enough stars")
+        users_db[uid]["balance"] -= cost
+
     winning_item = random.choice(ITEMS_POOL)
     return {"balance": users_db[uid]["balance"], "item": winning_item}
 
 
 @app.post("/api/inventory-action")
-def inventory_action(data: InventoryActionRequest):
+def inventory_action(data: InventoryAction):
     uid = data.user_id
     if uid not in users_db:
         raise HTTPException(status_code=404, detail="User not found")
+
     user = users_db[uid]
     if data.action == "claim":
         user["inventory"].append(
@@ -107,6 +125,7 @@ def inventory_action(data: InventoryActionRequest):
         )
     elif data.action == "sell":
         user["balance"] += data.item["price"]
+
     return {"balance": user["balance"], "inventory": user["inventory"]}
 
 
@@ -115,13 +134,16 @@ def sell_inventory_item(data: SellItemRequest):
     uid = data.user_id
     if uid not in users_db:
         raise HTTPException(status_code=404, detail="User not found")
+
     user = users_db[uid]
     idx = next(
         (i for i, item in enumerate(user["inventory"]) if item["uid"] == data.uid),
         -1,
     )
     if idx != -1:
-        user["balance"] += user["inventory"].pop(idx)["price"]
+        item = user["inventory"].pop(idx)
+        user["balance"] += item["price"]
+
     return {"balance": user["balance"], "inventory": user["inventory"]}
 
 
