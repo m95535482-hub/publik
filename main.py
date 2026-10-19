@@ -79,7 +79,7 @@ def spin_case(data: SpinRequest):
             "last_bonus": 0,
         }
 
-    cost = 100  # Стоимость прокрутки кейса
+    cost = 100
     if not data.is_demo and users_db[uid]["balance"] < cost:
         raise HTTPException(status_code=400, detail="Недостаточно звезд для прокрутки!")
 
@@ -103,7 +103,7 @@ def spin_wheel(data: SpinRequest):
             "last_bonus": 0,
         }
 
-    cost = 50  # Стоимость прокрутки колеса
+    cost = 50
     if not data.is_demo and users_db[uid]["balance"] < cost:
         raise HTTPException(status_code=400, detail="Недостаточно звезд для прокрутки!")
 
@@ -148,7 +148,7 @@ def sell_inventory_item(data: SellItemRequest):
     idx = next((i for i, item in enumerate(user["inventory"]) if item["uid"] == data.uid), -1)
     if idx != -1:
         item = user["inventory"].pop(idx)
-        user["balance"] += item.get("price", 100)  # Пополняем банк при продаже
+        user["balance"] += item.get("price", 100)
 
     save_db()
     return {"balance": user["balance"], "inventory": user["inventory"]}

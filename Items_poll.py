@@ -55,7 +55,6 @@ ITEMS_POOL = [
 async def fetch_and_update_items_pool(api_key: str, collection_address: str):
     global ITEMS_POOL
     
-    # Если токен не задан, используем наш тестовый пул с видео
     if not api_key or api_key == "ТВОЙ_ТОКЕН_TONAPI" or not collection_address:
         return ITEMS_POOL
 
