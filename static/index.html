@@ -382,8 +382,10 @@
             width: 100%; padding: 15px; background: linear-gradient(135deg, var(--purple-accent), var(--purple-bright));
             border: none; border-radius: 18px; color: #fff; font-weight: 900; font-size: 16px; cursor: pointer;
             box-shadow: 0 8px 25px var(--accent-glow);
+            transition: opacity 0.2s;
         }
         .action-btn:active { transform: scale(0.96); opacity: 0.9; }
+        .action-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
         .inventory-controls { width: 100%; display: flex; gap: 10px; margin-bottom: 16px; }
         .search-input, .sort-select {
@@ -529,7 +531,7 @@
             <div class="roulette-wrapper"><div class="pointer"></div><div class="roulette-track" id="rouletteTrack"></div></div>
         </div>
 
-        <button class="action-btn" onclick="spinRoulette()" data-i18n="spinBtn">Крутить Кейс</button>
+        <button class="action-btn" id="spinCaseBtn" onclick="spinRoulette()" data-i18n="spinBtn">Крутить Кейс</button>
     </main>
 
     <main id="wheel-screen" class="screen">
@@ -548,7 +550,7 @@
             <div class="wheel-center-cap">🐾</div>
         </div>
 
-        <button class="action-btn" onclick="spinWheel()" data-i18n="spinWheelBtn">Вращать Колесо</button>
+        <button class="action-btn" id="spinWheelBtn" onclick="spinWheel()" data-i18n="spinWheelBtn">Вращать Колесо</button>
     </main>
 
     <main id="inventory-screen" class="screen">
@@ -820,7 +822,8 @@
             track.style.transition = 'none';
             track.style.transform = 'translateX(0px)';
             track.innerHTML = '';
-            for(let i=0; i<40; i++) {
+            // Генерируем длинную ленту из 50 элементов для плавной и долгой прокрутки
+            for(let i=0; i<50; i++) {
                 const randItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
                 track.innerHTML += `<div class="item-card"><div class="icon">${randItem.icon}</div><div class="name">${randItem.name}</div><div class="price-tag">${randItem.price} ⭐</div></div>`;
             }
@@ -845,9 +848,13 @@
             }
 
             state.isSpinning = true;
+            document.getElementById('spinCaseBtn').disabled = true;
             const track = document.getElementById('rouletteTrack');
             
-            // Запрашиваем победный предмет у защищенного бэкенда
+            // Сбрасываем положение ленты перед новым спином
+            track.style.transition = 'none';
+            track.style.transform = 'translateX(0px)';
+
             try {
                 const res = await fetch(`/api/roll/${userId}`, {
                     method: 'POST',
@@ -863,28 +870,31 @@
                 }
             } catch(e) {
                 state.isSpinning = false;
+                document.getElementById('spinCaseBtn').disabled = false;
                 alert('Error connecting to server');
                 return;
             }
             
+            // Гарантируем, что лента заполнена свежими элементами
             initRouletteTrack();
             const cards = track.querySelectorAll('.item-card');
-            // Устанавливаем выигранный сервером предмет на 22-ю карточку
-            cards[22].querySelector('.icon').textContent = currentWinningItem.icon;
-            cards[22].querySelector('.name').textContent = currentWinningItem.name;
-            cards[22].querySelector('.price-tag').textContent = currentWinningItem.price + ' ⭐';
+            
+            // Размещаем выигранный предмет точно на 30-ю позицию для красивого финиша
+            cards[30].querySelector('.icon').textContent = currentWinningItem.icon;
+            cards[30].querySelector('.name').textContent = currentWinningItem.name;
+            cards[30].querySelector('.price-tag').textContent = currentWinningItem.price + ' ⭐';
 
-            track.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.85, 0.35, 1.05)';
-            const offset = (22 * 107) - 130 + Math.random() * 40;
-            track.style.transform = `translateX(-${offset}px)`;
+            // Небольшая задержка перед запуском CSS-анимации движения
+            setTimeout(() => {
+                track.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.85, 0.35, 1.05)';
+                // Ширина карточки (95px) + отступы (12px) = 107px. Центрируем 30-ю карточку по указателю (-130px смещение центра)
+                const offset = (30 * 107) - 130 + (Math.random() * 40 - 20);
+                track.style.transform = `translateX(-${offset}px)`;
+            }, 50);
 
             rouletteTimeout = setTimeout(async () => {
-                state.isSpinning = false;
-                if (window.confetti) confetti({ particleCount: 80, spread: 90 });
-                if (!isDemo) await loadInventoryFromServer();
-                showWinModal(currentWinningItem, !isDemo);
-                addFeedItem(currentWinningItem);
-            }, 4500);
+                finishRouletteSpin(!isDemo);
+            }, 4600);
         }
 
         function skipCaseAnimation() {
@@ -892,8 +902,15 @@
             clearTimeout(rouletteTimeout);
             const track = document.getElementById('rouletteTrack');
             track.style.transition = 'none';
+            finishRouletteSpin(true);
+        }
+
+        async function finishRouletteSpin(isReal) {
             state.isSpinning = false;
-            showWinModal(currentWinningItem, true);
+            document.getElementById('spinCaseBtn').disabled = false;
+            if (window.confetti) confetti({ particleCount: 80, spread: 90 });
+            if (isReal) await loadInventoryFromServer();
+            showWinModal(currentWinningItem, isReal);
             addFeedItem(currentWinningItem);
         }
 
@@ -908,6 +925,7 @@
             }
 
             state.isSpinning = true;
+            document.getElementById('spinWheelBtn').disabled = true;
             const wheel = document.getElementById('wheelTrack');
 
             try {
@@ -925,6 +943,7 @@
                 }
             } catch(e) {
                 state.isSpinning = false;
+                document.getElementById('spinWheelBtn').disabled = false;
                 alert('Error connecting to server');
                 return;
             }
@@ -937,12 +956,8 @@
             wheel.style.transform = `rotate(${currentWheelRotation}deg)`;
 
             wheelTimeout = setTimeout(async () => {
-                state.isSpinning = false;
-                if (window.confetti) confetti({ particleCount: 80, spread: 90 });
-                if (!isDemo) await loadInventoryFromServer();
-                showWinModal(currentWinningItem, !isDemo);
-                addFeedItem(currentWinningItem);
-            }, 4500);
+                finishWheelSpin(!isDemo);
+            }, 4600);
         }
 
         function skipWheelAnimation() {
@@ -950,8 +965,15 @@
             clearTimeout(wheelTimeout);
             const wheel = document.getElementById('wheelTrack');
             wheel.style.transition = 'none';
+            finishWheelSpin(true);
+        }
+
+        async function finishWheelSpin(isReal) {
             state.isSpinning = false;
-            showWinModal(currentWinningItem, true);
+            document.getElementById('spinWheelBtn').disabled = false;
+            if (window.confetti) confetti({ particleCount: 80, spread: 90 });
+            if (isReal) await loadInventoryFromServer();
+            showWinModal(currentWinningItem, isReal);
             addFeedItem(currentWinningItem);
         }
 
@@ -1048,7 +1070,7 @@
             if (type === 'expensive') {
                 state.inventory.sort((a,b) => b.price - a.price);
             } else {
-                state.inventory.sort((a,b) => b.id - a.id);
+                state.inventory.sort((a,b) => a.id - b.id);
             }
             renderInventory();
         }
