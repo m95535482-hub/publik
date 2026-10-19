@@ -783,6 +783,7 @@
                 const slice = document.createElement('div');
                 slice.className = 'wheel-slice';
                 slice.style.transform = `rotate(${angle}deg)`;
+                slice.dataset.itemId = item.id;
                 slice.innerHTML = `<div class="wheel-slice-content" style="--item-angle: ${sliceAngle / 2}"><i class="fa-solid ${item.icon}"></i></div>`;
                 track.appendChild(slice);
             });
@@ -903,7 +904,8 @@
                     body: JSON.stringify({ cost: wheelCost, is_demo: isDemo })
                 });
                 const data = await res.json();
-                
+
+                // Выбираем приз на клиенте и жестко привязываем его к сектору колеса
                 currentWinningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
 
                 state.balance = data.balance;
@@ -918,10 +920,14 @@
                 return;
             }
 
-            const index = Math.floor(Math.random() * itemsPool.length);
+            // Находим индекс сектора выпавшего предмета
+            const prizeIndex = itemsPool.findIndex(i => i.id === currentWinningItem.id);
             const sliceAngle = 360 / itemsPool.length;
             
-            currentWheelRotation += 1800 + (360 - (index * sliceAngle + sliceAngle / 2));
+            // Вычисляем точный угол поворота, чтобы стрелка (наверху, 0°) четко указала на центр сектора
+            const targetOffset = 360 - (prizeIndex * sliceAngle + sliceAngle / 2);
+            currentWheelRotation = Math.floor(currentWheelRotation / 360) * 360 + 360 * 5 + targetOffset;
+
             wheel.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.85, 0.35, 1.05)';
             wheel.style.transform = `rotate(${currentWheelRotation}deg)`;
 
@@ -1058,4 +1064,4 @@
         loadInventoryFromServer();
     </script>
 </body>
-</html>>
+</html>
