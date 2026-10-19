@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CatRoll - Cases & Gifts</title>
+    <title>CatRoll - Case Opening</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg-color: var(--tg-theme-bg-color, #0f172a);
+            --bg-color: var(--tg-theme-bg-color, #0b0f19);
             --text-color: var(--tg-theme-text-color, #ffffff);
-            --hint-color: var(--tg-theme-hint-color, #94a3b8);
-            --button-color: var(--tg-theme-button-color, #3b82f6);
+            --hint-color: var(--tg-theme-hint-color, #64748b);
+            --button-color: var(--tg-theme-button-color, #6366f1);
             --button-text: var(--tg-theme-button-text-color, #ffffff);
-            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-bg: rgba(30, 41, 59, 0.6);
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
@@ -24,45 +24,46 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-bottom: 80px;
+            padding-bottom: 90px;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .header h1 {
-            margin: 0 0 5px 0;
-            font-size: 24px;
+            margin: 0;
+            font-size: 22px;
         }
 
         .header p {
-            margin: 0;
+            margin: 4px 0 0;
             color: var(--hint-color);
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .tabs {
             display: flex;
             background: var(--card-bg);
-            border-radius: 14px;
+            border-radius: 12px;
             padding: 4px;
             width: 100%;
             max-width: 400px;
             margin-bottom: 20px;
+            backdrop-filter: blur(10px);
         }
 
         .tab {
             flex: 1;
             text-align: center;
             padding: 10px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             color: var(--hint-color);
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: 0.3s;
+            transition: 0.2s;
         }
 
         .tab.active {
@@ -80,25 +81,27 @@
             display: block;
         }
 
-        .roulette-container {
-            text-align: center;
+        /* Roulette section */
+        .case-card {
             background: var(--card-bg);
             border-radius: 20px;
-            padding: 24px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        .roulette-box {
-            height: 120px;
-            background: rgba(0,0,0,0.2);
+        .roulette-window {
+            height: 100px;
+            background: rgba(0,0,0,0.3);
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
-            margin-bottom: 16px;
-            border: 2px dashed var(--button-color);
+            margin: 16px 0;
+            border: 2px solid var(--button-color);
             overflow: hidden;
             position: relative;
         }
@@ -107,35 +110,42 @@
             background-color: var(--button-color);
             color: var(--button-text);
             border: none;
-            border-radius: 14px;
+            border-radius: 12px;
             padding: 14px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
             width: 100%;
-            transition: 0.2s;
+            transition: transform 0.1s;
         }
 
         .btn:active {
-            transform: scale(0.98);
+            transform: scale(0.97);
         }
 
-        .inventory-item {
+        /* Inventory */
+        .inventory-list {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .item-card {
             background: var(--card-bg);
             border-radius: 14px;
             padding: 12px 16px;
-            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        .item-details h4 {
+        .item-info h4 {
             margin: 0 0 4px 0;
             font-size: 15px;
         }
 
-        .item-details span {
+        .item-info span {
             font-size: 12px;
             color: var(--hint-color);
         }
@@ -144,11 +154,11 @@
             background-color: #10b981;
             color: white;
             border: none;
-            padding: 8px 14px;
-            border-radius: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 12px;
         }
 
         .withdraw-btn:disabled {
@@ -160,7 +170,7 @@
 <body>
 
     <div class="header">
-        <h1>🎁 CatRoll</h1>
+        <h1>🐱 CatRoll Cases</h1>
         <p id="user-greeting">Loading profile...</p>
     </div>
 
@@ -169,18 +179,21 @@
         <div class="tab" onclick="switchTab('inventory', this)">Inventory</div>
     </div>
 
+    <!-- Roulette Tab -->
     <div id="roll-section" class="section-content active">
-        <div class="roulette-container">
-            <h3>Case Opening</h3>
-            <div class="roulette-box" id="roulette-display">
-                Click the button below!
+        <div class="case-card">
+            <h3>Lucky Case</h3>
+            <p style="color: var(--hint-color); font-size: 13px;">Try your luck and win exclusive items!</p>
+            <div class="roulette-window" id="roulette-display">
+                Ready to spin
             </div>
-            <button class="btn" onclick="spinRoulette()">🎲 Get Gift (/buy)</button>
+            <button class="btn" onclick="spinCase()">🎲 Spin Case (Free Test)</button>
         </div>
     </div>
 
+    <!-- Inventory Tab -->
     <div id="inventory-section" class="section-content">
-        <div id="inventory-list">
+        <div id="inventory-list" class="inventory-list">
             <p style="text-align: center; color: var(--hint-color);">Loading inventory...</p>
         </div>
     </div>
@@ -191,7 +204,7 @@
 
         const userId = tg.initDataUnsafe?.user?.id || 1218168630;
         const userName = tg.initDataUnsafe?.user?.first_name || "Player";
-        document.getElementById('user-greeting').innerText = `Welcome, ${userName}!`;
+        document.getElementById('user-greeting').innerText = `Welcome back, ${userName}!`;
 
         function switchTab(tabName, element) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -205,15 +218,20 @@
             }
         }
 
-        async function spinRoulette() {
+        async function spinCase() {
             const display = document.getElementById('roulette-display');
             display.innerText = "Rolling...";
-            
-            setTimeout(() => {
-                display.innerText = "🎉 Check your chat with the bot!";
-                alert("To get a gift, send the /buy command in the chat with the bot or refresh your inventory.");
-                loadInventory();
-            }, 1000);
+
+            try {
+                const response = await fetch(`/api/roll/${userId}`, { method: 'POST' });
+                const data = await response.json();
+                
+                setTimeout(() => {
+                    display.innerText = `🎉 Won: ${data.gift_name}`;
+                }, 500);
+            } catch (e) {
+                display.innerText = "Error!";
+            }
         }
 
         async function loadInventory() {
@@ -225,7 +243,7 @@
                 container.innerHTML = '';
 
                 if (items.length === 0) {
-                    container.innerHTML = '<p style="text-align: center; color: var(--hint-color);">Your inventory is currently empty.</p>';
+                    container.innerHTML = '<p style="text-align: center; color: var(--hint-color);">Your inventory is empty. Spin the case!</p>';
                     return;
                 }
 
@@ -237,30 +255,30 @@
                     if (item.status === 'withdraw_requested') {
                         statusText = '⏳ Withdrawal pending';
                         btnDisabled = 'disabled';
-                        btnText = 'Pending';
+                        btnText = 'Requested';
                     }
 
-                    const div = document.createElement('div');
-                    div.className = 'inventory-item';
-                    div.innerHTML = `
-                        <div class="item-details">
+                    const card = document.createElement('div');
+                    card.className = 'item-card';
+                    card.innerHTML = `
+                        <div class="item-info">
                             <h4>${item.gift_name}</h4>
                             <span>${statusText}</span>
                         </div>
                         <button class="withdraw-btn" ${btnDisabled} onclick="withdrawItem(${item.id}, this)">${btnText}</button>
                     `;
-                    container.appendChild(div);
+                    container.appendChild(card);
                 });
             } catch (e) {
-                console.error("Error loading inventory", e);
+                console.error("Failed to load inventory", e);
             }
         }
 
         async function withdrawItem(itemId, btn) {
-            if (!confirm("Do you want to request a withdrawal for this gift?")) return;
+            if (!confirm("Do you want to request a withdrawal for this item?")) return;
 
             btn.disabled = true;
-            btn.innerText = "Processing...";
+            btn.innerText = "Sending...";
 
             try {
                 const res = await fetch(`/api/withdraw/${itemId}`, { method: 'POST' });
