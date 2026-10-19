@@ -61,6 +61,7 @@
         .mode-card { width: 100%; background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid var(--card-border); border-radius: 22px; padding: 16px; margin-bottom: 12px; cursor: pointer; display: flex; align-items: center; gap: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.5); }
         .mode-card:active { transform: scale(0.97); }
         .daily-bonus-card { background: linear-gradient(135deg, rgba(108, 92, 231, 0.35), rgba(22, 22, 32, 0.9)); border: 1px solid rgba(108, 92, 231, 0.55); box-shadow: 0 8px 25px var(--accent-glow); }
+        .mode-card.disabled { opacity: 0.6; cursor: not-allowed; }
         .mode-icon { width: 52px; height: 52px; border-radius: 16px; background: rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.15); }
         .mode-info { flex: 1; }
         .mode-info h3 { font-size: 16px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
@@ -97,7 +98,7 @@
         .item-card .name { font-size: 10px; color: var(--text-secondary); margin-top: 6px; font-weight: 700; text-align: center; }
         .item-card .price-tag { font-size: 11px; color: var(--gold); font-weight: 800; margin-top: 2px; }
 
-        /* Стиль Колеса Фортуны (Черный/Серый с золотым ободком и точками-лампочками как на референсе) */
+        /* Колесо Фортуны */
         .wheel-box { position: relative; width: 290px; height: 290px; margin: 10px 0 22px 0; display: flex; align-items: center; justify-content: center; }
         .wheel-pointer { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 26px solid #ff3b30; z-index: 30; filter: drop-shadow(0 4px 14px rgba(255,59,48,0.95)); }
         
@@ -106,7 +107,7 @@
             height: 100%;
             border-radius: 50%;
             background: linear-gradient(135deg, #ffd700, #b8860b, #ffd700);
-            padding: 8px; /* золотой ободок с рамкой */
+            padding: 8px;
             box-shadow: 0 0 35px rgba(255, 184, 0, 0.35), 0 10px 30px rgba(0,0,0,0.8);
             position: relative;
         }
@@ -188,7 +189,7 @@
         <h1 class="menu-title" data-i18n="mainTitle">Choose Mode</h1>
         <p class="menu-subtitle" data-i18n="mainSub">Spin roulette, test your luck, get NFTs</p>
 
-        <div class="mode-card daily-bonus-card" onclick="openClassicRoll()">
+        <div class="mode-card daily-bonus-card" id="dailyCard" onclick="openClassicRoll()">
             <div class="mode-icon">🎁</div>
             <div class="mode-info">
                 <h3><span data-i18n="dailyTitle">Classic Roll</span><span class="timer-badge" id="bonusTimer">Ready</span></h3>
@@ -478,7 +479,7 @@
                     return;
                 }
                 let data = await res.json();
-                state.lastBonusTime = Date.now();
+                state.lastBonusTime = data.last_bonus;
                 startBonusTimer();
                 executeRouletteAnimation(data.item, false);
             } else {
@@ -548,7 +549,8 @@
 
         function startBonusTimer() {
             const timerEl = document.getElementById('bonusTimer');
-            if(!timerEl) return;
+            const cardEl = document.getElementById('dailyCard');
+            if(!timerEl || !cardEl) return;
             if(bonusTimerInterval) clearInterval(bonusTimerInterval);
 
             bonusTimerInterval = setInterval(() => {
@@ -557,8 +559,10 @@
 
                 if (diff <= 0) {
                     timerEl.textContent = translations[state.lang].ready;
+                    cardEl.classList.remove('disabled');
                     clearInterval(bonusTimerInterval);
                 } else {
+                    cardEl.classList.add('disabled');
                     const hrs = Math.floor(diff / (1000 * 60 * 60));
                     const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                     const secs = Math.floor((diff % (1000 * 60)) / 1000);
@@ -567,7 +571,6 @@
             }, 1000);
         }
 
-        // Стильное колесо фортуны с четким чередованием глубокого черного (#1a1a1a) и строгого серого (#3a3a3a) с подарками и NFT
         function buildWheel() {
             const wheel = document.getElementById('wheelTrack');
             wheel.innerHTML = '';

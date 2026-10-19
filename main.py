@@ -10,7 +10,6 @@ app = FastAPI(title="CatRoll Secure Backend")
 
 DB_FILE = "database.json"
 
-
 def load_db():
     if os.path.exists(DB_FILE):
         try:
@@ -20,13 +19,10 @@ def load_db():
             return {}
     return {}
 
-
 def save_db():
     with open(DB_FILE, "w", encoding="utf-8") as f:
         json.dump(users_db, f, ensure_ascii=False, indent=4)
 
-
-# Загружаем базу при старте сервера
 users_db = load_db()
 
 ITEMS_POOL = [
@@ -37,35 +33,29 @@ ITEMS_POOL = [
     {"id": 5, "name": "Rocket Gift", "icon": "🚀", "price": 450},
     {"id": 6, "name": "Golden Crown", "icon": "👑", "price": 800},
     {"id": 7, "name": "Cyber Cat NFT", "icon": "🐱", "price": 1500},
-    {"id": 8, "name": "Diamond Diamond", "icon": "💠", "price": 2500},
+    {"id": 8, "name": "Diamond NFT", "icon": "💠", "price": 2500},
 ]
-
 
 class UserRequest(BaseModel):
     user_id: str
-
 
 class SpinRequest(BaseModel):
     user_id: str
     case_type: str = "starter"
     is_demo: bool = False
 
-
 class InventoryAction(BaseModel):
     user_id: str
     action: str
     item: dict
 
-
 class SellItemRequest(BaseModel):
     user_id: str
     uid: float
 
-
 @app.get("/")
 def serve_frontend():
     return FileResponse("index.html")
-
 
 @app.post("/api/init")
 def init_user(data: UserRequest):
@@ -79,7 +69,6 @@ def init_user(data: UserRequest):
         save_db()
     return users_db[uid]
 
-
 @app.post("/api/bonus")
 def claim_bonus(data: UserRequest):
     uid = data.user_id
@@ -88,17 +77,20 @@ def claim_bonus(data: UserRequest):
 
     now = time.time() * 1000
     cooldown = 24 * 60 * 60 * 1000
-    if now - users_db[uid]["last_bonus"] < cooldown:
+    
+    # Жесткая проверка защиты от обхода таймера на сервере
+    if now - users_db[uid].get("last_bonus", 0) < cooldown:
         raise HTTPException(status_code=400, detail="Cooldown active")
 
     users_db[uid]["last_bonus"] = now
-    users_db[uid]["balance"] += 50
+    winning_item = random.choice(ITEMS_POOL)
     save_db()
+    
     return {
         "balance": users_db[uid]["balance"],
-        "item": {"name": "Ежедневный Бонус", "icon": "🎁", "price": 50},
+        "last_bonus": now,
+        "item": winning_item
     }
-
 
 @app.post("/api/spin-case")
 def spin_case(data: SpinRequest):
@@ -118,7 +110,6 @@ def spin_case(data: SpinRequest):
     save_db()
     return {"balance": users_db[uid]["balance"], "item": winning_item}
 
-
 @app.post("/api/spin-wheel")
 def spin_wheel(data: SpinRequest):
     uid = data.user_id
@@ -135,7 +126,6 @@ def spin_wheel(data: SpinRequest):
     save_db()
     return {"balance": users_db[uid]["balance"], "item": winning_item}
 
-
 @app.post("/api/inventory-action")
 def inventory_action(data: InventoryAction):
     uid = data.user_id
@@ -144,15 +134,12 @@ def inventory_action(data: InventoryAction):
 
     user = users_db[uid]
     if data.action == "claim":
-        user["inventory"].append(
-            {**data.item, "uid": time.time() * 1000 + random.random()}
-        )
+        user["inventory"].append({**data.item, "uid": time.time() * 1000 + random.random()})
     elif data.action == "sell":
         user["balance"] += data.item["price"]
 
     save_db()
     return {"balance": user["balance"], "inventory": user["inventory"]}
-
 
 @app.post("/api/sell-inventory-item")
 def sell_inventory_item(data: SellItemRequest):
@@ -161,10 +148,7 @@ def sell_inventory_item(data: SellItemRequest):
         raise HTTPException(status_code=404, detail="User not found")
 
     user = users_db[uid]
-    idx = next(
-        (i for i, item in enumerate(user["inventory"]) if item["uid"] == data.uid),
-        -1,
-    )
+    idx = next((i for i, item in enumerate(user["inventory"]) if item["uid"] == data.uid), -1)
     if idx != -1:
         item = user["inventory"].pop(idx)
         user["balance"] += item["price"]
@@ -172,8 +156,6 @@ def sell_inventory_item(data: SellItemRequest):
     save_db()
     return {"balance": user["balance"], "inventory": user["inventory"]}
 
-
 if __name__ == "__main__":
     import uvicorn
-
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
