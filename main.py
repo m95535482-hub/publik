@@ -6,8 +6,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import telebot
 
-# Токен вашего бота
-TOKEN = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN")
+# Токен бота (если переменная окружения не задана, подставьте ваш токен прямо сюда в кавычки)
+TOKEN = os.getenv("BOT_TOKEN", "123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ")
 
 # Ваш личный Telegram ID для получения заявок на вывод
 ADMIN_ID = 1218168630
