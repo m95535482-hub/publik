@@ -8,14 +8,14 @@ async def fetch_and_update_items_pool(tonapi_key: str, collection_address: str):
     if not tonapi_key or tonapi_key == "ТВОЙ_ТОКЕН_TONAPI" or not collection_address:
         print("ℹ️ TonAPI ключ или адрес коллекции не настроены, используем дефолтный пул подарков.")
         ITEMS_POOL = [
-            {"id": 1, "name": "Star Pouch", "icon": "⭐", "image": "", "price": 30},
-            {"id": 2, "name": "Gift Box", "icon": "🎁", "image": "", "price": 60},
-            {"id": 3, "name": "Rubber Duck", "icon": "🦆", "image": "", "price": 120},
-            {"id": 4, "name": "Rocket Gift", "icon": "🚀", "image": "", "price": 450},
-            {"id": 5, "name": "Telegram Gem", "icon": "💎", "image": "", "price": 250},
-            {"id": 6, "name": "Golden Crown", "icon": "👑", "image": "", "price": 800},
-            {"id": 7, "name": "Cyber Cat NFT", "icon": "🐱", "image": "", "price": 1500},
-            {"id": 8, "name": "Diamond NFT", "icon": "💠", "image": "", "price": 2500}
+            {"id": 1, "name": "Star Pouch", "icon": "⭐", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f31f.png", "price": 30},
+            {"id": 2, "name": "Gift Box", "icon": "🎁", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f381.png", "price": 60},
+            {"id": 3, "name": "Rubber Duck", "icon": "🦆", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f986.png", "price": 120},
+            {"id": 4, "name": "Rocket Gift", "icon": "🚀", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f680.png", "price": 450},
+            {"id": 5, "name": "Telegram Gem", "icon": "💎", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f48e.png", "price": 250},
+            {"id": 6, "name": "Golden Crown", "icon": "👑", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f451.png", "price": 800},
+            {"id": 7, "name": "Cyber Cat NFT", "icon": "🐱", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f431.png", "price": 1500},
+            {"id": 8, "name": "Diamond NFT", "icon": "💠", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4a0.png", "price": 2500}
         ]
         return ITEMS_POOL
 
