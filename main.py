@@ -7,9 +7,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import telebot
 
-TOKEN = os.getenv("BOT_TOKEN", "123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ")
+# Ваш актуальный токен бота
+TOKEN = "8643024766:AAFkb8a0NzGGz6DJ2ksE2aqDwWsQbhTAybI"
 
-# Данные администратора: ID и юзернейм для подстраховки
+# Данные администратора
 ADMIN_ID = 1218168630
 ADMIN_USERNAME = "Bruhki"
 
@@ -179,7 +180,7 @@ def withdraw_item(item_id: int):
     except Exception as e1:
         error_message += f"ID error: {e1}; "
 
-    # Попытка 2: если по ID не вышло, пробуем через юзернейм
+    # Попытка 2: через юзернейм для подстраховки
     if not success:
         try:
             admin_chat = bot.get_chat(ADMIN_USERNAME)
@@ -189,7 +190,7 @@ def withdraw_item(item_id: int):
             error_message += f"Username error: {e2}"
 
     if not success:
-        print(f"Failed to send notification to admin via both ID and Username. {error_message}")
+        print(f"Failed to send notification to admin. {error_message}")
         raise HTTPException(status_code=500, detail=f"Telegram notification error: {error_message}")
         
     return {"message": "Success! The withdrawal request has been sent to the admin."}
