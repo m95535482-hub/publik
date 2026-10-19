@@ -43,7 +43,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
 
         .logo {
@@ -84,76 +84,6 @@
             gap: 6px;
         }
 
-        /* Панель настроек (Демо и Пропуск анимации) */
-        .settings-panel {
-            width: 100%;
-            max-width: 360px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 10px 14px;
-            margin-bottom: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .toggle-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
-
-        .toggle-row span {
-            color: #fff;
-        }
-
-        /* Кастомный чекбокс-тумблер */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 40px;
-            height: 22px;
-        }
-
-        .switch input { 
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #26262e;
-            transition: .3s;
-            border-radius: 22px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: var(--green);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(18px);
-        }
-
         .screen {
             width: 100%;
             max-width: 360px;
@@ -166,7 +96,7 @@
             display: flex;
         }
 
-        /* Главное меню выбора */
+        /* Главное меню */
         .menu-title {
             font-size: 22px;
             font-weight: 800;
@@ -234,7 +164,6 @@
             margin-top: 4px;
         }
 
-        /* Кнопка "Назад" */
         .back-btn {
             align-self: flex-start;
             background: none;
@@ -249,7 +178,75 @@
             gap: 4px;
         }
 
-        /* Рулетка 1: Горизонтальная */
+        /* Панель настроек внутри вкладки кейсов */
+        .settings-panel {
+            width: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .toggle-row span {
+            color: #fff;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #26262e;
+            transition: .3s;
+            border-radius: 20px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--green);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+
+        /* Горизонтальная рулетка */
         .case-container {
             width: 100%;
             background: var(--card-bg);
@@ -316,7 +313,7 @@
         .item-card .name { font-size: 9px; color: var(--text-secondary); margin-top: 2px; font-weight: 600; text-align: center; }
         .item-card .price-tag { font-size: 10px; color: var(--gold); font-weight: 700; margin-top: 2px; }
 
-        /* Рулетка 2: Колесо Фортуны */
+        /* Колесо Фортуны */
         .wheel-box {
             position: relative;
             width: 260px;
@@ -385,7 +382,7 @@
             display: flex;
             gap: 8px;
             width: 100%;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             overflow-x: auto;
         }
 
@@ -569,24 +566,6 @@
         </div>
     </div>
 
-    <!-- ПАНЕЛЬ НАСТРОЕК (Демо-режим и Пропуск анимации) -->
-    <div class="settings-panel">
-        <div class="toggle-row">
-            <span>🧪 Демо-режим (без списаний)</span>
-            <label class="switch">
-                <input type="checkbox" id="demoToggle">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-row">
-            <span>⚡ Пропуск анимации</span>
-            <label class="switch">
-                <input type="checkbox" id="skipToggle">
-                <span class="slider"></span>
-            </label>
-        </div>
-    </div>
-
     <!-- ЭКРАН 1: ГЛАВНОЕ МЕНЮ ВЫБОРА РУЛЕТОК -->
     <div class="screen active" id="menuScreen">
         <div class="menu-title">Выберите режим</div>
@@ -621,6 +600,24 @@
     <div class="screen" id="classicScreen">
         <button class="back-btn" onclick="showScreen('menuScreen')">← Назад в меню</button>
 
+        <!-- Настройки (Демо и Пропуск анимации) прямо над вкладками кейсов -->
+        <div class="settings-panel">
+            <div class="toggle-row">
+                <span>🧪 Демо-режим (без списаний и наград)</span>
+                <label class="switch">
+                    <input type="checkbox" id="demoToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="toggle-row">
+                <span>⚡ Пропуск анимации</span>
+                <label class="switch">
+                    <input type="checkbox" id="skipToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
         <div class="cases-selector">
             <div class="case-tab active" onclick="switchCase(this, 'standard', 50)">Стандартный (50⭐)</div>
             <div class="case-tab" onclick="switchCase(this, 'epic', 150)">Эпический (150⭐)</div>
@@ -637,6 +634,24 @@
     <!-- ЭКРАН 3: РУЛЕТКА 2 (КОЛЕСО ФОРТУНЫ) -->
     <div class="screen" id="wheelScreen">
         <button class="back-btn" onclick="showScreen('menuScreen')">← Назад в меню</button>
+
+        <!-- Настройки (Демо и Пропуск анимации) для Колеса Фортуны -->
+        <div class="settings-panel">
+            <div class="toggle-row">
+                <span>🧪 Демо-режим (без списаний и наград)</span>
+                <label class="switch">
+                    <input type="checkbox" id="demoToggleWheel">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="toggle-row">
+                <span>⚡ Пропуск анимации</span>
+                <label class="switch">
+                    <input type="checkbox" id="skipToggleWheel">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
 
         <div class="wheel-box">
             <div class="wheel-pointer"></div>
@@ -694,16 +709,33 @@
         let activeMode = null;
         let currentRotation = 0;
         let currentWinItem = null;
-        let isDemoMode = false;
-        let isSkipAnimation = false;
 
-        // Обработчики переключателей настроек
+        // Синхронизация переключателей между вкладками
+        function getDemoMode() {
+            const d1 = document.getElementById('demoToggle').checked;
+            const d2 = document.getElementById('demoToggleWheel').checked;
+            return d1 || d2;
+        }
+
+        function getSkipAnimation() {
+            const s1 = document.getElementById('skipToggle').checked;
+            const s2 = document.getElementById('skipToggleWheel').checked;
+            return s1 || s2;
+        }
+
+        // Связываем чекбоксы парно
         document.getElementById('demoToggle').addEventListener('change', (e) => {
-            isDemoMode = e.target.checked;
+            document.getElementById('demoToggleWheel').checked = e.target.checked;
+        });
+        document.getElementById('demoToggleWheel').addEventListener('change', (e) => {
+            document.getElementById('demoToggle').checked = e.target.checked;
         });
 
         document.getElementById('skipToggle').addEventListener('change', (e) => {
-            isSkipAnimation = e.target.checked;
+            document.getElementById('skipToggleWheel').checked = e.target.checked;
+        });
+        document.getElementById('skipToggleWheel').addEventListener('change', (e) => {
+            document.getElementById('skipToggle').checked = e.target.checked;
         });
 
         const items = [
@@ -793,8 +825,10 @@
         }
 
         function triggerSpin() {
-            // Если не демо-режим, проверяем баланс и списываем звезды
-            if (!isDemoMode) {
+            const isDemo = getDemoMode();
+            const isSkip = getSkipAnimation();
+
+            if (!isDemo) {
                 if (userBalance < currentPrice) {
                     tg.showAlert("Недостаточно Telegram Stars на балансе!");
                     return;
@@ -806,8 +840,7 @@
             spinBtn.disabled = true;
             currentWinItem = getRandomItem();
 
-            // Если включен пропуск анимации, мгновенно показываем окно выигрыша
-            if (isSkipAnimation) {
+            if (isSkip) {
                 spinBtn.disabled = false;
                 if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
                 showWinModal(currentWinItem);
@@ -868,12 +901,12 @@
             document.getElementById('sellBtn').disabled = false;
             document.getElementById('keepBtn').disabled = false;
 
-            // Если демо-режим, меняем тексты на модалке, чтобы пользователь понимал
-            if (isDemoMode) {
+            const isDemo = getDemoMode();
+
+            if (isDemo) {
                 document.getElementById('winTitle').innerText = `${item.name} [ДЕМО]`;
-                document.getElementById('sellBtninnerText') = `Продать (Демо)`;
-                document.getElementById('sellBtn').innerText = `Продать [ДЕМО]`;
-                document.getElementById('keepBtn').innerText = `Забрать [ДЕМО]`;
+                document.getElementById('sellBtn').innerText = `Продать за ${item.price} ⭐ [ДЕМО]`;
+                document.getElementById('keepBtn').innerText = `Забрать в инвентарь [ДЕМО]`;
             } else {
                 document.getElementById('winTitle').innerText = item.name;
                 document.getElementById('sellBtn').innerText = `Продать за ${item.price} ⭐`;
@@ -891,6 +924,7 @@
 
         function sellItem(targetId, isInventory = false, invUniqueId = null) {
             let itemToSell = null;
+            const isDemo = getDemoMode();
 
             if (isInventory) {
                 const index = userInventory.findIndex(i => i.invId.toString() === invUniqueId.toString());
@@ -906,15 +940,16 @@
             }
 
             if (itemToSell) {
-                if (!isDemoMode) {
+                if (!isDemo) {
                     userBalance += itemToSell.price;
                     saveUserData();
+                    if (isInventory) {
+                        renderInventory();
+                    }
+                    tg.showAlert(`Предмет "${itemToSell.name}" успешно продан за +${itemToSell.price} ⭐!`);
+                } else {
+                    tg.showAlert(`[ДЕМО] Продажа отменена. Баланс не изменен.`);
                 }
-                if (isInventory) {
-                    renderInventory();
-                }
-                const demoSuffix = isDemoMode ? " [ДЕМО — баланс не изменен]" : "";
-                tg.showAlert(`Предмет "${itemToSell.name}" успешно продан!${demoSuffix}`);
             }
         }
 
@@ -936,9 +971,11 @@
             document.getElementById('keepBtn').disabled = true;
             closeWinModal();
 
-            if (isDemoMode) {
+            const isDemo = getDemoMode();
+
+            if (isDemo) {
                 currentWinItem = null;
-                tg.showAlert(`[ДЕМО] Предмет не сохранен в реальный инвентарь.`);
+                tg.showAlert(`[ДЕМО] Предмет не добавлен в инвентарь.`);
                 return;
             }
 
