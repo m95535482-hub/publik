@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CatRoll — Cases & NFT</title>
+    <title>CatRoll — Gifts & NFT</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -43,7 +43,6 @@
             padding-bottom: 90px;
         }
 
-        /* Шапка */
         .header {
             width: 100%;
             max-width: 360px;
@@ -116,7 +115,6 @@
             box-shadow: 0 4px 15px var(--gold-glow);
         }
 
-        /* Экраны */
         .screen {
             width: 100%;
             max-width: 360px;
@@ -150,7 +148,6 @@
             text-align: center;
         }
 
-        /* Карточки режимов */
         .mode-card {
             width: 100%;
             background: var(--card-bg);
@@ -231,7 +228,6 @@
             color: #fff;
         }
 
-        /* Настройки */
         .settings-panel {
             width: 100%;
             background: var(--card-bg);
@@ -292,7 +288,6 @@
         input:checked + .slider { background-color: var(--green); }
         input:checked + .slider:before { transform: translateX(18px); }
 
-        /* Табы кейсов */
         .cases-selector {
             display: flex;
             gap: 8px;
@@ -321,7 +316,6 @@
             box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
         }
 
-        /* Рулетка (Классика) */
         .case-container {
             width: 100%;
             background: rgba(14, 14, 18, 0.9);
@@ -344,7 +338,6 @@
             box-shadow: inset 0 0 15px rgba(0,0,0,0.9);
         }
 
-        /* Неоновый индикатор рулетки */
         .pointer {
             position: absolute;
             top: 0; left: 50%;
@@ -373,7 +366,7 @@
             position: absolute;
             left: 0; top: 0;
             height: 100%;
-            transition: transform 5s cubic-bezier(0.1, 1, 0.1, 1);
+            will-change: transform;
         }
 
         .item-card {
@@ -388,6 +381,7 @@
             justify-content: center;
             border: 1px solid rgba(255, 255, 255, 0.06);
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            flex-shrink: 0;
         }
 
         .item-card img { 
@@ -412,7 +406,6 @@
             margin-top: 2px; 
         }
 
-        /* Колесо Фортуны */
         .wheel-box {
             position: relative; 
             width: 250px; 
@@ -456,7 +449,6 @@
             );
         }
 
-        /* Центр колеса */
         .wheel-center-cap {
             position: absolute;
             width: 44px;
@@ -468,7 +460,6 @@
             box-shadow: 0 0 15px var(--purple-glow);
         }
 
-        /* Инвентарь */
         .inventory-controls {
             width: 100%;
             display: flex;
@@ -555,7 +546,6 @@
             text-align: center;
         }
 
-        /* Лента побед */
         .live-feed {
             width: 100%;
             background: var(--card-bg);
@@ -599,7 +589,6 @@
         .feed-prize { color: var(--gold); font-weight: 700; display: flex; align-items: center; gap: 6px; }
         .feed-prize img { width: 16px; height: 16px; object-fit: contain; }
 
-        /* Нижняя плавающая кнопка */
         .actions {
             width: 100%;
             max-width: 360px;
@@ -631,7 +620,6 @@
             cursor: not-allowed; 
         }
 
-        /* Модалка выигрыша */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -703,7 +691,6 @@
 </head>
 <body>
 
-    <!-- Шапка -->
     <div class="header">
         <div class="logo" onclick="showScreen('menuScreen')">
             <div class="logo-icon">❖</div> CatRoll
@@ -849,11 +836,11 @@
     <div class="modal-overlay" id="winModal">
         <div class="modal-card">
             <div class="win-icon" id="winIcon"><img src="" alt="Win"></div>
-            <div class="win-title" id="winTitle">Santa Hat NFT</div>
-            <div class="win-price" id="winPrice">Price: 500 ⭐</div>
+            <div class="win-title" id="winTitle">Star Trophy Gift</div>
+            <div class="win-price" id="winPrice">Price: 1000 ⭐</div>
 
             <div class="modal-btns">
-                <button class="btn-sell" id="sellBtn" onclick="sellModalItem()">Sell for 500 ⭐</button>
+                <button class="btn-sell" id="sellBtn" onclick="sellModalItem()">Sell for 1000 ⭐</button>
                 <button class="btn-keep" id="keepBtn" onclick="keepModalItem()">Keep in inventory</button>
             </div>
         </div>
@@ -1011,14 +998,15 @@
         function getDemoMode() { return document.getElementById('demoToggle').checked || document.getElementById('demoToggleWheel').checked; }
         function getSkipAnimation() { return document.getElementById('skipToggle').checked || document.getElementById('skipToggleWheel').checked; }
 
+        // Обновленные актуальные Telegram подарки / NFT
         const items = [
-            { nft_id: 'santa_hat', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f385.png', name: 'Santa Hat NFT', price: 500, weight: 30 },
-            { nft_id: 'snake_nft', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f40d.png', name: 'Snake NFT', price: 500, weight: 30 },
-            { nft_id: 'ny_gift', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f381.png', name: 'New Year Gift NFT', price: 500, weight: 30 },
-            { nft_id: 'teddy_bear', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f9f8.png', name: 'Teddy Bear', price: 15, weight: 100 },
-            { nft_id: 'heart_item', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f496.png', name: 'Heart', price: 15, weight: 100 },
-            { nft_id: 'gold_cup', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f3c6.png', name: 'Gold Cup', price: 100, weight: 60 },
-            { nft_id: 'diamond_item', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f48e.png', name: 'Diamond', price: 100, weight: 60 }
+            { nft_id: 'star_trophy', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f3c6.png', name: 'Star Trophy Gift', price: 1000, weight: 15 },
+            { nft_id: 'golden_duck', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f986.png', name: 'Golden Duck NFT', price: 750, weight: 25 },
+            { nft_id: 'crystal_heart', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f496.png', name: 'Crystal Heart Gift', price: 500, weight: 35 },
+            { nft_id: 'space_rocket', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f680.png', name: 'Space Rocket Gift', price: 250, weight: 50 },
+            { nft_id: 'blue_diamond', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f48e.png', name: 'Blue Diamond NFT', price: 100, weight: 70 },
+            { nft_id: 'plush_bear', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f9f8.png', name: 'Plush Bear Gift', price: 50, weight: 90 },
+            { nft_id: 'santa_cap', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f385.png', name: 'Santa Cap Gift', price: 25, weight: 110 }
         ];
 
         const track = document.getElementById('track');
@@ -1081,9 +1069,9 @@
         }
 
         let feedData = [
-            { user: "cryptocat", prize: "Santa Hat NFT", image: "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f385.png" },
-            { user: "ton_holder", prize: "Gold Cup", image: "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f3c6.png" },
-            { user: "telegramer", prize: "Diamond", image: "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f48e.png" }
+            { user: "cryptoking", prize: "Star Trophy Gift", image: "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f3c6.png" },
+            { user: "ton_holder", prize: "Golden Duck NFT", image: "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f986.png" },
+            { user: "telegramer", prize: "Blue Diamond NFT", image: "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f48e.png" }
         ];
 
         function renderFeed() {
@@ -1143,6 +1131,8 @@
         }
 
         function initClassicTrack() {
+            track.style.transition = 'none';
+            track.style.transform = 'translateX(0px)';
             track.innerHTML = '';
             for (let i = 0; i < 40; i++) {
                 const rItem = getRandomItem();
@@ -1213,6 +1203,7 @@
         function spinClassic() {
             track.style.transition = 'none';
             track.style.transform = 'translateX(0px)';
+            
             setTimeout(() => {
                 const itemWidth = 100;
                 const winnerIndex = 28;
