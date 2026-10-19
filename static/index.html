@@ -307,7 +307,6 @@
         .item-card .name { font-size: 10px; color: var(--text-secondary); margin-top: 6px; font-weight: 700; text-align: center; }
         .item-card .price-tag { font-size: 11px; color: var(--gold); font-weight: 800; margin-top: 2px; }
 
-        /* КОЛЕСО ФОРТУНЫ СЕКТОРАМИ ПО КРУГУ */
         .wheel-box {
             position: relative; width: 260px; height: 260px; margin: 10px 0 22px 0;
             display: flex; align-items: center; justify-content: center;
@@ -333,7 +332,6 @@
             border: 3px solid var(--purple-accent); border-radius: 50%; z-index: 15; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px;
         }
 
-        /* СЕТКА ПОПОЛНЕНИЯ ЗВЕЗД */
         .stars-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -415,7 +413,7 @@
 
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10, 10, 14, 0.92); backdrop-filter: blur(22px);
-            border-top: 1px solid var(--card-border); padding: 10px 24px 14px 24px; display: flex; justify-content: space-around; align-items: center; z-index: 50;
+            border-top: 1px solid var(--card-border); padding: 10px 24px 14px 24px; display: flex; justify-space-around; align-items: center; z-index: 50;
         }
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-secondary); font-size: 10px; font-weight: 800; cursor: pointer; }
         .nav-item i { font-size: 19px; }
@@ -484,7 +482,6 @@
         </div>
     </main>
 
-    <!-- Экран кошелька/пополнения -->
     <main id="wallet-screen" class="screen">
         <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Назад</button>
         <h1 class="menu-title" data-i18n="walletHeader">Пополнение звёзд</h1>
@@ -674,21 +671,35 @@
         async function topUpStars(amount) {
             const msgEl = document.getElementById('topupMsg');
             msgEl.style.color = 'var(--gold)';
-            msgEl.textContent = state.lang === 'RU' ? 'Пополнение...' : 'Processing...';
+            msgEl.textContent = state.lang === 'RU' ? 'Формирование счета...' : 'Creating invoice...';
 
             try {
-                const res = await fetch(`/api/topup/${userId}`, {
+                const res = await fetch(`/api/create-invoice/${userId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ amount: amount })
                 });
                 const data = await res.json();
-                if (data.success) {
-                    state.balance = data.balance;
-                    document.getElementById('userBalance').textContent = state.balance.toLocaleString();
-                    msgEl.style.color = 'var(--green)';
-                    msgEl.textContent = state.lang === 'RU' ? `Успешно пополнено на ${amount} ⭐!` : `Successfully added ${amount} ⭐!`;
-                    if (TG?.HapticFeedback) TG.HapticFeedback.notificationOccurred('success');
+                
+                if (data.success && data.invoice_link) {
+                    msgEl.textContent = '';
+                    if (TG && TG.openInvoice) {
+                        TG.openInvoice(data.invoice_link, function(status) {
+                            if (status === 'paid') {
+                                msgEl.style.color = 'var(--green)';
+                                msgEl.textContent = state.lang === 'RU' ? 'Оплата прошла успешно!' : 'Payment successful!';
+                                setTimeout(loadUserData, 1500);
+                            } else if (status === 'cancelled') {
+                                msgEl.style.color = '#ff3b30';
+                                msgEl.textContent = state.lang === 'RU' ? 'Оплата отменена' : 'Payment cancelled';
+                            } else {
+                                msgEl.style.color = '#ff3b30';
+                                msgEl.textContent = state.lang === 'RU' ? 'Ошибка при оплате' : 'Payment failed';
+                            }
+                        });
+                    } else {
+                        window.location.href = data.invoice_link;
+                    }
                 }
             } catch (e) {
                 msgEl.style.color = '#ff3b30';
@@ -747,7 +758,6 @@
 
             state.lastBonusTime = now;
             localStorage.setItem('catroll_bonus', state.lastBonusTime);
-            topUpStars(50);
             if (window.confetti) confetti({ particleCount: 60, spread: 70 });
             showWinModal({ name: state.lang === 'RU' ? 'Ежедневный Бонус' : 'Daily Bonus', icon: '🎁', price: 50 }, false);
             startBonusTimer();
@@ -886,9 +896,6 @@
 
         async function closeModal(action) {
             document.getElementById('winModal').classList.remove('active');
-            if (action === 'sell' && pendingWinItem) {
-                topUpStars(pendingWinItem.price);
-            }
             loadInventoryFromServer();
         }
 
@@ -968,7 +975,6 @@
             list.innerHTML = `<div class="feed-item"><span>User won ${item.name}</span><span style="color:var(--gold)">${item.icon} ${item.price} ⭐</span></div>` + list.innerHTML;
         }
 
-        // Инициализация при запуске
         if (state.lang === 'EN') toggleLanguage();
         initWheel();
         initRouletteTrack();

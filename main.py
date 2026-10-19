@@ -6,11 +6,10 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import telebot
+from telebot.types import LabeledPrice
 
-# Токен вашего бота
 TOKEN = "8643024766:AAFkb8a0NzGGz6DJ2ksE2aqDwWsQbhTAybI"
 
-# Данные администратора
 ADMIN_ID = 1218168630
 ADMIN_USERNAME = "Bruhki"
 
@@ -23,7 +22,6 @@ def init_db():
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
     
-    # Таблица пользователей и их баланса звёзд
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             user_id INTEGER PRIMARY KEY,
@@ -31,7 +29,6 @@ def init_db():
         )
     """)
     
-    # Таблица подарков
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS gifts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,7 +39,6 @@ def init_db():
         )
     """)
     
-    # Таблица инвентаря
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS inventory (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,7 +50,6 @@ def init_db():
         )
     """)
     
-    # Базовые подарки
     cursor.execute("SELECT COUNT(*) FROM gifts")
     if cursor.fetchone()[0] == 0:
         base_gifts = [
@@ -76,7 +71,30 @@ def init_db():
 
 init_db()
 
-# Фоновый поток для работы бота
+# --- ОБРАБОТЧИКИ ОПЛАТЫ TELEGRAM STARS ---
+
+@bot.pre_checkout_query_handler(func=lambda query: True)
+def process_pre_checkout_query(pre_checkout_query):
+    # Подтверждаем транзакцию для Telegram
+    bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True)
+
+@bot.message_handler(content_types=['successful_payment'])
+def process_successful_payment(message):
+    payment_info = message.successful_payment
+    user_id = message.from_user.id
+    stars_amount = payment_info.total_amount  # Количество купленных звёзд
+    
+    # Начисляем звёзды пользователю в БД только ПОСЛЕ успешной реальной оплаты
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute("INSERT OR IGNORE INTO users (user_id, balance) VALUES (?, 0)", (user_id,))
+    cursor.execute("UPDATE users SET balance = balance + ? WHERE user_id = ?", (stars_amount, user_id))
+    conn.commit()
+    conn.close()
+    
+    bot.send_message(user_id, f"✅ Оплата прошла успешно! Вам начислено **{stars_amount} ⭐**.", parse_mode="Markdown")
+
+# Запуск бота в фоновом потоке
 def run_bot():
     try:
         bot.infinity_polling(skip_pending=True)
@@ -103,18 +121,7 @@ def give_random_gift(user_id: int):
     conn.close()
     return gift_name
 
-# --- Команды Telegram Бота ---
-
-@bot.message_handler(commands=['start'])
-def send_welcome(message):
-    bot.reply_to(
-        message, 
-        "Welcome to CatRoll Mini App!\n\n"
-        "• Open the Mini App using the menu button to play, check inventory, top up stars, and request withdrawals!",
-        parse_mode="Markdown"
-    )
-
-# --- API Эндпоинты ---
+# --- API ЭНДПОИНТЫ ---
 
 @app.get("/")
 def read_root():
@@ -131,24 +138,31 @@ def get_user(user_id: int):
     conn.close()
     return {"user_id": user_id, "balance": balance}
 
-@app.post("/api/topup/{user_id}")
-def topup_balance(user_id: int, data: dict):
+# Эндпоинт для генерации счета на реальную оплату через Telegram Stars
+@app.post("/api/create-invoice/{user_id}")
+def create_invoice(user_id: int, data: dict):
     amount = data.get("amount", 0)
     allowed_amounts = [100, 200, 500, 1000, 2500]
     
     if amount not in allowed_amounts:
         raise HTTPException(status_code=400, detail="Invalid topup amount")
         
-    conn = sqlite3.connect("database.db")
-    cursor = conn.cursor()
-    cursor.execute("INSERT OR IGNORE INTO users (user_id, balance) VALUES (?, 0)", (user_id,))
-    cursor.execute("UPDATE users SET balance = balance + ? WHERE user_id = ?", (amount, user_id))
-    cursor.execute("SELECT balance FROM users WHERE user_id = ?", (user_id,))
-    new_balance = cursor.fetchone()[0]
-    conn.commit()
-    conn.close()
+    prices = [LabeledPrice(label=f"{amount} Telegram Stars", amount=amount)]
     
-    return {"success": True, "balance": new_balance}
+    try:
+        # Важно: валюта XTR используется для Telegram Stars
+        invoice_link = bot.create_invoice_link(
+            title=f"Пополнение {amount} Stars",
+            description=f"Пополнение баланса в CatRoll на {amount} звёзд",
+            invoice_payload=f"topup_{user_id}_{amount}",
+            provider_token="",  # Для XTR токен провайдера должен быть пустым
+            currency="XTR",
+            prices=prices
+        )
+        return {"success": True, "invoice_link": invoice_link}
+    except Exception as e:
+        print(f"Invoice creation error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/gifts")
 def get_gifts():
