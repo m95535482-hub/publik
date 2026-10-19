@@ -38,7 +38,8 @@ def init_db():
             name TEXT NOT NULL,
             image_url TEXT NOT NULL,
             anim_url TEXT NOT NULL,
-            price INTEGER NOT NULL
+            price INTEGER NOT NULL,
+            weight REAL NOT NULL
         )
     """)
     
@@ -56,18 +57,19 @@ def init_db():
     
     cursor.execute("SELECT COUNT(*) FROM gifts")
     if cursor.fetchone()[0] == 0:
+        # Защищенные веса (шансы) выпадения. Дешевые падают часто, дорогие — крайне редко (казино в плюсе).
         base_gifts = [
-            ("Star Pouch", "⭐", "⭐", 30),
-            ("Gift Box", "🎁", "🎁", 60),
-            ("Rubber Duck", "🦆", "🦆", 120),
-            ("Telegram Gem", "💎", "💎", 250),
-            ("Rocket Gift", "🚀", "🚀", 450),
-            ("Golden Crown", "👑", "👑", 800),
-            ("Cyber Cat NFT", "🐱", "🐱", 1500),
-            ("Diamond", "💠", "💠", 2500)
+            ("Star Pouch", "⭐", "⭐", 30, 50.0),
+            ("Gift Box", "🎁", "🎁", 60, 30.0),
+            ("Rubber Duck", "🦆", "🦆", 120, 12.0),
+            ("Telegram Gem", "💎", "💎", 250, 5.0),
+            ("Rocket Gift", "🚀", "🚀", 450, 2.0),
+            ("Golden Crown", "👑", "👑", 800, 0.8),
+            ("Cyber Cat NFT", "🐱", "🐱", 1500, 0.3),
+            ("Diamond", "💠", "💠", 2500, 0.1)
         ]
         cursor.executemany(
-            "INSERT INTO gifts (name, image_url, anim_url, price) VALUES (?, ?, ?, ?)", 
+            "INSERT INTO gifts (name, image_url, anim_url, price, weight) VALUES (?, ?, ?, ?, ?)", 
             base_gifts
         )
     conn.commit()
@@ -169,44 +171,67 @@ def get_inventory(user_id: int):
     conn.close()
     return [{"id": r[0], "gift_name": r[1], "image_url": r[2], "anim_url": r[3], "price": r[4], "status": r[5]} for r in rows]
 
-# Прокрутка кейса / колеса с реальным списанием и добавлением в инвентарь
+# ЗАЩИЩЕННЫЙ СЕРВЕРНЫЙ РОЛЛ: Шансы и списание происходят строго здесь!
 @app.post("/api/roll/{user_id}")
 def api_roll(user_id: int, data: dict):
     cost = data.get("cost", 50)
+    is_demo = data.get("is_demo", False)
+    
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
     
-    cursor.execute("SELECT balance FROM users WHERE user_id = ?", (user_id,))
-    row = cursor.fetchone()
-    current_balance = row[0] if row else 0
-    
-    if current_balance < cost:
-        conn.close()
-        raise HTTPException(status_code=400, detail="Insufficient balance")
+    if not is_demo:
+        cursor.execute("SELECT balance FROM users WHERE user_id = ?", (user_id,))
+        row = cursor.fetchone()
+        current_balance = row[0] if row else 0
         
-    cursor.execute("SELECT name, image_url, anim_url, price FROM gifts")
+        if current_balance < cost:
+            conn.close()
+            raise HTTPException(status_code=400, detail="Insufficient balance")
+        
+        cursor.execute("UPDATE users SET balance = balance - ? WHERE user_id = ?", (cost, user_id))
+    
+    # Загружаем подарки и их веса из базы данных
+    cursor.execute("SELECT name, image_url, anim_url, price, weight FROM gifts")
     gifts = cursor.fetchall()
     if not gifts:
         conn.close()
         raise HTTPException(status_code=400, detail="No gifts available")
-        
-    chosen = random.choice(gifts)
-    gift_name, image_url, anim_url, gift_price = chosen
     
-    # Списываем стоимость прокрута и добавляем предмет в инвентарь
-    cursor.execute("UPDATE users SET balance = balance - ? WHERE user_id = ?", (cost, user_id))
-    cursor.execute(
-        "INSERT INTO inventory (user_id, gift_name, image_url, anim_url, price) VALUES (?, ?, ?, ?, ?)",
-        (user_id, gift_name, image_url, anim_url, gift_price)
-    )
-    conn.commit()
+    # Серверный расчет случайного подарка по весам
+    total_weight = sum(g[4] for g in gifts)
+    rand_val = random.uniform(0, total_weight)
+    current_w = 0
+    chosen = gifts[0]
+    for g in gifts:
+        current_w += g[4]
+        if rand_val <= current_w:
+            chosen = g
+            break
+            
+    gift_name, image_url, anim_url, gift_price, _ = chosen
+    
+    # Сохраняем в инвентарь только если это не демо-режим
+    item_id = 0
+    if not is_demo:
+        cursor.execute(
+            "INSERT INTO inventory (user_id, gift_name, image_url, anim_url, price) VALUES (?, ?, ?, ?, ?)",
+            (user_id, gift_name, image_url, anim_url, gift_price)
+        )
+        item_id = cursor.lastrowid
+        conn.commit()
+        
     cursor.execute("SELECT balance FROM users WHERE user_id = ?", (user_id,))
-    new_balance = cursor.fetchone()[0]
+    new_balance = cursor.fetchone()[0] if not is_demo else 200000
     conn.close()
     
-    return {"success": True, "gift": {"name": gift_name, "icon": image_url, "price": gift_price}, "balance": new_balance}
+    return {
+        "success": True, 
+        "item_id": item_id,
+        "gift": {"name": gift_name, "icon": image_url, "price": gift_price}, 
+        "balance": new_balance
+    }
 
-# Продажа предмета из инвентаря (возврат стоимости в звёздах на баланс)
 @app.post("/api/sell/{item_id}")
 def sell_item(item_id: int):
     conn = sqlite3.connect("database.db")
@@ -254,9 +279,6 @@ def withdraw_item(item_id: int):
     conn.commit()
     conn.close()
     
-    success = False
-    error_message = ""
-    
     text_msg = (
         f"🎁 **GIFT WITHDRAWAL REQUEST!**\n\n"
         f"👤 **Winner ID:** `{user_id}`\n"
@@ -267,19 +289,7 @@ def withdraw_item(item_id: int):
 
     try:
         bot.send_message(ADMIN_ID, text_msg, parse_mode="Markdown")
-        success = True
-    except Exception as e1:
-        error_message += f"ID error: {e1}; "
-
-    if not success:
-        try:
-            admin_chat = bot.get_chat(ADMIN_USERNAME)
-            bot.send_message(admin_chat.id, text_msg, parse_mode="Markdown")
-            success = True
-        except Exception as e2:
-            error_message += f"Username error: {e2}"
-
-    if not success:
-        raise HTTPException(status_code=500, detail=f"Telegram notification error: {error_message}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Telegram notification error: {e}")
         
     return {"message": "Success! The withdrawal request has been sent to the admin."}

@@ -262,7 +262,6 @@
         input:checked + .slider { background-color: var(--purple-accent); }
         input:checked + .slider:before { transform: translateX(18px); }
 
-        /* Единый элегантный стиль для кнопок «Пропустить» */
         .skip-btn-mini {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -821,7 +820,7 @@
             track.style.transition = 'none';
             track.style.transform = 'translateX(0px)';
             track.innerHTML = '';
-            for(let i=0; i<35; i++) {
+            for(let i=0; i<40; i++) {
                 const randItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
                 track.innerHTML += `<div class="item-card"><div class="icon">${randItem.icon}</div><div class="name">${randItem.name}</div><div class="price-tag">${randItem.price} ⭐</div></div>`;
             }
@@ -848,42 +847,41 @@
             state.isSpinning = true;
             const track = document.getElementById('rouletteTrack');
             
-            if (isDemo) {
-                currentWinningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
-            } else {
-                try {
-                    const res = await fetch(`/api/roll/${userId}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ cost: state.currentCaseCost })
-                    });
-                    const data = await res.json();
-                    currentWinningItem = data.gift;
-                    state.balance = data.balance;
-                    document.getElementById('userBalance').textContent = state.balance.toLocaleString();
-                } catch(e) {
-                    state.isSpinning = false;
-                    alert('Error');
-                    return;
+            // Запрашиваем победный предмет у защищенного бэкенда
+            try {
+                const res = await fetch(`/api/roll/${userId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cost: state.currentCaseCost, is_demo: isDemo })
+                });
+                const data = await res.json();
+                currentWinningItem = data.gift;
+                state.balance = data.balance;
+                document.getElementById('userBalance').textContent = state.balance.toLocaleString();
+                if (!isDemo) {
+                    lastWonItemId = data.item_id;
                 }
+            } catch(e) {
+                state.isSpinning = false;
+                alert('Error connecting to server');
+                return;
             }
             
             initRouletteTrack();
             const cards = track.querySelectorAll('.item-card');
-            // Устанавливаем выигрышный предмет на 18 позицию для красивого центрирования
-            cards[18].querySelector('.icon').textContent = currentWinningItem.icon;
-            cards[18].querySelector('.name').textContent = currentWinningItem.name;
-            cards[18].querySelector('.price-tag').textContent = currentWinningItem.price + ' ⭐';
+            // Устанавливаем выигранный сервером предмет на 22-ю карточку
+            cards[22].querySelector('.icon').textContent = currentWinningItem.icon;
+            cards[22].querySelector('.name').textContent = currentWinningItem.name;
+            cards[22].querySelector('.price-tag').textContent = currentWinningItem.price + ' ⭐';
 
-            // Плавная кривая анимации без рывков
             track.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.85, 0.35, 1.05)';
-            const offset = (18 * 107) - 130 + Math.random() * 40;
+            const offset = (22 * 107) - 130 + Math.random() * 40;
             track.style.transform = `translateX(-${offset}px)`;
 
             rouletteTimeout = setTimeout(async () => {
                 state.isSpinning = false;
                 if (window.confetti) confetti({ particleCount: 80, spread: 90 });
-                await loadInventoryFromServer();
+                if (!isDemo) await loadInventoryFromServer();
                 showWinModal(currentWinningItem, !isDemo);
                 addFeedItem(currentWinningItem);
             }, 4500);
@@ -912,24 +910,23 @@
             state.isSpinning = true;
             const wheel = document.getElementById('wheelTrack');
 
-            if (isDemo) {
-                currentWinningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
-            } else {
-                try {
-                    const res = await fetch(`/api/roll/${userId}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ cost: wheelCost })
-                    });
-                    const data = await res.json();
-                    currentWinningItem = data.gift;
-                    state.balance = data.balance;
-                    document.getElementById('userBalance').textContent = state.balance.toLocaleString();
-                } catch(e) {
-                    state.isSpinning = false;
-                    alert('Error');
-                    return;
+            try {
+                const res = await fetch(`/api/roll/${userId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cost: wheelCost, is_demo: isDemo })
+                });
+                const data = await res.json();
+                currentWinningItem = data.gift;
+                state.balance = data.balance;
+                document.getElementById('userBalance').textContent = state.balance.toLocaleString();
+                if (!isDemo) {
+                    lastWonItemId = data.item_id;
                 }
+            } catch(e) {
+                state.isSpinning = false;
+                alert('Error connecting to server');
+                return;
             }
 
             const index = itemsPool.findIndex(i => i.name === currentWinningItem.name);
@@ -942,7 +939,7 @@
             wheelTimeout = setTimeout(async () => {
                 state.isSpinning = false;
                 if (window.confetti) confetti({ particleCount: 80, spread: 90 });
-                await loadInventoryFromServer();
+                if (!isDemo) await loadInventoryFromServer();
                 showWinModal(currentWinningItem, !isDemo);
                 addFeedItem(currentWinningItem);
             }, 4500);
@@ -960,12 +957,6 @@
 
         function showWinModal(item, isReal) {
             pendingWinItem = item;
-            if (isReal && state.inventory.length > 0) {
-                lastWonItemId = state.inventory[state.inventory.length - 1].id;
-            } else {
-                lastWonItemId = null;
-            }
-
             document.getElementById('modalIcon').textContent = item.icon;
             document.getElementById('modalItemName').textContent = item.name;
             document.getElementById('modalItemPrice').textContent = `${item.price} ⭐`;
