@@ -1,6 +1,7 @@
 import os
 import random
 import sqlite3
+import threading
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -59,6 +60,15 @@ def init_db():
 
 init_db()
 
+# Запуск бота в фоновом потоке, чтобы он слушал входящие сообщения (например, /start)
+def run_bot():
+    try:
+        bot.infinity_polling(skip_pending=True)
+    except Exception as e:
+        print(f"Bot polling error: {e}")
+
+threading.Thread(target=run_bot, daemon=True).start()
+
 def give_random_gift(user_id: int):
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
@@ -80,7 +90,6 @@ def give_random_gift(user_id: int):
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     global ADMIN_ID
-    # Автоматически определяем и сохраняем ваш ID, если вы администратор
     if message.from_user.username and message.from_user.username.lower() == "bruhki":
         ADMIN_ID = message.from_user.id
         print(f"✅ Администратор авторизован! ID: {ADMIN_ID}")
