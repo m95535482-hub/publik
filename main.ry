@@ -1,0 +1,131 @@
+import random
+import time
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from pydantic import BaseModel
+
+app = FastAPI(title="CatRoll Secure Backend")
+
+users_db = {}
+
+ITEMS_POOL = [
+    {"id": 1, "name": "Star Pouch", "icon": "⭐", "price": 30},
+    {"id": 2, "name": "Gift Box", "icon": "🎁", "price": 60},
+    {"id": 3, "name": "Rubber Duck", "icon": "🦆", "price": 120},
+    {"id": 4, "name": "Telegram Gem", "icon": "💎", "price": 250},
+    {"id": 5, "name": "Rocket Gift", "icon": "🚀", "price": 450},
+    {"id": 6, "name": "Golden Crown", "icon": "👑", "price": 800},
+    {"id": 7, "name": "Cyber Cat NFT", "icon": "🐱", "price": 1500},
+    {"id": 8, "name": "Diamond Diamond", "icon": "💠", "price": 2500},
+]
+
+
+class UserRequest(BaseModel):
+    user_id: str
+
+
+class SpinRequest(BaseModel):
+    user_id: str
+    case_type: str = "starter"
+
+
+class InventoryActionRequest(BaseModel):
+    user_id: str
+    action: str
+    item: dict
+
+
+class SellItemRequest(BaseModel):
+    user_id: str
+    uid: float
+
+
+@app.get("/")
+def serve_frontend():
+    return FileResponse("index.html")
+
+
+@app.post("/api/init")
+def init_user(data: UserRequest):
+    uid = data.user_id
+    if uid not in users_db:
+        users_db[uid] = {"balance": 200000, "inventory": [], "last_bonus": 0}
+    return users_db[uid]
+
+
+@app.post("/api/bonus")
+def claim_bonus(data: UserRequest):
+    uid = data.user_id
+    if uid not in users_db:
+        raise HTTPException(status_code=404, detail="User not found")
+    now = time.time() * 1000
+    if now - users_db[uid]["last_bonus"] < 24 * 60 * 60 * 1000:
+        raise HTTPException(status_code=400, detail="Cooldown active")
+    users_db[uid]["last_bonus"] = now
+    users_db[uid]["balance"] += 50
+    return {
+        "balance": users_db[uid]["balance"],
+        "item": {"name": "Ежедневный Бонус", "icon": "🎁", "price": 50},
+    }
+
+
+@app.post("/api/spin-case")
+def spin_case(data: SpinRequest):
+    uid = data.user_id
+    if uid not in users_db:
+        raise HTTPException(status_code=404, detail="User not found")
+    costs = {"starter": 50, "rare": 250, "legend": 1000}
+    cost = costs.get(data.case_type, 50)
+    if users_db[uid]["balance"] < cost:
+        raise HTTPException(status_code=400, detail="Not enough stars")
+    users_db[uid]["balance"] -= cost
+    winning_item = random.choice(ITEMS_POOL)
+    return {"balance": users_db[uid]["balance"], "item": winning_item}
+
+
+@app.post("/api/spin-wheel")
+def spin_wheel(data: UserRequest):
+    uid = data.user_id
+    if uid not in users_db:
+        raise HTTPException(status_code=404, detail="User not found")
+    if users_db[uid]["balance"] < 100:
+        raise HTTPException(status_code=400, detail="Not enough stars")
+    users_db[uid]["balance"] -= 100
+    winning_item = random.choice(ITEMS_POOL)
+    return {"balance": users_db[uid]["balance"], "item": winning_item}
+
+
+@app.post("/api/inventory-action")
+def inventory_action(data: InventoryActionRequest):
+    uid = data.user_id
+    if uid not in users_db:
+        raise HTTPException(status_code=404, detail="User not found")
+    user = users_db[uid]
+    if data.action == "claim":
+        user["inventory"].append(
+            {**data.item, "uid": time.time() * 1000 + random.random()}
+        )
+    elif data.action == "sell":
+        user["balance"] += data.item["price"]
+    return {"balance": user["balance"], "inventory": user["inventory"]}
+
+
+@app.post("/api/sell-inventory-item")
+def sell_inventory_item(data: SellItemRequest):
+    uid = data.user_id
+    if uid not in users_db:
+        raise HTTPException(status_code=404, detail="User not found")
+    user = users_db[uid]
+    idx = next(
+        (i for i, item in enumerate(user["inventory"]) if item["uid"] == data.uid),
+        -1,
+    )
+    if idx != -1:
+        user["balance"] += user["inventory"].pop(idx)["price"]
+    return {"balance": user["balance"], "inventory": user["inventory"]}
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
