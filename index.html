@@ -97,10 +97,21 @@
         .item-card .name { font-size: 10px; color: var(--text-secondary); margin-top: 6px; font-weight: 700; text-align: center; }
         .item-card .price-tag { font-size: 11px; color: var(--gold); font-weight: 800; margin-top: 2px; }
 
-        /* Колесо Фортуны (Черный / Серый) */
-        .wheel-box { position: relative; width: 280px; height: 280px; margin: 10px 0 22px 0; display: flex; align-items: center; justify-content: center; }
-        .wheel-pointer { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 24px solid #ff3b30; z-index: 20; filter: drop-shadow(0 4px 14px rgba(255,59,48,0.95)); }
-        .wheel { width: 100%; height: 100%; border-radius: 50%; border: 7px solid #1a1a26; position: relative; overflow: hidden; transition: transform 5s cubic-bezier(0.1, 1, 0.1, 1); box-shadow: 0 0 40px rgba(0,0,0,0.9); }
+        /* Стиль Колеса Фортуны (Черный/Серый с золотым ободком и точками-лампочками как на референсе) */
+        .wheel-box { position: relative; width: 290px; height: 290px; margin: 10px 0 22px 0; display: flex; align-items: center; justify-content: center; }
+        .wheel-pointer { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 26px solid #ff3b30; z-index: 30; filter: drop-shadow(0 4px 14px rgba(255,59,48,0.95)); }
+        
+        .wheel-container-outer {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffd700, #b8860b, #ffd700);
+            padding: 8px; /* золотой ободок с рамкой */
+            box-shadow: 0 0 35px rgba(255, 184, 0, 0.35), 0 10px 30px rgba(0,0,0,0.8);
+            position: relative;
+        }
+
+        .wheel { width: 100%; height: 100%; border-radius: 50%; background: #111; position: relative; overflow: hidden; transition: transform 5s cubic-bezier(0.1, 1, 0.1, 1); }
         
         .wheel-slice { 
             position: absolute; 
@@ -112,12 +123,13 @@
             pointer-events: none; 
             display: flex; 
             justify-content: center;
+            border-left: 1px solid rgba(255,255,255,0.1);
         }
         
         .wheel-slice-content { 
             position: absolute; 
             left: 50%; 
-            top: 35px; 
+            top: 38px; 
             transform: translateX(-50%) rotate(45deg); 
             display: flex; 
             flex-direction: column; 
@@ -126,7 +138,7 @@
             width: 60px;
         }
 
-        .wheel-center-cap { position: absolute; width: 48px; height: 48px; background: linear-gradient(135deg, #2c2c3d, #121218); border: 3px solid var(--purple-accent); border-radius: 50%; z-index: 15; display: flex; align-items: center; justify-content: center; color: #fff; }
+        .wheel-center-cap { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 54px; height: 54px; background: radial-gradient(circle, #ffe600 0%, #b8860b 100%); border: 3px solid #fff; border-radius: 50%; z-index: 25; display: flex; align-items: center; justify-content: center; color: #000; font-size: 20px; box-shadow: 0 0 15px rgba(0,0,0,0.6); }
 
         .action-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--purple-accent), var(--purple-bright)); border: none; border-radius: 18px; color: #fff; font-weight: 900; font-size: 16px; cursor: pointer; box-shadow: 0 8px 25px var(--accent-glow); }
         .action-btn:active { transform: scale(0.96); }
@@ -256,8 +268,10 @@
 
         <div class="wheel-box">
             <div class="wheel-pointer"></div>
-            <div class="wheel" id="wheelTrack"></div>
-            <div class="wheel-center-cap">🐾</div>
+            <div class="wheel-container-outer">
+                <div class="wheel" id="wheelTrack"></div>
+                <div class="wheel-center-cap">🐾</div>
+            </div>
         </div>
 
         <button class="action-btn" id="spinWheelBtn" onclick="spinWheel()" data-i18n="spinWheelBtn">Spin Wheel</button>
@@ -409,7 +423,6 @@
             renderInventory();
         }
 
-        // Открытие Классик Ролла (ежедневного бесплатного прокрута кейса)
         function openClassicRoll() {
             const now = Date.now();
             const cooldown = 24 * 60 * 60 * 1000;
@@ -453,7 +466,6 @@
             const isDemo = document.getElementById('casesDemoToggle').checked;
 
             if (state.isClassicRoll) {
-                // Запрос на ежедневный бонус на бэкенд (защита от обхода таймера)
                 let res = await fetch('/api/bonus', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -555,12 +567,13 @@
             }, 1000);
         }
 
+        // Стильное колесо фортуны с четким чередованием глубокого черного (#1a1a1a) и строгого серого (#3a3a3a) с подарками и NFT
         function buildWheel() {
             const wheel = document.getElementById('wheelTrack');
             wheel.innerHTML = '';
             const count = itemsPool.length;
             const sliceAngle = 360 / count;
-            const twoColors = ['#111116', '#2c2c38'];
+            const twoColors = ['#1a1a1a', '#3a3a3a'];
 
             itemsPool.forEach((item, index) => {
                 const slice = document.createElement('div');
@@ -573,7 +586,7 @@
                 const content = document.createElement('div');
                 content.className = 'wheel-slice-content';
                 content.innerHTML = `
-                    <span style="font-size: 20px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));">${item.icon}</span>
+                    <span style="font-size: 21px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.9));">${item.icon}</span>
                     <span style="font-size: 8px; color: #fff; font-weight: 700; margin-top: 2px; text-shadow: 0 1px 2px rgba(0,0,0,0.9);">${item.name}</span>
                 `;
                 
