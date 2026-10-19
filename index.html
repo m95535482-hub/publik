@@ -50,6 +50,9 @@
             font-size: 20px;
             font-weight: 800;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .header-actions {
@@ -133,7 +136,7 @@
         }
 
         .mode-icon {
-            font-size: 36px;
+            font-size: 28px;
             background: #111115;
             width: 60px;
             height: 60px;
@@ -142,6 +145,12 @@
             align-items: center;
             justify-content: center;
             border: 1px solid var(--border-color);
+        }
+
+        .mode-icon img {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
         }
 
         .mode-info h3 {
@@ -228,7 +237,12 @@
             position: relative;
         }
 
-        .item-card .icon { font-size: 28px; }
+        .item-card img {
+            width: 44px;
+            height: 44px;
+            object-fit: contain;
+        }
+
         .item-card .name { font-size: 9px; color: var(--text-secondary); margin-top: 2px; font-weight: 600; text-align: center; }
         .item-card .price-tag { font-size: 10px; color: var(--gold); font-weight: 700; margin-top: 2px; }
 
@@ -278,8 +292,14 @@
             top: 50%;
             left: 50%;
             transform-origin: 0 0;
-            font-size: 20px;
-            font-weight: bold;
+            width: 30px;
+            height: 30px;
+        }
+
+        .wheel-label img {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
         }
 
         .wheel-label:nth-child(1) { transform: rotate(25deg) translate(60px, -15px); }
@@ -338,7 +358,13 @@
             text-align: center;
         }
 
-        .inventory-card .icon { font-size: 40px; margin-bottom: 6px; }
+        .inventory-card img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            margin-bottom: 6px;
+        }
+
         .inventory-card .name { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
         .inventory-card .price { font-size: 12px; color: var(--gold); font-weight: 600; margin-bottom: 10px; }
         .inventory-card .sell-btn {
@@ -411,8 +437,10 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
 
-        .win-icon {
-            font-size: 64px;
+        .win-icon img {
+            width: 72px;
+            height: 72px;
+            object-fit: contain;
             margin-bottom: 8px;
         }
 
@@ -477,7 +505,7 @@
         <div class="menu-subtitle">Выберите стиль рулетки или откройте свой инвентарь</div>
 
         <div class="mode-card" onclick="openGameMode('classic')">
-            <div class="mode-icon">🎰</div>
+            <div class="mode-icon"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f3b0.png" alt="Classic"></div>
             <div class="mode-info">
                 <h3>Классический ролл</h3>
                 <p>Горизонтальная лента с карточками</p>
@@ -485,7 +513,7 @@
         </div>
 
         <div class="mode-card" onclick="openGameMode('wheel')">
-            <div class="mode-icon">🎡</div>
+            <div class="mode-icon"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f3a1.png" alt="Wheel"></div>
             <div class="mode-info">
                 <h3>Колесо Фортуны</h3>
                 <p>Круговое вращающееся колесо с призами</p>
@@ -493,7 +521,7 @@
         </div>
 
         <div class="mode-card inventory-main-card" onclick="showScreen('inventoryScreen')">
-            <div class="mode-icon">🎒</div>
+            <div class="mode-icon"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f392.png" alt="Inventory"></div>
             <div class="mode-info">
                 <h3>Мой Инвентарь</h3>
                 <p>Просмотр и продажа ваших предметов</p>
@@ -525,13 +553,13 @@
         <div class="wheel-box">
             <div class="wheel-pointer"></div>
             <div class="wheel" id="wheelTrack">
-                <div class="wheel-label">🎅</div>
-                <div class="wheel-label">🐍</div>
-                <div class="wheel-label">🎁</div>
-                <div class="wheel-label">🧸</div>
-                <div class="wheel-label">💖</div>
-                <div class="wheel-label">🏆</div>
-                <div class="wheel-label">💎</div>
+                <div class="wheel-label"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f385.png" alt="Santa"></div>
+                <div class="wheel-label"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f40d.png" alt="Snake"></div>
+                <div class="wheel-label"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f381.png" alt="Gift"></div>
+                <div class="wheel-label"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f9f8.png" alt="Bear"></div>
+                <div class="wheel-label"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f496.png" alt="Heart"></div>
+                <div class="wheel-label"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f3c6.png" alt="Cup"></div>
+                <div class="wheel-label"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f48e.png" alt="Diamond"></div>
             </div>
         </div>
     </div>
@@ -552,7 +580,7 @@
     <!-- МОДАЛЬНОЕ ОКНО ВЫИГРЫША -->
     <div class="modal-overlay" id="winModal">
         <div class="modal-card">
-            <div class="win-icon" id="winIcon">🎅</div>
+            <div class="win-icon" id="winIcon"><img src="" alt="Win"></div>
             <div class="win-title" id="winTitle">Santa Hat NFT</div>
             <div class="win-price" id="winPrice">Стоимость: 500 ⭐</div>
 
@@ -580,13 +608,13 @@
         let currentWinItem = null;
 
         const items = [
-            { nft_id: 'santa_hat', icon: '🎅', name: 'Santa Hat NFT', price: 500, weight: 30 },
-            { nft_id: 'snake_nft', icon: '🐍', name: 'Snake NFT', price: 500, weight: 30 },
-            { nft_id: 'ny_gift', icon: '🎁', name: 'New Year Gift NFT', price: 500, weight: 30 },
-            { nft_id: 'teddy_bear', icon: '🧸', name: 'Мишка', price: 15, weight: 100 },
-            { nft_id: 'heart_item', icon: '💖', name: 'Сердце', price: 15, weight: 100 },
-            { nft_id: 'gold_cup', icon: '🏆', name: 'Кубок', price: 100, weight: 60 },
-            { nft_id: 'diamond_item', icon: '💎', name: 'Бриллиант', price: 100, weight: 60 }
+            { nft_id: 'santa_hat', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f385.png', name: 'Santa Hat NFT', price: 500, weight: 30 },
+            { nft_id: 'snake_nft', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f40d.png', name: 'Snake NFT', price: 500, weight: 30 },
+            { nft_id: 'ny_gift', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f381.png', name: 'New Year Gift NFT', price: 500, weight: 30 },
+            { nft_id: 'teddy_bear', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f9f8.png', name: 'Мишка', price: 15, weight: 100 },
+            { nft_id: 'heart_item', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f496.png', name: 'Сердце', price: 15, weight: 100 },
+            { nft_id: 'gold_cup', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f3c6.png', name: 'Кубок', price: 100, weight: 60 },
+            { nft_id: 'diamond_item', image: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f48e.png', name: 'Бриллиант', price: 100, weight: 60 }
         ];
 
         const track = document.getElementById('track');
@@ -645,7 +673,7 @@
                 const card = document.createElement('div');
                 card.className = 'item-card';
                 card.innerHTML = `
-                    <div class="icon">${randomItem.icon}</div>
+                    <img src="${randomItem.image}" alt="${randomItem.name}">
                     <div class="name">${randomItem.name}</div>
                     <div class="price-tag">${randomItem.price} ⭐</div>
                 `;
@@ -695,7 +723,7 @@
                 const cards = track.children;
                 if (cards[winnerIndex]) {
                     cards[winnerIndex].innerHTML = `
-                        <div class="icon">${currentWinItem.icon}</div>
+                        <img src="${currentWinItem.image}" alt="${currentWinItem.name}">
                         <div class="name">${currentWinItem.name}</div>
                         <div class="price-tag">${currentWinItem.price} ⭐</div>
                     `;
@@ -731,7 +759,7 @@
             document.getElementById('sellBtn').disabled = false;
             document.getElementById('keepBtn').disabled = false;
 
-            document.getElementById('winIcon').innerText = item.icon;
+            document.getElementById('winIcon').innerHTML = `<img src="${item.image}" alt="${item.name}">`;
             document.getElementById('winTitle').innerText = item.name;
             document.getElementById('winPrice').innerText = `Стоимость: ${item.price} ⭐`;
             document.getElementById('sellBtn').innerText = `Продать за ${item.price} ⭐`;
@@ -742,7 +770,6 @@
             document.getElementById('winModal').style.display = 'none';
         }
 
-        // Универсальная функция продажи с проверкой по уникальному ID предмета
         function sellItem(targetId, isInventory = false, invUniqueId = null) {
             let itemToSell = null;
 
@@ -772,7 +799,6 @@
         function sellModalItem() {
             if (!currentWinItem) return;
 
-            // Блокируем кнопки и закрываем виджет мгновенно для защиты от дюпа
             document.getElementById('sellBtn').disabled = true;
             document.getElementById('keepBtn').disabled = true;
             closeWinModal();
@@ -819,7 +845,7 @@
                 const card = document.createElement('div');
                 card.className = 'inventory-card';
                 card.innerHTML = `
-                    <div class="icon">${item.icon}</div>
+                    <img src="${item.image}" alt="${item.name}">
                     <div class="name">${item.name}</div>
                     <div class="price">+${item.price} ⭐</div>
                     <button class="sell-btn" onclick="sellItem('${item.nft_id}', true, '${item.invId}')">Продать</button>
