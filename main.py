@@ -2,6 +2,7 @@ import os
 import random
 import sqlite3
 import threading
+import time
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -75,16 +76,14 @@ init_db()
 
 @bot.pre_checkout_query_handler(func=lambda query: True)
 def process_pre_checkout_query(pre_checkout_query):
-    # Подтверждаем транзакцию для Telegram
     bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True)
 
 @bot.message_handler(content_types=['successful_payment'])
 def process_successful_payment(message):
     payment_info = message.successful_payment
     user_id = message.from_user.id
-    stars_amount = payment_info.total_amount  # Количество купленных звёзд
+    stars_amount = payment_info.total_amount
     
-    # Начисляем звёзды пользователю в БД только ПОСЛЕ успешной реальной оплаты
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
     cursor.execute("INSERT OR IGNORE INTO users (user_id, balance) VALUES (?, 0)", (user_id,))
@@ -92,14 +91,18 @@ def process_successful_payment(message):
     conn.commit()
     conn.close()
     
-    bot.send_message(user_id, f"✅ Оплата прошла успешно! Вам начислено **{stars_amount} ⭐**.", parse_mode="Markdown")
-
-# Запуск бота в фоновом потоке
-def run_bot():
     try:
-        bot.infinity_polling(skip_pending=True)
+        bot.send_message(user_id, f"✅ Оплата прошла успешно! Вам начислено **{stars_amount} ⭐**.", parse_mode="Markdown")
     except Exception as e:
-        print(f"Bot polling error: {e}")
+        print(f"Failed to send confirmation message: {e}")
+
+def run_bot():
+    while True:
+        try:
+            bot.infinity_polling(skip_pending=True, timeout=10, long_polling_timeout=5)
+        except Exception as e:
+            print(f"Bot polling error: {e}")
+            time.sleep(3)
 
 threading.Thread(target=run_bot, daemon=True).start()
 
@@ -138,7 +141,6 @@ def get_user(user_id: int):
     conn.close()
     return {"user_id": user_id, "balance": balance}
 
-# Эндпоинт для генерации счета на реальную оплату через Telegram Stars
 @app.post("/api/create-invoice/{user_id}")
 def create_invoice(user_id: int, data: dict):
     amount = data.get("amount", 0)
@@ -150,12 +152,12 @@ def create_invoice(user_id: int, data: dict):
     prices = [LabeledPrice(label=f"{amount} Telegram Stars", amount=amount)]
     
     try:
-        # Важно: валюта XTR используется для Telegram Stars
+        # Исправлено: аргумент называется 'payload', а не 'invoice_payload'
         invoice_link = bot.create_invoice_link(
             title=f"Пополнение {amount} Stars",
             description=f"Пополнение баланса в CatRoll на {amount} звёзд",
-            invoice_payload=f"topup_{user_id}_{amount}",
-            provider_token="",  # Для XTR токен провайдера должен быть пустым
+            payload=f"topup_{user_id}_{amount}",
+            provider_token="",
             currency="XTR",
             prices=prices
         )
