@@ -206,7 +206,7 @@
         input:checked + .slider { background-color: var(--accent-color); }
         input:checked + .slider:before { transform: translateX(24px); }
 
-        /* Модальное окно победы */
+        /* Модальное окно победы с анимацией появления */
         #win-modal {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -216,6 +216,8 @@
             justify-content: center;
             z-index: 100;
             padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
         .win-modal-content {
             background: var(--card-bg);
@@ -226,6 +228,15 @@
             max-width: 320px;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: scale(0.8);
+            transition: transform 0.3s cubic-bezier(0.1, 0.8, 0.2, 1);
+        }
+        #win-modal.show {
+            display: flex;
+            opacity: 1;
+        }
+        #win-modal.show .win-modal-content {
+            transform: scale(1);
         }
         .win-modal-content img {
             width: 80px;
@@ -454,11 +465,16 @@
             document.getElementById('win-modal-img').src = item.animation || item.image || '';
             document.getElementById('win-modal-name').innerText = item.name;
             document.getElementById('win-modal-price').innerText = item.price || 100;
-            document.getElementById('win-modal').style.display = 'flex';
+            
+            const modal = document.getElementById('win-modal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('show'), 10);
         }
 
         function closeWinModal() {
-            document.getElementById('win-modal').style.display = 'none';
+            const modal = document.getElementById('win-modal');
+            modal.classList.remove('show');
+            setTimeout(() => modal.style.display = 'none', 300);
         }
 
         async function claimPrize() {
@@ -482,7 +498,6 @@
 
         async function sellPrizeDirectly() {
             if (!lastWonItem) return;
-            // Сначала добавляем во временный инвентарь для получения uid, затем сразу продаем
             try {
                 const resp1 = await fetch('/api/inventory-action', {
                     method: 'POST',
@@ -491,7 +506,6 @@
                 });
                 const data1 = await resp1.json();
                 if (resp1.ok && data1.inventory.length > 0) {
-                    // Берем последний добавленный предмет (его uid)
                     const addedItem = data1.inventory[data1.inventory.length - 1];
                     const resp2 = await fetch('/api/sell-inventory-item', {
                         method: 'POST',
