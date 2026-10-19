@@ -105,7 +105,7 @@
             color: var(--accent-color);
             font-weight: bold;
         }
-        /* Рулетка / Кейсы анимации */
+        /* Анимация рулетки */
         .case-roulette-container {
             width: 100%;
             height: 140px;
@@ -163,7 +163,6 @@
             text-overflow: ellipsis;
             max-width: 90px;
         }
-        /* Карточки */
         .item-card {
             background: var(--card-bg);
             border: 1px solid #2a2e39;
@@ -188,7 +187,6 @@
             box-sizing: border-box;
             border: 1px solid #2a2e39;
         }
-        /* Переключатель */
         .switch {
             position: relative;
             display: inline-block;
@@ -211,7 +209,7 @@
 <body>
 
     <header>
-        <div class="balance-box">⭐ <span id="user-balance">200000</span></div>
+        <div class="balance-box">⭐ <span id="user-balance">0</span></div>
         <button class="btn" style="width: auto; padding: 6px 12px; margin: 0; font-size: 12px;" onclick="toggleLang()">🌐 <span id="lang-label">RU</span></button>
     </header>
 
@@ -229,15 +227,13 @@
                 </label>
             </div>
 
-            <!-- Лента рулетки с анимацией -->
+            <!-- Лента рулетки -->
             <div class="case-roulette-container">
                 <div class="case-selector-line"></div>
-                <div class="case-items-track" id="case-track">
-                    <!-- Заполняется динамически скриптом -->
-                </div>
+                <div class="case-items-track" id="case-track"></div>
             </div>
 
-            <button class="btn" id="spin-case-btn" onclick="spinCase()">Крутить кейс</button>
+            <button class="btn" id="spin-case-btn" onclick="spinCase()">Крутить кейс (-100 ⭐)</button>
         </div>
 
         <!-- Вкладка Колеса -->
@@ -247,12 +243,10 @@
             
             <div class="case-roulette-container">
                 <div class="case-selector-line"></div>
-                <div class="case-items-track" id="wheel-track">
-                    <!-- Заполняется динамически -->
-                </div>
+                <div class="case-items-track" id="wheel-track"></div>
             </div>
 
-            <button class="btn" id="spin-wheel-btn" onclick="spinWheel()">Крутить колесо</button>
+            <button class="btn" id="spin-wheel-btn" onclick="spinWheel()">Крутить колесо (-50 ⭐)</button>
         </div>
 
         <!-- Вкладка Инвентаря -->
@@ -277,7 +271,6 @@
         const userId = tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : "test_user_123";
         let currentLang = "ru";
         
-        // Пул предметов по умолчанию (будет обновлен при инициализации)
         let localItemsPool = [
             {"id": 1, "name": "Star Pouch", "icon": "⭐", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f31f.png", "price": 30},
             {"id": 2, "name": "Gift Box", "icon": "🎁", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f381.png", "price": 60},
@@ -305,13 +298,11 @@
         }
 
         function buildRouletteTracks() {
-            const tracks = ['case-track', 'wheel-track'];
-            tracks.forEach(trackId => {
+            ['case-track', 'wheel-track'].forEach(trackId => {
                 const track = document.getElementById(trackId);
                 if (!track) return;
                 let html = '';
-                // Создаем длинную ленту для эффекта прокрутки
-                for (let i = 0; i < 30; i++) {
+                for (let i = 0; i < 35; i++) {
                     const item = localItemsPool[i % localItemsPool.length];
                     html += `
                         <div class="case-item-box">
@@ -328,10 +319,9 @@
             const track = document.getElementById(trackId);
             if (!track) return;
             
-            // Вставляем выигранный предмет примерно на 20-ю позицию для красивой остановки
             let html = '';
-            const targetIndex = 22;
-            for (let i = 0; i < 30; i++) {
+            const targetIndex = 25; // позиция остановки
+            for (let i = 0; i < 35; i++) {
                 const item = (i === targetIndex) ? winningItem : localItemsPool[i % localItemsPool.length];
                 html += `
                     <div class="case-item-box">
@@ -344,11 +334,10 @@
             track.style.transition = 'none';
             track.style.transform = 'translateX(0px)';
 
-            // Запускаем плавную анимацию прокрутки к выигрышному элементу
             setTimeout(() => {
-                const itemWidth = 126; // ширина блока + отступы
-                const offset = (targetIndex * itemWidth) - 150; // центрируем по линии
-                track.style.transition = 'transform 3.5s cubic-bezier(0.15, 0.85, 0.25, 1)';
+                const itemWidth = 126; 
+                const offset = (targetIndex * itemWidth) - 150; 
+                track.style.transition = 'transform 4s cubic-bezier(0.1, 0.8, 0.2, 1)';
                 track.style.transform = `translateX(-${offset}px)`;
             }, 50);
         }
@@ -373,7 +362,7 @@
                             await addToInventory(data.item);
                         }
                         btn.disabled = false;
-                    }, 3600);
+                    }, 4100);
                 } else {
                     alert(data.detail || "Error");
                     btn.disabled = false;
@@ -404,7 +393,7 @@
                             await addToInventory(data.item);
                         }
                         btn.disabled = false;
-                    }, 3600);
+                    }, 4100);
                 } else {
                     alert(data.detail || "Error");
                     btn.disabled = false;
@@ -459,7 +448,7 @@
                 <div class="item-card">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <img src="${item.image || ''}" width="36" height="36" style="object-fit: contain;" onerror="this.style.display='none'">
-                        <div><b>${item.name}</b><br><small style="color: var(--gold);">${item.price} TON</small></div>
+                        <div><b>${item.name}</b><br><small style="color: var(--gold);">+${item.price} ⭐</small></div>
                     </div>
                     <button class="btn" style="width: auto; padding: 6px 14px; margin: 0; font-size: 13px;" onclick="sellItem(${item.uid})">Продать</button>
                 </div>
@@ -477,15 +466,14 @@
             currentLang = currentLang === "ru" ? "en" : "ru";
             document.getElementById('lang-label').innerText = currentLang.toUpperCase();
             
-            // Простой перевод текста интерфейса
             if (currentLang === "en") {
                 document.getElementById('cases-title').innerText = "Case Opening";
                 document.getElementById('cases-subtitle').innerText = "Try your luck in gift roulette";
                 document.getElementById('demo-text').innerText = "Demo Mode";
-                document.getElementById('spin-case-btn').innerText = "Spin Case";
+                document.getElementById('spin-case-btn').innerText = "Spin Case (-100 ⭐)";
                 document.getElementById('wheel-title').innerText = "Lucky Wheel";
                 document.getElementById('wheel-subtitle').innerText = "Spin the wheel for rewards";
-                document.getElementById('spin-wheel-btn').innerText = "Spin Wheel";
+                document.getElementById('spin-wheel-btn').innerText = "Spin Wheel (-50 ⭐)";
                 document.getElementById('inv-title').innerText = "Inventory";
                 document.getElementById('nav-cases').innerText = "Cases";
                 document.getElementById('nav-wheel').innerText = "Wheel";
@@ -494,10 +482,10 @@
                 document.getElementById('cases-title').innerText = "Открытие кейсов";
                 document.getElementById('cases-subtitle').innerText = "Испытай удачу в рулетке подарков";
                 document.getElementById('demo-text').innerText = "Демо-режим";
-                document.getElementById('spin-case-btn').innerText = "Крутить кейс";
+                document.getElementById('spin-case-btn').innerText = "Крутить кейс (-100 ⭐)";
                 document.getElementById('wheel-title').innerText = "Колесо фортуны";
                 document.getElementById('wheel-subtitle').innerText = "Крути колесо и забирай ценные призы";
-                document.getElementById('spin-wheel-btn').innerText = "Крутить колесо";
+                document.getElementById('spin-wheel-btn').innerText = "Крутить колесо (-50 ⭐)";
                 document.getElementById('inv-title').innerText = "Инвентарь";
                 document.getElementById('nav-cases').innerText = "Кейсы";
                 document.getElementById('nav-wheel').innerText = "Колесо";
