@@ -303,7 +303,7 @@
             border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center;
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
-        .item-icon-wrap { font-size: 32px; color: var(--purple-bright); margin-bottom: 2px; display: flex; align-items: center; justify-content: center; }
+        .item-icon-wrap { font-size: 32px; color: var(--gold); margin-bottom: 2px; display: flex; align-items: center; justify-content: center; }
         .item-card .name { font-size: 9px; color: var(--text-secondary); margin-top: 2px; font-weight: 700; text-align: center; }
         .item-card .price-tag { font-size: 11px; color: var(--gold); font-weight: 800; margin-top: 2px; }
 
@@ -327,7 +327,7 @@
             position: absolute; left: 50%; top: 28%; transform: translate(-50%, -50%) rotate(calc(var(--item-angle) * 1deg));
             display: flex; flex-direction: column; align-items: center; justify-content: center; width: 50px; text-align: center;
         }
-        .wheel-slice-content i { font-size: 20px; color: var(--purple-bright); }
+        .wheel-slice-content i { font-size: 18px; color: var(--gold); }
         .wheel-center-cap {
             position: absolute; width: 48px; height: 48px; background: linear-gradient(135deg, #2c2c3d, #121218);
             border: 3px solid var(--purple-accent); border-radius: 50%; z-index: 15; display: flex; align-items: center; justify-content: center; color: var(--purple-bright); font-size: 16px;
@@ -362,7 +362,7 @@
             background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 16px;
             display: flex; flex-direction: column; align-items: center; text-align: center;
         }
-        .inventory-card .item-icon-wrap { font-size: 42px; color: var(--purple-bright); margin-bottom: 8px; display: flex; align-items: center; justify-content: center; }
+        .inventory-card .item-icon-wrap { font-size: 42px; color: var(--gold); margin-bottom: 8px; display: flex; align-items: center; justify-content: center; }
         .inventory-card .name { font-size: 13px; font-weight: 800; margin-bottom: 3px; }
         .inventory-card .price { font-size: 12px; color: var(--gold); font-weight: 800; margin-bottom: 10px; }
 
@@ -378,7 +378,7 @@
         .live-feed-title { font-size: 11px; color: var(--text-secondary); margin-bottom: 12px; font-weight: 800; text-transform: uppercase; }
         .feed-list { display: flex; flex-direction: column; gap: 8px; max-height: 135px; overflow-y: auto; }
         .feed-item { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--text-secondary); background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 12px; }
-        .feed-item i { color: var(--purple-bright); margin-right: 4px; }
+        .feed-item i { color: var(--gold); margin-right: 4px; }
 
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(14px);
@@ -391,12 +391,12 @@
         
         .win-image-box {
             font-size: 64px;
-            color: var(--purple-bright);
+            color: var(--gold);
             margin: 15px auto;
             display: flex;
             align-items: center;
             justify-content: center;
-            filter: drop-shadow(0 4px 15px rgba(108, 92, 231, 0.5));
+            filter: drop-shadow(0 4px 15px rgba(255, 184, 0, 0.4));
         }
 
         .bottom-nav {
@@ -546,9 +546,9 @@
     <div class="modal-overlay" id="winModal">
         <div class="modal-card">
             <h2 class="menu-title" data-i18n="winTitle">Congratulations!</h2>
-            <div class="win-image-box" id="win-modal-icon"><i class="fa-solid fa-book-bookmark"></i></div>
-            <h3 id="modalItemName" style="font-size: 18px; margin-bottom: 6px;">Timeless Book</h3>
-            <p id="modalItemPrice" style="color: var(--gold); font-weight: 800; font-size: 14px; margin-bottom: 20px;">30 ⭐</p>
+            <div class="win-image-box" id="win-modal-icon"><i class="fa-solid fa-gift"></i></div>
+            <h3 id="modalItemName" style="font-size: 18px; margin-bottom: 6px;">Prize</h3>
+            <p id="modalItemPrice" style="color: var(--gold); font-weight: 800; font-size: 14px; margin-bottom: 20px;">50 ⭐</p>
             <div style="display: flex; gap: 10px;">
                 <button class="action-btn" onclick="closeModal('sell')" style="background: rgba(46,204,113,0.2); color: var(--green); border: 1px solid rgba(46,204,113,0.4);" data-i18n="sellBtnModal">Sell</button>
                 <button class="action-btn" onclick="closeModal('claim')" data-i18n="claimBtn">To Collection</button>
@@ -559,7 +559,7 @@
     <div class="modal-overlay" id="withdrawModal">
         <div class="modal-card">
             <h2 class="menu-title" style="font-size: 20px;" data-i18n="withdrawTitle">Item Withdrawal</h2>
-            <div class="win-image-box" style="font-size: 48px;"><i class="fa-solid fa-book-bookmark"></i></div>
+            <div class="win-image-box" style="font-size: 48px;"><i class="fa-solid fa-gift"></i></div>
             <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;" data-i18n="withdrawDesc">Request withdrawal of this reward from admin?</p>
             <div style="display: flex; gap: 10px;">
                 <button class="action-btn" onclick="closeWithdrawModal(false)" style="background: rgba(255,59,48,0.2); color: #ff3b30; border: 1px solid rgba(255,59,48,0.4);" data-i18n="rejectBtn">Reject</button>
@@ -631,14 +631,12 @@
         };
 
         const itemsPool = [
-            { id: 1, name: 'Timeless Book', icon: 'fa-book-bookmark', price: 30 },
-            { id: 2, name: 'Timeless Book', icon: 'fa-book-bookmark', price: 30 },
-            { id: 3, name: 'Timeless Book', icon: 'fa-book-bookmark', price: 30 },
-            { id: 4, name: 'Timeless Book', icon: 'fa-book-bookmark', price: 30 },
-            { id: 5, name: 'Timeless Book', icon: 'fa-book-bookmark', price: 30 },
-            { id: 6, name: 'Timeless Book', icon: 'fa-book-bookmark', price: 30 },
-            { id: 7, name: 'Timeless Book', icon: 'fa-book-bookmark', price: 30 },
-            { id: 8, name: 'Timeless Book', icon: 'fa-book-bookmark', price: 30 }
+            { id: 1, name: 'Bronze Star', icon: 'fa-star', price: 10 },
+            { id: 2, name: 'Silver Pack', icon: 'fa-gift', price: 25 },
+            { id: 3, name: 'Gold Box', icon: 'fa-box', price: 50 },
+            { id: 4, name: 'Ruby Gem', icon: 'fa-gem', price: 100 },
+            { id: 5, name: 'Crown', icon: 'fa-crown', price: 250 },
+            { id: 6, name: 'Trophy', icon: 'fa-trophy', price: 500 }
         ];
 
         let pendingWinItem = null;
@@ -708,9 +706,9 @@
                 const data = await res.json();
                 state.inventory = data.map(item => ({
                     id: item.id,
-                    name: 'Timeless Book',
-                    icon: 'fa-book-bookmark',
-                    price: 30,
+                    name: item.name || 'Prize',
+                    icon: item.icon || 'fa-gift',
+                    price: item.price || 50,
                     status: item.status
                 }));
                 renderInventory();
@@ -754,7 +752,7 @@
             state.lastBonusTime = now;
             localStorage.setItem('catroll_bonus', state.lastBonusTime);
             if (window.confetti) confetti({ particleCount: 60, spread: 70 });
-            showWinModal({ name: 'Timeless Book', icon: 'fa-book-bookmark', price: 30 }, false);
+            showWinModal({ name: 'Daily Gift', icon: 'fa-gift', price: 50 }, false);
             startBonusTimer();
         }
 
@@ -835,11 +833,7 @@
                 });
                 const data = await res.json();
                 
-                currentWinningItem = {
-                    name: 'Timeless Book',
-                    icon: 'fa-book-bookmark',
-                    price: 30
-                };
+                currentWinningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
 
                 state.balance = data.balance;
                 document.getElementById('userBalance').textContent = state.balance.toLocaleString();
@@ -910,11 +904,7 @@
                 });
                 const data = await res.json();
                 
-                currentWinningItem = {
-                    name: 'Timeless Book',
-                    icon: 'fa-book-bookmark',
-                    price: 30
-                };
+                currentWinningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
 
                 state.balance = data.balance;
                 document.getElementById('userBalance').textContent = state.balance.toLocaleString();
@@ -928,7 +918,7 @@
                 return;
             }
 
-            const index = 0;
+            const index = Math.floor(Math.random() * itemsPool.length);
             const sliceAngle = 360 / itemsPool.length;
             
             currentWheelRotation += 1800 + (360 - (index * sliceAngle + sliceAngle / 2));
@@ -1068,4 +1058,4 @@
         loadInventoryFromServer();
     </script>
 </body>
-</html>
+</html>>
