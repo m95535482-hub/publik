@@ -97,7 +97,7 @@
         .item-card .name { font-size: 10px; color: var(--text-secondary); margin-top: 6px; font-weight: 700; text-align: center; }
         .item-card .price-tag { font-size: 11px; color: var(--gold); font-weight: 800; margin-top: 2px; }
 
-        /* Идеальное Колесо Фортуны (Черный / Серый) */
+        /* Колесо Фортуны (Черный / Серый) */
         .wheel-box { position: relative; width: 280px; height: 280px; margin: 10px 0 22px 0; display: flex; align-items: center; justify-content: center; }
         .wheel-pointer { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 24px solid #ff3b30; z-index: 20; filter: drop-shadow(0 4px 14px rgba(255,59,48,0.95)); }
         .wheel { width: 100%; height: 100%; border-radius: 50%; border: 7px solid #1a1a26; position: relative; overflow: hidden; transition: transform 5s cubic-bezier(0.1, 1, 0.1, 1); box-shadow: 0 0 40px rgba(0,0,0,0.9); }
@@ -176,11 +176,11 @@
         <h1 class="menu-title" data-i18n="mainTitle">Choose Mode</h1>
         <p class="menu-subtitle" data-i18n="mainSub">Spin roulette, test your luck, get NFTs</p>
 
-        <div class="mode-card daily-bonus-card" onclick="openDailyBonusWheel()">
+        <div class="mode-card daily-bonus-card" onclick="openClassicRoll()">
             <div class="mode-icon">🎁</div>
             <div class="mode-info">
-                <h3><span data-i18n="dailyTitle">Daily Bonus</span><span class="timer-badge" id="bonusTimer">Ready</span></h3>
-                <p data-i18n="dailySub">Spin the bonus wheel for free rewards</p>
+                <h3><span data-i18n="dailyTitle">Classic Roll</span><span class="timer-badge" id="bonusTimer">Ready</span></h3>
+                <p data-i18n="dailySub">Free daily case spin for rewards</p>
             </div>
         </div>
 
@@ -216,8 +216,8 @@
 
     <main id="cases-screen" class="screen">
         <button class="back-btn" id="casesBackBtn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
-        <h1 class="menu-title" data-i18n="casesHeader">Case Opening</h1>
-        <p class="menu-subtitle" data-i18n="casesSubHeader">Try your luck in roulette</p>
+        <h1 class="menu-title" id="casesHeaderTitle" data-i18n="casesHeader">Case Opening</h1>
+        <p class="menu-subtitle" id="casesSubHeaderTitle" data-i18n="casesSubHeader">Try your luck in roulette</p>
 
         <div class="controls-row">
             <label class="toggle-label"><span data-i18n="demoMode">Demo Mode</span>
@@ -226,7 +226,7 @@
             <button class="skip-btn-mini" onclick="skipCaseAnimation()" data-i18n="skipBtn">Skip</button>
         </div>
 
-        <div class="cases-selector">
+        <div class="cases-selector" id="casesSelectorRow">
             <div class="case-tab active" onclick="selectCase('starter', this)">Starter (50 ⭐)</div>
             <div class="case-tab" onclick="selectCase('rare', this)">Rare (250 ⭐)</div>
             <div class="case-tab" onclick="selectCase('legend', this)">Royal (1000 ⭐)</div>
@@ -244,8 +244,8 @@
 
     <main id="wheel-screen" class="screen">
         <button class="back-btn" id="wheelBackBtn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
-        <h1 class="menu-title" id="wheelHeaderTitle" data-i18n="wheelHeader">Wheel of Fortune</h1>
-        <p class="menu-subtitle" id="wheelCostSubtitle" data-i18n="wheelCost">Spin cost: 100 ⭐</p>
+        <h1 class="menu-title" data-i18n="wheelHeader">Wheel of Fortune</h1>
+        <p class="menu-subtitle" data-i18n="wheelCost">Spin cost: 100 ⭐</p>
 
         <div class="controls-row">
             <label class="toggle-label"><span data-i18n="demoMode">Demo Mode</span>
@@ -260,7 +260,7 @@
             <div class="wheel-center-cap">🐾</div>
         </div>
 
-        <button class="action-btn" id="spinWheelBtn" onclick="executeWheelSpin()" data-i18n="spinWheelBtn">Spin Wheel</button>
+        <button class="action-btn" id="spinWheelBtn" onclick="spinWheel()" data-i18n="spinWheelBtn">Spin Wheel</button>
     </main>
 
     <main id="inventory-screen" class="screen">
@@ -316,21 +316,22 @@
         if (TG) { TG.ready(); TG.expand(); }
 
         const userId = String(TG?.initDataUnsafe?.user?.id || 'user_' + Math.floor(Math.random() * 100000));
-        let state = { balance: 0, inventory: [], currentCase: 'starter', isSpinning: false, lang: 'EN', isBonusSpin: false };
+        let state = { balance: 0, inventory: [], currentCase: 'starter', isSpinning: false, lang: 'EN', isClassicRoll: false, lastBonusTime: 0 };
         let pendingWinItem = null;
         let pendingWithdrawItem = null;
+        let bonusTimerInterval = null;
 
         const translations = {
             EN: {
                 mainTitle: "Choose Mode", mainSub: "Spin roulette, test your luck, get NFTs",
-                dailyTitle: "Daily Bonus", dailySub: "Spin the bonus wheel for free rewards",
+                dailyTitle: "Classic Roll", dailySub: "Free daily case spin for rewards",
                 casesTitle: "Gift Cases", casesSub: "Open cases and win Telegram Stars",
                 wheelTitle: "Wheel of Fortune", wheelSub: "Spin the wheel and get up to x10 rewards",
                 inventoryTitle: "My Inventory", inventorySub: "View and sell your rewards",
                 liveFeed: "Live Win Feed", back: "← Back", casesHeader: "Case Opening",
                 casesSubHeader: "Try your luck in roulette", spinBtn: "Spin Case", skipBtn: "Skip",
+                classicHeader: "Classic Roll", classicSubHeader: "Free Daily Case",
                 wheelHeader: "Wheel of Fortune", wheelCost: "Spin cost: 100 ⭐", spinWheelBtn: "Spin Wheel",
-                bonusHeader: "Daily Bonus Wheel", bonusCost: "Free Daily Spin",
                 invHeader: "Inventory", invSubHeader: "Your items & gifts", sortNew: "Newest first",
                 sortExp: "Expensive first", winTitle: "Congratulations!", claimBtn: "To Inventory", sellBtnModal: "Sell",
                 navHome: "Home", navCases: "Cases", navWheel: "Wheel", navInv: "Inventory", emptyInv: "Inventory is empty",
@@ -339,14 +340,14 @@
             },
             RU: {
                 mainTitle: "Выбирай режим", mainSub: "Крути рулетку, испытывай удачу и забирай NFT",
-                dailyTitle: "Ежедневный Бонус", dailySub: "Крути бонусное колесо бесплатно",
+                dailyTitle: "Классик Ролл", dailySub: "Бесплатный ежедневный прокрут кейса",
                 casesTitle: "Кейсы Подарков", casesSub: "Открывай кейсы и выигрывай Telegram Stars",
                 wheelTitle: "Колесо Фортуны", wheelSub: "Вращай колесо и получай до x10 наград",
                 inventoryTitle: "Мой Инвентарь", inventorySub: "Просматривай и продавай свои награды",
                 liveFeed: "Лента выигрышей", back: "← Назад", casesHeader: "Открытие кейсов",
                 casesSubHeader: "Испытай удачу в рулетке", spinBtn: "Крутить Кейс", skipBtn: "Пропустить",
+                classicHeader: "Классик Ролл", classicSubHeader: "Бесплатный ежедневный кейс",
                 wheelHeader: "Колесо Фортуны", wheelCost: "Стоимость вращения: 100 ⭐", spinWheelBtn: "Вращать Колесо",
-                bonusHeader: "Колесо Бонуса", bonusCost: "Бесплатное вращение",
                 invHeader: "Инвентарь", invSubHeader: "Ваши предметы и подарки", sortNew: "Сначала новые",
                 sortExp: "Сначала дорогие", winTitle: "Поздравляем!", claimBtn: "В инвентарь", sellBtnModal: "Продать",
                 navHome: "Главная", navCases: "Кейсы", navWheel: "Колесо", navInv: "Инвентарь", emptyInv: "Инвентарь пуст",
@@ -355,16 +356,15 @@
             }
         };
 
-        // Точно 4 подарка и 4 NFT (всего 8 элементов для колеса)
         const itemsPool = [
-            { id: 1, name: 'Star Pouch', icon: '⭐', price: 30, type: 'gift' },
-            { id: 2, name: 'Gift Box', icon: '🎁', price: 60, type: 'gift' },
-            { id: 3, name: 'Rubber Duck', icon: '🦆', price: 120, type: 'gift' },
-            { id: 4, name: 'Rocket Gift', icon: '🚀', price: 450, type: 'gift' },
-            { id: 5, name: 'Telegram Gem', icon: '💎', price: 250, type: 'nft' },
-            { id: 6, name: 'Golden Crown', icon: '👑', price: 800, type: 'nft' },
-            { id: 7, name: 'Cyber Cat NFT', icon: '🐱', price: 1500, type: 'nft' },
-            { id: 8, name: 'Diamond NFT', icon: '💠', price: 2500, type: 'nft' }
+            { id: 1, name: 'Star Pouch', icon: '⭐', price: 30 },
+            { id: 2, name: 'Gift Box', icon: '🎁', price: 60 },
+            { id: 3, name: 'Rubber Duck', icon: '🦆', price: 120 },
+            { id: 4, name: 'Rocket Gift', icon: '🚀', price: 450 },
+            { id: 5, name: 'Telegram Gem', icon: '💎', price: 250 },
+            { id: 6, name: 'Golden Crown', icon: '👑', price: 800 },
+            { id: 7, name: 'Cyber Cat NFT', icon: '🐱', price: 1500 },
+            { id: 8, name: 'Diamond NFT', icon: '💠', price: 2500 }
         ];
 
         async function initApp() {
@@ -376,7 +376,9 @@
             let data = await res.json();
             state.balance = data.balance;
             state.inventory = data.inventory;
+            state.lastBonusTime = data.last_bonus || 0;
             updateUI();
+            startBonusTimer();
         }
 
         function updateUI() {
@@ -407,12 +409,21 @@
             renderInventory();
         }
 
-        // Ежедневный бонус теперь открывает Колесо Фортуны в специальном бонусном режиме
-        function openDailyBonusWheel() {
-            state.isBonusSpin = true;
-            document.getElementById('wheelHeaderTitle').textContent = translations[state.lang].bonusHeader;
-            document.getElementById('wheelCostSubtitle').textContent = translations[state.lang].bonusCost;
-            switchScreen('wheel-screen');
+        // Открытие Классик Ролла (ежедневного бесплатного прокрута кейса)
+        function openClassicRoll() {
+            const now = Date.now();
+            const cooldown = 24 * 60 * 60 * 1000;
+            if (now - state.lastBonusTime < cooldown) {
+                alert(state.lang === 'RU' ? 'Ежедневный бонус уже получен! Ждите таймер.' : 'Daily bonus already claimed! Wait for the timer.');
+                return;
+            }
+
+            state.isClassicRoll = true;
+            document.getElementById('casesHeaderTitle').textContent = translations[state.lang].classicHeader;
+            document.getElementById('casesSubHeaderTitle').textContent = translations[state.lang].classicSubHeader;
+            document.getElementById('casesSelectorRow').style.display = 'none';
+            document.getElementById('spinCasesBtn').textContent = state.lang === 'RU' ? 'Крутить Бесплатно' : 'Spin Free';
+            switchScreen('cases-screen');
         }
 
         function selectCase(caseType, el) {
@@ -441,24 +452,45 @@
             if (state.isSpinning) return;
             const isDemo = document.getElementById('casesDemoToggle').checked;
 
-            let res = await fetch('/api/spin-case', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: userId, case_type: state.currentCase, is_demo: isDemo })
-            });
-            if (!res.ok) {
-                alert(state.lang === 'RU' ? 'Недостаточно Stars!' : 'Not enough Stars!');
-                return;
+            if (state.isClassicRoll) {
+                // Запрос на ежедневный бонус на бэкенд (защита от обхода таймера)
+                let res = await fetch('/api/bonus', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                if (!res.ok) {
+                    alert(state.lang === 'RU' ? 'Бонус недоступен!' : 'Bonus not available!');
+                    resetClassicRollUI();
+                    switchScreen('main-screen');
+                    return;
+                }
+                let data = await res.json();
+                state.lastBonusTime = Date.now();
+                startBonusTimer();
+                executeRouletteAnimation(data.item, false);
+            } else {
+                let res = await fetch('/api/spin-case', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, case_type: state.currentCase, is_demo: isDemo })
+                });
+                if (!res.ok) {
+                    alert(state.lang === 'RU' ? 'Недостаточно Stars!' : 'Not enough Stars!');
+                    return;
+                }
+                let data = await res.json();
+                state.balance = data.balance;
+                updateUI();
+                executeRouletteAnimation(data.item, isDemo);
             }
-            let data = await res.json();
-            state.balance = data.balance;
-            updateUI();
+        }
 
+        function executeRouletteAnimation(winningItem, isDemo) {
             state.isSpinning = true;
             buildRouletteTrack();
             const track = document.getElementById('rouletteTrack');
             const winningIndex = 32;
-            const winningItem = data.item;
 
             const cards = track.children;
             if (cards[winningIndex]) {
@@ -478,10 +510,51 @@
                 pendingWinItem = winningItem;
                 showWinModal(winningItem, isDemo);
                 addFeedItem('You', winningItem.name);
+
+                if (state.isClassicRoll) {
+                    resetClassicRollUI();
+                }
             }, 5050);
         }
 
-        // Строго два цвета: черный (#111116) и серый (#2c2c38) с идеальным чередованием
+        function resetClassicRollUI() {
+            state.isClassicRoll = false;
+            document.getElementById('casesHeaderTitle').textContent = translations[state.lang].casesHeader;
+            document.getElementById('casesSubHeaderTitle').textContent = translations[state.lang].casesSubHeader;
+            document.getElementById('casesSelectorRow').style.display = 'flex';
+            document.getElementById('spinCasesBtn').textContent = translations[state.lang].spinBtn;
+        }
+
+        function skipCaseAnimation() {
+            if (!state.isSpinning) return;
+            const winningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+            state.isSpinning = false;
+            pendingWinItem = winningItem;
+            showWinModal(winningItem, document.getElementById('casesDemoToggle').checked);
+            if (state.isClassicRoll) resetClassicRollUI();
+        }
+
+        function startBonusTimer() {
+            const timerEl = document.getElementById('bonusTimer');
+            if(!timerEl) return;
+            if(bonusTimerInterval) clearInterval(bonusTimerInterval);
+
+            bonusTimerInterval = setInterval(() => {
+                const cooldown = 24 * 60 * 60 * 1000;
+                const diff = cooldown - (Date.now() - state.lastBonusTime);
+
+                if (diff <= 0) {
+                    timerEl.textContent = translations[state.lang].ready;
+                    clearInterval(bonusTimerInterval);
+                } else {
+                    const hrs = Math.floor(diff / (1000 * 60 * 60));
+                    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const secs = Math.floor((diff % (1000 * 60)) / 1000);
+                    timerEl.textContent = `${hrs}h ${mins}m ${secs}s`;
+                }
+            }, 1000);
+        }
+
         function buildWheel() {
             const wheel = document.getElementById('wheelTrack');
             wheel.innerHTML = '';
@@ -510,38 +583,26 @@
         }
 
         let currentWheelRotation = 0;
-        
-        async function executeWheelSpin() {
+        async function spinWheel() {
             if (state.isSpinning) return;
             const isDemo = document.getElementById('wheelDemoToggle').checked;
 
-            if (state.isBonusSpin) {
-                // Бонусное бесплатное вращение
-                state.isSpinning = true;
-                const winningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
-                spinWheelAnimation(winningItem, true);
-            } else {
-                let res = await fetch('/api/spin-wheel', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: userId, is_demo: isDemo })
-                });
-                if (!res.ok) {
-                    alert(state.lang === 'RU' ? 'Недостаточно Stars!' : 'Not enough Stars!');
-                    return;
-                }
-                let data = await res.json();
-                state.balance = data.balance;
-                updateUI();
-
-                state.isSpinning = true;
-                spinWheelAnimation(data.item, isDemo);
+            let res = await fetch('/api/spin-wheel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, is_demo: isDemo })
+            });
+            if (!res.ok) {
+                alert(state.lang === 'RU' ? 'Недостаточно Stars!' : 'Not enough Stars!');
+                return;
             }
-        }
+            let data = await res.json();
+            state.balance = data.balance;
+            updateUI();
 
-        function spinWheelAnimation(winningItem, isDemo) {
+            state.isSpinning = true;
             const wheel = document.getElementById('wheelTrack');
-            const winningIndex = itemsPool.findIndex(i => i.id === winningItem.id);
+            const winningIndex = itemsPool.findIndex(i => i.id === data.item.id);
             const segmentAngle = 360 / itemsPool.length;
             const targetRotation = currentWheelRotation + (5 * 360) + (360 - (winningIndex * segmentAngle + segmentAngle / 2));
             currentWheelRotation = targetRotation;
@@ -549,16 +610,9 @@
 
             setTimeout(() => {
                 state.isSpinning = false;
-                pendingWinItem = winningItem;
-                showWinModal(winningItem, isDemo);
-                addFeedItem('You', winningItem.name);
-                
-                // Сбрасываем бонусный режим после прокрута
-                if (state.isBonusSpin) {
-                    state.isBonusSpin = false;
-                    document.getElementById('wheelHeaderTitle').textContent = translations[state.lang].wheelHeader;
-                    document.getElementById('wheelCostSubtitle').textContent = translations[state.lang].wheelCost;
-                }
+                pendingWinItem = data.item;
+                showWinModal(data.item, isDemo);
+                addFeedItem('You', data.item.name);
             }, 5000);
         }
 
@@ -568,12 +622,6 @@
             state.isSpinning = false;
             pendingWinItem = winningItem;
             showWinModal(winningItem, document.getElementById('wheelDemoToggle').checked);
-            
-            if (state.isBonusSpin) {
-                state.isBonusSpin = false;
-                document.getElementById('wheelHeaderTitle').textContent = translations[state.lang].wheelHeader;
-                document.getElementById('wheelCostSubtitle').textContent = translations[state.lang].wheelCost;
-            }
         }
 
         function showWinModal(item, isDemo) {
