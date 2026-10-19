@@ -1240,11 +1240,9 @@
             const itemToProcess = pendingWinItem;
             const isDemo = pendingIsDemo;
 
-            // Мгновенно сбрасываем, чтобы исключить дюп при повторных кликах
             pendingWinItem = null;
             pendingIsDemo = false;
 
-            // Сразу закрываем модальное окно
             document.getElementById('winModal').classList.remove('active');
 
             if (!isDemo) {
