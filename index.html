@@ -649,8 +649,6 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // --- ЛОКАЛИЗАЦИЯ (ЯЗЫКИ) ---
-        // По умолчанию EN при первом входе, если не выбрано ранее
         let currentLang = localStorage.getItem('catroll_lang') || 'en';
 
         const dict = {
@@ -738,10 +736,8 @@
             currentLang = lang;
             localStorage.setItem('catroll_lang', lang);
             
-            // Кнопка переключения языка в шапке
             document.getElementById('langBtn').innerText = lang === 'en' ? "🇬🇧 EN" : "🇷🇺 RU";
 
-            // Перевод статических элементов интерфейса
             document.getElementById('navInvBtn').innerText = dict[lang].navInv;
             document.getElementById('t-menuTitle').innerText = dict[lang].menuTitle;
             document.getElementById('t-menuSub').innerText = dict[lang].menuSub;
@@ -1102,11 +1098,11 @@
 
         function keepModalItem() {
             if (!currentWinItem) return;
-            closeWinModal();
             const isDemo = getDemoMode();
 
             if (isDemo) {
                 currentWinItem = null;
+                closeWinModal();
                 tg.showAlert(dict[currentLang].msgDemoKept);
                 if (isDailyActive) { isDailyActive = false; showScreen('menuScreen'); }
                 return;
@@ -1117,6 +1113,7 @@
             userInventory.push(itemToKeep);
             saveUserData();
 
+            closeWinModal();
             tg.showAlert(dict[currentLang].msgKept);
             if (isDailyActive) { isDailyActive = false; showScreen('menuScreen'); }
         }
@@ -1157,7 +1154,6 @@
             });
         }
 
-        // Инициализация языка при самом первом запуске (по умолчанию English)
         setLanguage(currentLang);
     </script>
 </body>
