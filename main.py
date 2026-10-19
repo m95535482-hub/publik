@@ -6,11 +6,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import telebot
 
-# Токен бота (если переменная окружения не задана, подставьте ваш токен прямо сюда в кавычки)
+# Токен бота
 TOKEN = os.getenv("BOT_TOKEN", "123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ")
 
-# Ваш личный Telegram ID для получения заявок на вывод
-ADMIN_ID = 1218168630
+# Ваш юзернейм администратора в Telegram
+ADMIN_USERNAME = "Bruhki"
 
 bot = telebot.TeleBot(TOKEN)
 app = FastAPI()
@@ -122,36 +122,6 @@ def handle_buy_free(message):
             parse_mode="Markdown"
         )
 
-@bot.message_handler(commands=['add'])
-def handle_add_gift(message):
-    """Добавление подарка вручную (только для администратора)"""
-    if message.from_user.id != ADMIN_ID:
-        bot.reply_to(message, "⛔ You do not have permissions to execute this command.")
-        return
-
-    try:
-        text = message.text.replace('/add', '').strip()
-        parts = [p.strip() for p in text.split('|')]
-        
-        if len(parts) != 4:
-            bot.reply_to(message, "⚠️ Format: `/add Name | Image | Animation | Price`")
-            return
-            
-        name, image_url, anim_url, price = parts[0], parts[1], parts[2], int(parts[3])
-        
-        conn = sqlite3.connect("database.db")
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO gifts (name, image_url, anim_url, price) VALUES (?, ?, ?, ?)",
-            (name, image_url, anim_url, price)
-        )
-        conn.commit()
-        conn.close()
-        
-        bot.reply_to(message, f"✅ Gift **{name}** successfully added to the game!", parse_mode="Markdown")
-    except Exception as e:
-        bot.reply_to(message, f"❌ Error adding gift: {e}")
-
 
 # --- API Эндпоинты для Mini App ---
 
@@ -215,11 +185,15 @@ def withdraw_item(item_id: int):
     conn.close()
     
     try:
+        # Автоматическое определение числового ID администратора по юзернейму
+        admin_info = bot.get_chat(ADMIN_USERNAME)
+        admin_chat_id = admin_info.id
+        
         user_info = bot.get_chat(user_id)
         username = f"@{user_info.username}" if user_info.username else f"ID: `{user_id}`"
         
         bot.send_message(
-            ADMIN_ID,
+            admin_chat_id,
             f"🎁 **GIFT WITHDRAWAL REQUEST!**\n\n"
             f"👤 **Winner:** {username}\n"
             f"🏆 **Gift:** `{gift_name}`\n"
@@ -229,5 +203,6 @@ def withdraw_item(item_id: int):
         )
     except Exception as e:
         print(f"Failed to send notification to admin: {e}")
+        raise HTTPException(status_code=500, detail=f"Telegram error: {str(e)}")
         
     return {"message": "Success! The withdrawal request has been sent to the admin."}
