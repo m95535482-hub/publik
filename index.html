@@ -148,6 +148,7 @@
 
         .action-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--purple-accent), var(--purple-bright)); border: none; border-radius: 18px; color: #fff; font-weight: 900; font-size: 16px; cursor: pointer; box-shadow: 0 8px 25px var(--accent-glow); }
         .action-btn:active { transform: scale(0.96); }
+        .action-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
         .inventory-controls { width: 100%; display: flex; gap: 10px; margin-bottom: 16px; }
         .search-input, .sort-select { flex: 1; background: var(--card-bg); border: 1px solid var(--card-border); padding: 12px 14px; border-radius: 14px; color: #fff; font-size: 13px; outline: none; }
@@ -442,6 +443,9 @@
             document.getElementById('casesSubHeaderTitle').textContent = translations[state.lang].classicSubHeader;
             document.getElementById('casesSelectorRow').style.display = 'none';
             document.getElementById('spinCasesBtn').textContent = state.lang === 'RU' ? 'Крутить Бесплатно' : 'Spin Free';
+            
+            // Проверяем доступность кнопки прямо при открытии
+            document.getElementById('spinCasesBtn').disabled = false;
             switchScreen('cases-screen');
         }
 
@@ -472,6 +476,18 @@
             const isDemo = document.getElementById('casesDemoToggle').checked;
 
             if (state.isClassicRoll) {
+                const now = Date.now();
+                const cooldown = 24 * 60 * 60 * 1000;
+                if (now - state.lastBonusTime < cooldown) {
+                    alert(state.lang === 'RU' ? 'Ежедневный бонус уже получен!' : 'Daily bonus already claimed!');
+                    resetClassicRollUI();
+                    switchScreen('main-screen');
+                    return;
+                }
+
+                // Мгновенно блокируем кнопку на клиенте во избежание спама или повторных кликов
+                document.getElementById('spinCasesBtn').disabled = true;
+
                 let res = await fetch('/api/bonus', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -541,6 +557,7 @@
             document.getElementById('casesSubHeaderTitle').textContent = translations[state.lang].casesSubHeader;
             document.getElementById('casesSelectorRow').style.display = 'flex';
             document.getElementById('spinCasesBtn').textContent = translations[state.lang].spinBtn;
+            document.getElementById('spinCasesBtn').disabled = false;
         }
 
         function skipCaseAnimation() {
