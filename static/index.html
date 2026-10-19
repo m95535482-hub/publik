@@ -429,7 +429,6 @@
             background: linear-gradient(145deg, #181824, #0f0f16); border: 1px solid var(--card-border); border-radius: 28px; padding: 24px; width: 100%; max-width: 320px; text-align: center;
         }
         
-        /* Стиль для большой картинки в модалке по советам друга */
         .win-image {
             width: 120px;
             height: 120px;
@@ -587,7 +586,6 @@
     <div class="modal-overlay" id="winModal">
         <div class="modal-card">
             <h2 class="menu-title" data-i18n="winTitle">Congratulations!</h2>
-            <!-- Картинка подарка по рекомендации друга -->
             <img id="win-modal-img" class="win-image" src="" alt="Gift">
             <h3 id="modalItemName" style="font-size: 18px; margin-bottom: 6px;">Item</h3>
             <p id="modalItemPrice" style="color: var(--gold); font-weight: 800; font-size: 14px; margin-bottom: 20px;">0 ⭐</p>
@@ -663,7 +661,7 @@
                 wheelHeader: "Колесо Фортуны", wheelCost: "Стоимость вращения: 100 ⭐", spinWheelBtn: "Вращать колесо",
                 walletHeader: "Пополнение звезд", walletSubHeader: "Выберите пакет для пополнения баланса",
                 invHeader: "Моя коллекция", invSubHeader: "Ваши предметы и награды", sortNew: "Сначала новые",
-                sortExp: "Сейчас дороже", winTitle: "Поздравляем!", claimBtn: "В коллекцию", sellBtnModal: "Продать",
+                sortExp: "Сначала дороже", winTitle: "Поздравляем!", claimBtn: "В коллекцию", sellBtnModal: "Продать",
                 navHome: "Главная", navCases: "Сейфы", navWheel: "Колесо", navInv: "Коллекция",
                 emptyInv: "Коллекция пуста", sell: "Продать", withdraw: "Вывести", ready: "Готово",
                 searchPlaceholder: "Поиск...", withdrawTitle: "Вывод предмета",
@@ -672,7 +670,7 @@
             }
         };
 
-        // Бассейн предметов с реальными ссылками на картинки (включая Timeless Book, как просил друг)
+        // Бассейн предметов с реальными ссылками на картинки подарков (включая Timeless Book)
         const itemsPool = [
             { id: 1, name: 'Timeless Book', icon: 'https://nft.fragment.com/gift/TimelessBook-14508.png', price: 30 },
             { id: 2, name: 'Gift Box', icon: 'https://cdn4.iconfinder.com/data/icons/christmas-flat-13/64/gift-box-present-surprise-holiday-512.png', price: 60 },
@@ -749,13 +747,17 @@
             try {
                 const res = await fetch(`/api/inventory/${userId}`);
                 const data = await res.json();
-                state.inventory = data.map(item => ({
-                    id: item.id,
-                    name: item.gift_name,
-                    icon: item.image_url,
-                    price: item.price,
-                    status: item.status
-                }));
+                state.inventory = data.map(item => {
+                    // Ищем соответствующий подарок в itemsPool по имени для надежного отображения картинки
+                    const found = itemsPool.find(p => p.name === item.gift_name);
+                    return {
+                        id: item.id,
+                        name: item.gift_name,
+                        icon: found ? found.icon : item.image_url,
+                        price: item.price,
+                        status: item.status
+                    };
+                });
                 renderInventory();
             } catch(e) { console.error(e); }
         }
@@ -877,7 +879,15 @@
                     body: JSON.stringify({ cost: state.currentCaseCost, is_demo: isDemo })
                 });
                 const data = await res.json();
-                currentWinningItem = data.gift;
+                
+                // Сопоставляем выигранный предмет с локальным пулом по имени для корректной картинки
+                const foundItem = itemsPool.find(p => p.name === data.gift.name);
+                currentWinningItem = {
+                    name: data.gift.name,
+                    icon: foundItem ? foundItem.icon : data.gift.icon,
+                    price: data.gift.price
+                };
+
                 state.balance = data.balance;
                 document.getElementById('userBalance').textContent = state.balance.toLocaleString();
                 if (!isDemo) {
@@ -946,7 +956,14 @@
                     body: JSON.stringify({ cost: wheelCost, is_demo: isDemo })
                 });
                 const data = await res.json();
-                currentWinningItem = data.gift;
+                
+                const foundItem = itemsPool.find(p => p.name === data.gift.name);
+                currentWinningItem = {
+                    name: data.gift.name,
+                    icon: foundItem ? foundItem.icon : data.gift.icon,
+                    price: data.gift.price
+                };
+
                 state.balance = data.balance;
                 document.getElementById('userBalance').textContent = state.balance.toLocaleString();
                 if (!isDemo) {
