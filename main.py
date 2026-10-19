@@ -10,7 +10,7 @@ from pydantic import BaseModel
 # Импортируем наш массив и функцию из Items_poll.py
 from Items_poll import ITEMS_POOL, fetch_and_update_items_pool
 
-# Настройки для TonAPI (можешь подставить свои данные)
+# Настройки для TonAPI
 TONAPI_KEY = "ТВОЙ_ТОКЕН_TONAPI"
 COLLECTION_ADDRESS = "АДРЕС_КОЛЛЕКЦИИ_В_TON"
 
@@ -172,7 +172,3 @@ def sell_inventory_item(data: SellItemRequest):
 
     save_db()
     return {"balance": user["balance"], "inventory": user["inventory"]}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)ё
