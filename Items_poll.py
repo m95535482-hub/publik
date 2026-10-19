@@ -1,6 +1,6 @@
 import aiohttp
 
-# Запасной пул предметов с иконками и картинками по умолчанию
+# Запасной пул предметов с иконками, картинками и поддержкой видео по умолчанию
 ITEMS_POOL = [
     {"id": 1, "name": "Star Pouch", "icon": "⭐", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f31f.png", "animation": "", "price": 30},
     {"id": 2, "name": "Gift Box", "icon": "🎁", "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f381.png", "animation": "", "price": 60},
@@ -45,7 +45,7 @@ async def fetch_and_update_items_pool(api_key: str, collection_address: str):
             if best_image.startswith("ipfs://"):
                 best_image = best_image.replace("ipfs://", "https://ipfs.io/ipfs/")
 
-            # 3. Анімація: перевіряємо всі можливі поля
+            # 3. Анімація / відео
             animation = metadata.get("video") or metadata.get("animation_url") or metadata.get("content_url") or ""
             
             if animation.startswith("ipfs://"):
