@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CatRoll — Cases & Rewards Mini App</title>
+    <title>CatRoll — Cases & Rewards Full Application</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -948,7 +948,6 @@
         <div class="inventory-grid" id="inventoryGrid"></div>
     </main>
 
-    <!-- Модальное окно ВЫИГРЫША -->
     <div class="modal-overlay" id="winModal">
         <div class="modal-card">
             <h2 class="menu-title" data-i18n="winTitle">Congratulations!</h2>
@@ -962,7 +961,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно ПОДПИСКИ НА КАНАЛ -->
     <div class="modal-overlay" id="subModal">
         <div class="modal-card">
             <h2 class="menu-title" style="font-size: 20px;" data-i18n="subTitle">Channel Subscription</h2>
@@ -977,7 +975,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно подтверждения ВЫВОДА -->
     <div class="modal-overlay" id="withdrawModal">
         <div class="modal-card">
             <h2 class="menu-title" style="font-size: 20px;" data-i18n="withdrawTitle">Item Withdrawal</h2>
@@ -1017,114 +1014,50 @@
 
         const translations = {
             EN: {
-                mainTitle: "Select Mode",
-                mainSub: "Spin roulette, test your luck & collect rewards",
-                dailyTitle: "Daily Reward",
-                dailySub: "Free spin every 24 hours (Sub required)",
-                dailyScreenSub: "Spin the daily roulette for free",
-                spinDailyBtn: "Spin Daily Free",
-                topTitle: "Leaderboard",
-                topSub: "Top spenders & your global position",
-                walletTitle: "Top Up Balance",
-                walletSub: "Purchase star packages for play",
-                casesTitle: "Mystery Vaults",
-                casesSub: "Open vaults and win exclusive rewards",
-                wheelTitle: "Fortune Wheel",
-                wheelSub: "Spin the wheel and get up to x10 multipliers",
-                inventoryTitle: "My Collection",
-                inventorySub: "Manage, sell, and withdraw your items",
-                liveFeed: "Live Winners Feed",
-                back: "← Back",
-                casesHeader: "Mystery Vaults",
-                spinBtn: "Open Vault",
-                skipBtn: "Skip",
-                wheelHeader: "Fortune Wheel",
-                wheelCost: "Spin cost: 100 ⭐",
-                spinWheelBtn: "Spin Wheel",
-                walletHeader: "Top Up Stars",
-                walletSubHeader: "Choose a package to top up your balance",
-                invHeader: "My Collection",
-                invSubHeader: "Your items and rewards",
-                sortNew: "Newest first",
-                sortExp: "Highest price",
-                winTitle: "Congratulations!",
-                claimBtn: "To Collection",
-                sellBtnModal: "Sell",
-                navHome: "Home",
-                navTop: "Top",
-                navCases: "Vaults",
-                navWheel: "Fortune",
-                navInv: "Collection",
-                emptyInv: "Collection is empty",
-                sell: "Sell",
-                withdraw: "Withdraw",
-                ready: "Ready",
-                searchPlaceholder: "Search...",
-                withdrawTitle: "Item Withdrawal",
+                mainTitle: "Select Mode", mainSub: "Spin roulette, test your luck & collect rewards",
+                dailyTitle: "Daily Reward", dailySub: "Free spin every 24 hours (Sub required)",
+                dailyScreenSub: "Spin the daily roulette for free", spinDailyBtn: "Spin Daily Free",
+                topTitle: "Leaderboard", topSub: "Top spenders & your global position",
+                walletTitle: "Top Up Balance", walletSub: "Purchase star packages for play",
+                casesTitle: "Mystery Vaults", casesSub: "Open vaults and win exclusive rewards",
+                wheelTitle: "Fortune Wheel", wheelSub: "Spin the wheel and get up to x10 multipliers",
+                inventoryTitle: "My Collection", inventorySub: "Manage, sell, and withdraw your items",
+                liveFeed: "Live Winners Feed", back: "← Back", casesHeader: "Mystery Vaults",
+                spinBtn: "Open Vault", skipBtn: "Skip", wheelHeader: "Fortune Wheel",
+                wheelCost: "Spin cost: 100 ⭐", spinWheelBtn: "Spin Wheel",
+                walletHeader: "Top Up Stars", walletSubHeader: "Choose a package to top up your balance",
+                invHeader: "My Collection", invSubHeader: "Your items and rewards", sortNew: "Newest first",
+                sortExp: "Highest price", winTitle: "Congratulations!", claimBtn: "To Collection", sellBtnModal: "Sell",
+                navHome: "Home", navTop: "Top", navCases: "Vaults", navWheel: "Fortune", navInv: "Collection",
+                emptyInv: "Collection is empty", sell: "Sell", withdraw: "Withdraw", ready: "Ready",
+                searchPlaceholder: "Search...", withdrawTitle: "Item Withdrawal",
                 withdrawDesc: "Request withdrawal of this reward from admin?",
-                confirmBtn: "Confirm",
-                rejectBtn: "Reject",
-                pending: "Pending",
-                demoMode: "Demo mode",
-                subTitle: "Channel Subscription",
-                subDesc: "Please subscribe to our official Telegram channel to unlock the daily free spin!",
-                subBtnLink: "Subscribe to @CaaatRoll",
-                checkSubBtn: "I Subscribed ✅"
+                confirmBtn: "Confirm", rejectBtn: "Reject", pending: "Pending", demoMode: "Demo mode",
+                subTitle: "Channel Subscription", subDesc: "Please subscribe to our official Telegram channel to unlock the daily free spin!",
+                subBtnLink: "Subscribe to @CaaatRoll", checkSubBtn: "I Subscribed ✅"
             },
             RU: {
-                mainTitle: "Выбор режима",
-                mainSub: "Крутите рулетку, испытывайте удачу и собирайте награды",
-                dailyTitle: "Ежедневная награда",
-                dailySub: "Бесплатный спин раз в 24 часа (нужна подписка)",
-                dailyScreenSub: "Крутите ежедневную рулетку бесплатно",
-                spinDailyBtn: "Крутить бесплатно",
-                topTitle: "Таблица лидеров",
-                topSub: "Топ по потраченным звёздам и ваша позиция",
-                walletTitle: "Пополнить баланс",
-                walletSub: "Покупка пакетов звезд для игры",
-                casesTitle: "Сейфы наград",
-                casesSub: "Открывайте сейфы и выигрывайте ценные призы",
-                wheelTitle: "Колесо Фортуны",
-                wheelSub: "Вращайте колесо и получайте до x10 множителей",
-                inventoryTitle: "Моя коллекция",
-                inventorySub: "Управляйте, продавайте и выводите предметы",
-                liveFeed: "Лента победителей",
-                back: "← Назад",
-                casesHeader: "Сейфы наград",
-                spinBtn: "Открыть сейф",
-                skipBtn: "Пропустить",
-                wheelHeader: "Колесо Фортуны",
-                wheelCost: "Стоимость вращения: 100 ⭐",
-                spinWheelBtn: "Вращать колесо",
-                walletHeader: "Пополнение звезд",
-                walletSubHeader: "Выберите пакет для пополнения баланса",
-                invHeader: "Моя коллекция",
-                invSubHeader: "Ваши предметы и награды",
-                sortNew: "Сначала новые",
-                sortExp: "Сначала дороже",
-                winTitle: "Поздравляем!",
-                claimBtn: "В коллекцию",
-                sellBtnModal: "Продать",
-                navHome: "Главная",
-                navTop: "Топ",
-                navCases: "Сейфы",
-                navWheel: "Колесо",
-                navInv: "Коллекция",
-                emptyInv: "Коллекция пуста",
-                sell: "Продать",
-                withdraw: "Вывести",
-                ready: "Готово",
-                searchPlaceholder: "Поиск...",
-                withdrawTitle: "Вывод предмета",
+                mainTitle: "Выбор режима", mainSub: "Крутите рулетку, испытывайте удачу и собирайте награды",
+                dailyTitle: "Ежедневная награда", dailySub: "Бесплатный спин раз в 24 часа (нужна подписка)",
+                dailyScreenSub: "Крутите ежедневную рулетку бесплатно", spinDailyBtn: "Крутить бесплатно",
+                topTitle: "Таблица лидеров", topSub: "Топ по потраченным звёздам и ваша позиция",
+                walletTitle: "Пополнить баланс", walletSub: "Покупка пакетов звезд для игры",
+                casesTitle: "Сейфы наград", casesSub: "Открывайте сейфы и выигрывайте ценные призы",
+                wheelTitle: "Колесо Фортуны", wheelSub: "Вращайте колесо и получайте до x10 множителей",
+                inventoryTitle: "Моя коллекция", inventorySub: "Управляйте, продавайте и выводите предметы",
+                liveFeed: "Лента победителей", back: "← Назад", casesHeader: "Сейфы наград",
+                spinBtn: "Открыть сейф", skipBtn: "Пропустить", wheelHeader: "Колесо Фортуны",
+                wheelCost: "Стоимость вращения: 100 ⭐", spinWheelBtn: "Вращать колесо",
+                walletHeader: "Пополнение звезд", walletSubHeader: "Выберите пакет для пополнения баланса",
+                invHeader: "Моя коллекция", invSubHeader: "Ваши предметы и награды", sortNew: "Сначала новые",
+                sortExp: "Сначала дороже", winTitle: "Поздравляем!", claimBtn: "В коллекцию", sellBtnModal: "Продать",
+                navHome: "Главная", navTop: "Топ", navCases: "Сейфы", navWheel: "Колесо", navInv: "Коллекция",
+                emptyInv: "Коллекция пуста", sell: "Продать", withdraw: "Вывести", ready: "Готово",
+                searchPlaceholder: "Поиск...", withdrawTitle: "Вывод предмета",
                 withdrawDesc: "Запросить вывод этой награды у администратора?",
-                confirmBtn: "Подтвердить",
-                rejectBtn: "Отклонить",
-                pending: "Ожидает",
-                demoMode: "Демо-режим",
-                subTitle: "Подписка на канал",
-                subDesc: "Для получения бесплатного спина необходимо подписаться на наш официальный Telegram-канал!",
-                subBtnLink: "Подписаться на @CaaatRoll",
-                checkSubBtn: "Я подписался ✅"
+                confirmBtn: "Подтвердить", rejectBtn: "Отклонить", pending: "Ожидает", demoMode: "Демо-режим",
+                subTitle: "Подписка на канал", subDesc: "Для получения бесплатного спина необходимо подписаться на наш официальный Telegram-канал!",
+                subBtnLink: "Подписаться на @CaaatRoll", checkSubBtn: "Я подписался ✅"
             }
         };
 
@@ -1148,12 +1081,27 @@
 
         async function loadUserData() {
             try {
+                const tgUser = TG?.initDataUnsafe?.user;
+                const currentUsername = tgUser?.username || tgUser?.first_name || "Player";
+                const currentPhoto = tgUser?.photo_url || "";
+
                 const res = await fetch(`/api/user/${userId}`);
                 const data = await res.json();
                 state.balance = data.balance;
                 state.lastDailyTime = data.last_daily;
                 document.getElementById('userBalance').textContent = state.balance;
                 updateDailyTimerState();
+
+                if (tgUser) {
+                    fetch(`/api/user/${userId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            username: currentUsername,
+                            photo_url: currentPhoto
+                        })
+                    }).catch(() => {});
+                }
             } catch(e) {
                 console.error(e);
             }
@@ -1200,7 +1148,9 @@
                     if (index === 1) rankBadge = '🥈';
                     if (index === 2) rankBadge = '🥉';
 
-                    const avatarHtml = u.photo_url ? `<img src="${u.photo_url}" class="user-avatar" alt="Avatar">` : `<div class="user-avatar"><i class="fa-solid fa-user"></i></div>`;
+                    const avatarHtml = u.photo_url 
+                        ? `<img src="${u.photo_url}" class="user-avatar" alt="Avatar" onerror="this.onerror=null; this.src='';">` 
+                        : `<div class="user-avatar" style="background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: #fff; font-weight: 800; display: flex; align-items: center; justify-content: center;">${u.username.charAt(0).toUpperCase()}</div>`;
 
                     list.innerHTML += `
                         <div class="leaderboard-item ${u.is_me ? 'me' : ''}">

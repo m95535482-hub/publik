@@ -92,14 +92,13 @@ def on_startup():
     except Exception as e:
         logging.error(f"❌ Ошибка установки Webhook: {e}")
 
-# Точная серверная проверка подписки через Telegram API
 def check_user_subscription(user_id: int) -> bool:
     try:
         member = bot.get_chat_member(CHANNEL_USERNAME, user_id)
         if member.status in ['creator', 'administrator', 'member']:
             return True
     except Exception as e:
-        logging.error(f"Ошибка проверки подписки для user_id={user_id}: {e}")
+        logging.error(f"Ошибка проверки подписки для {user_id}: {e}")
     return False
 
 @bot.message_handler(commands=['start'])
@@ -134,7 +133,6 @@ def send_welcome(message):
             (username, photo_url, user_id)
         )
         balance = row[0]
-        
     conn.commit()
     conn.close()
 
@@ -159,6 +157,10 @@ class RollRequest(BaseModel):
 class InvoiceRequest(BaseModel):
     amount: int
 
+class UserUpdateRequest(BaseModel):
+    username: str
+    photo_url: str
+
 @app.get("/")
 def read_index():
     return FileResponse("static/index.html")
@@ -178,6 +180,18 @@ def get_user_profile(user_id: int):
         balance, last_daily = row[0], row[1]
     conn.close()
     return {"user_id": user_id, "balance": balance, "last_daily": last_daily}
+
+@app.post("/api/user/{user_id}")
+def update_user_profile(user_id: int, req: UserUpdateRequest):
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE users SET username = ?, photo_url = ? WHERE user_id = ?",
+        (req.username, req.photo_url, user_id)
+    )
+    conn.commit()
+    conn.close()
+    return {"success": True}
 
 @app.get("/api/leaderboard/{user_id}")
 def get_leaderboard(user_id: int):
@@ -199,7 +213,8 @@ def get_leaderboard(user_id: int):
     return {
         "top": [
             {
-                "username": u[1] or "Player",
+                "user_id": u[0],
+                "username": u[1] if (u[1] and u[1] != 'Player') else f"User_{u[0] % 10000}",
                 "photo_url": u[2] or "",
                 "total_spent": u[3],
                 "is_me": u[0] == user_id
@@ -208,20 +223,15 @@ def get_leaderboard(user_id: int):
         "my_rank": my_rank
     }
 
-# Отдельная ручная проверка подписки с веб-интерфейса
 @app.get("/api/check-sub/{user_id}")
 def check_sub_status(user_id: int):
     is_subbed = check_user_subscription(user_id)
     return {"subscribed": is_subbed}
 
-# Защищенный ежедневный спин
 @app.post("/api/daily-spin/{user_id}")
 async def daily_spin(user_id: int):
     if not check_user_subscription(user_id):
-        raise HTTPException(
-            status_code=403, 
-            detail="NOT_SUBSCRIBED"
-        )
+        raise HTTPException(status_code=403, detail="NOT_SUBSCRIBED")
 
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
@@ -234,10 +244,7 @@ async def daily_spin(user_id: int):
     last_daily = row[0] if row else 0
     if current_time - last_daily < cooldown:
         conn.close()
-        raise HTTPException(
-            status_code=400, 
-            detail="COOLDOWN_ACTIVE"
-        )
+        raise HTTPException(status_code=400, detail="COOLDOWN_ACTIVE")
 
     cursor.execute("UPDATE users SET last_daily = ? WHERE user_id = ?", (current_time, user_id))
     conn.commit()
