@@ -322,24 +322,27 @@
             background: #0f0f18;
         }
         
-        /* Четкие границы секторов колеса */
+        /* Ровно 6 отсеков колеса */
         .wheel-slice {
-            position: absolute; width: 50%; height: 50%; top: 0; left: 50%; transform-origin: 0% 100%; pointer-events: none; display: flex; justify-content: center;
-            border-left: 2px solid rgba(255, 255, 255, 0.22);
-            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.5);
+            position: absolute; top: 0; right: 0; width: 50%; height: 50%;
+            transform-origin: 0% 100%; pointer-events: none; overflow: hidden;
         }
-        .wheel-slice:nth-child(even) {
-            background: rgba(108, 92, 231, 0.15);
+        .wheel-slice-bg {
+            position: absolute; width: 200%; height: 200%; top: 0; left: -100%;
+            transform-origin: 100% 0%; transform: rotate(60deg);
+            border-right: 2px solid rgba(255, 255, 255, 0.35);
         }
-        .wheel-slice:nth-child(odd) {
-            background: rgba(255, 184, 0, 0.08);
-        }
+        .wheel-slice:nth-child(even) .wheel-slice-bg { background: rgba(108, 92, 231, 0.22); }
+        .wheel-slice:nth-child(odd) .wheel-slice-bg { background: rgba(255, 184, 0, 0.12); }
 
         .wheel-slice-content {
-            position: absolute; left: 50%; top: 28%; transform: translate(-50%, -50%) rotate(calc(var(--item-angle) * 1deg));
-            display: flex; flex-direction: column; align-items: center; justify-content: center; width: 50px; text-align: center;
+            position: absolute; left: 20%; top: 50%;
+            transform: translate(-50%, -50%) rotate(30deg);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            width: 50px; text-align: center; z-index: 5;
         }
-        .wheel-slice-content i { font-size: 20px; color: var(--gold); filter: drop-shadow(0 0 6px var(--gold-glow)); }
+        .wheel-slice-content i { font-size: 22px; color: var(--gold); filter: drop-shadow(0 0 6px var(--gold-glow)); }
+        
         .wheel-center-cap {
             position: absolute; width: 48px; height: 48px; background: linear-gradient(135deg, #2c2c3d, #121218);
             border: 3px solid var(--purple-accent); border-radius: 50%; z-index: 15; display: flex; align-items: center; justify-content: center; color: var(--purple-bright); font-size: 16px;
@@ -403,18 +406,14 @@
         }
         
         .win-image-box {
-            font-size: 64px;
-            color: var(--gold);
-            margin: 15px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-size: 64px; color: var(--gold); margin: 15px auto;
+            display: flex; align-items: center; justify-content: center;
             filter: drop-shadow(0 4px 15px rgba(255, 184, 0, 0.4));
         }
 
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10, 10, 14, 0.92); backdrop-filter: blur(22px);
-            border-top: 1px solid var(--card-border); padding: 10px 24px 14px 24px; display: flex; justify-space-around; align-items: center; z-index: 50;
+            border-top: 1px solid var(--card-border); padding: 10px 24px 14px 24px; display: flex; justify-content: space-around; align-items: center; z-index: 50;
         }
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-secondary); font-size: 10px; font-weight: 800; cursor: pointer; }
         .nav-item i { font-size: 19px; }
@@ -596,7 +595,7 @@
         let state = {
             balance: 0,
             inventory: [],
-            currentCaseCost: 50,
+            currentCaseType: 'starter',
             isSpinning: false,
             lang: localStorage.getItem('catroll_lang') || 'EN',
             lastBonusTime: parseInt(localStorage.getItem('catroll_bonus')) || 0
@@ -674,18 +673,12 @@
             msgEl.style.color = 'var(--gold)';
             msgEl.textContent = state.lang === 'EN' ? 'Creating invoice...' : 'Формирование счета...';
 
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000);
-
             try {
                 const res = await fetch(`/api/create-invoice/${userId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ amount: amount }),
-                    signal: controller.signal
+                    body: JSON.stringify({ amount: amount })
                 });
-                clearTimeout(timeoutId);
-                
                 const data = await res.json();
                 
                 if (data.success && data.invoice_link) {
@@ -704,12 +697,10 @@
                     } else {
                         window.location.href = data.invoice_link;
                     }
-                } else {
-                    throw new Error('Server error');
                 }
             } catch (e) {
                 msgEl.style.color = '#ff3b30';
-                msgEl.textContent = state.lang === 'EN' ? 'Connection error' : 'Ошибка связи с сервером';
+                msgEl.textContent = state.lang === 'EN' ? 'Connection error' : 'Ошибка связи';
             }
         }
 
@@ -797,7 +788,12 @@
                 slice.className = 'wheel-slice';
                 slice.style.transform = `rotate(${angle}deg)`;
                 slice.dataset.itemId = item.id;
-                slice.innerHTML = `<div class="wheel-slice-content" style="--item-angle: ${sliceAngle / 2}"><i class="fa-solid ${item.icon}"></i></div>`;
+                slice.innerHTML = `
+                    <div class="wheel-slice-bg"></div>
+                    <div class="wheel-slice-content">
+                        <i class="fa-solid ${item.icon}"></i>
+                    </div>
+                `;
                 track.appendChild(slice);
             });
         }
@@ -818,7 +814,7 @@
             if (state.isSpinning) return;
             document.querySelectorAll('.case-tab').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
-            state.currentCaseCost = cost;
+            state.currentCaseType = caseType;
             document.getElementById('caseCostSubtitle').textContent = state.lang === 'EN' ? `Vault cost: ${cost} ⭐` : `Стоимость сейфа: ${cost} ⭐`;
             initRouletteTrack();
         }
@@ -826,11 +822,6 @@
         async function spinRoulette() {
             if (state.isSpinning) return;
             const isDemo = document.getElementById('casesDemoToggle').checked;
-
-            if (!isDemo && state.balance < state.currentCaseCost) {
-                alert(state.lang === 'EN' ? 'Insufficient balance!' : 'Недостаточно звезд на балансе!');
-                return;
-            }
 
             state.isSpinning = true;
             document.getElementById('spinCaseBtn').disabled = true;
@@ -840,15 +831,19 @@
             track.style.transform = 'translateX(0px)';
 
             try {
+                // Передаем тип кейса вместо цены (защита на бэкенде)
                 const res = await fetch(`/api/roll/${userId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cost: state.currentCaseCost, is_demo: isDemo })
+                    body: JSON.stringify({ case_type: state.currentCaseType, is_demo: isDemo })
                 });
                 const data = await res.json();
                 
-                currentWinningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+                if(!data.success) {
+                    throw new Error(data.detail || 'Error');
+                }
 
+                currentWinningItem = data.won_item;
                 state.balance = data.balance;
                 document.getElementById('userBalance').textContent = state.balance.toLocaleString();
                 if (!isDemo) {
@@ -857,7 +852,7 @@
             } catch(e) {
                 state.isSpinning = false;
                 document.getElementById('spinCaseBtn').disabled = false;
-                alert('Error connecting to server');
+                alert(state.lang === 'EN' ? 'Insufficient balance or error!' : 'Недостаточно средств или ошибка!');
                 return;
             }
             
@@ -899,27 +894,25 @@
         async function spinWheel() {
             if (state.isSpinning) return;
             const isDemo = document.getElementById('wheelDemoToggle').checked;
-            const wheelCost = 100;
-
-            if (!isDemo && state.balance < wheelCost) {
-                alert(state.lang === 'EN' ? 'Insufficient balance!' : 'Недостаточно звезд на балансе!');
-                return;
-            }
 
             state.isSpinning = true;
             document.getElementById('spinWheelBtn').disabled = true;
             const wheel = document.getElementById('wheelTrack');
 
             try {
+                // Передаем фиксированный тип 'wheel' для проверки на сервере
                 const res = await fetch(`/api/roll/${userId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cost: wheelCost, is_demo: isDemo })
+                    body: JSON.stringify({ case_type: 'wheel', is_demo: isDemo })
                 });
                 const data = await res.json();
 
-                currentWinningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+                if(!data.success) {
+                    throw new Error(data.detail || 'Error');
+                }
 
+                currentWinningItem = data.won_item;
                 state.balance = data.balance;
                 document.getElementById('userBalance').textContent = state.balance.toLocaleString();
                 if (!isDemo) {
@@ -928,7 +921,7 @@
             } catch(e) {
                 state.isSpinning = false;
                 document.getElementById('spinWheelBtn').disabled = false;
-                alert('Error connecting to server');
+                alert(state.lang === 'EN' ? 'Insufficient balance or error!' : 'Недостаточно средств или ошибка!');
                 return;
             }
 
@@ -1018,9 +1011,7 @@
                     document.getElementById('userBalance').textContent = state.balance.toLocaleString();
                     if (updateUI) loadInventoryFromServer();
                 }
-            } catch(e) {
-                alert('Sell error');
-            }
+            } catch(e) { alert('Sell error'); }
         }
 
         function promptWithdraw(itemId, icon) {
@@ -1036,9 +1027,7 @@
                     const data = await res.json();
                     alert(data.message || 'Success');
                     loadInventoryFromServer();
-                } catch(e) {
-                    alert('Withdrawal error');
-                }
+                } catch(e) { alert('Withdrawal error'); }
             }
             selectedItemIdForWithdraw = null;
         }
