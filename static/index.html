@@ -316,32 +316,49 @@
             border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 24px solid #ff3b30;
             filter: drop-shadow(0 4px 14px rgba(255, 59, 48, 0.95)); z-index: 20;
         }
+        
+        /* Классическое колесо фортуны с ровными секторами (как кусочки пиццы из центра) */
         .wheel {
             width: 100%; height: 100%; border-radius: 50%; border: 7px solid #1a1a26; position: relative; overflow: hidden;
             will-change: transform; box-shadow: 0 0 40px rgba(0,0,0,0.9);
-            background: #0f0f18;
+            background: conic-gradient(
+                from 0deg,
+                rgba(255, 184, 0, 0.18) 0deg 60deg,
+                rgba(108, 92, 231, 0.28) 60deg 120deg,
+                rgba(255, 184, 0, 0.18) 120deg 180deg,
+                rgba(108, 92, 231, 0.28) 180deg 240deg,
+                rgba(255, 184, 0, 0.18) 240deg 300deg,
+                rgba(108, 92, 231, 0.28) 300deg 360deg
+            );
         }
-        
-        /* Ровно 6 отсеков колеса */
+
+        /* Четкие линии-разделители от центра к краям */
+        .wheel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: repeating-conic-gradient(
+                from 0deg,
+                rgba(255, 255, 255, 0.35) 0deg 1deg,
+                transparent 1deg 60deg
+            );
+            pointer-events: none;
+            z-index: 2;
+        }
+
         .wheel-slice {
-            position: absolute; top: 0; right: 0; width: 50%; height: 50%;
-            transform-origin: 0% 100%; pointer-events: none; overflow: hidden;
+            position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none;
         }
-        .wheel-slice-bg {
-            position: absolute; width: 200%; height: 200%; top: 0; left: -100%;
-            transform-origin: 100% 0%; transform: rotate(60deg);
-            border-right: 2px solid rgba(255, 255, 255, 0.35);
-        }
-        .wheel-slice:nth-child(even) .wheel-slice-bg { background: rgba(108, 92, 231, 0.22); }
-        .wheel-slice:nth-child(odd) .wheel-slice-bg { background: rgba(255, 184, 0, 0.12); }
 
         .wheel-slice-content {
-            position: absolute; left: 20%; top: 50%;
-            transform: translate(-50%, -50%) rotate(30deg);
+            position: absolute; left: 50%; top: 50%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            width: 50px; text-align: center; z-index: 5;
+            width: 40px; height: 40px;
+            transform-origin: center;
+            z-index: 5;
         }
-        .wheel-slice-content i { font-size: 22px; color: var(--gold); filter: drop-shadow(0 0 6px var(--gold-glow)); }
+        .wheel-slice-content i { font-size: 20px; color: var(--gold); filter: drop-shadow(0 0 6px var(--gold-glow)); }
         
         .wheel-center-cap {
             position: absolute; width: 48px; height: 48px; background: linear-gradient(135deg, #2c2c3d, #121218);
@@ -783,14 +800,12 @@
             track.innerHTML = '';
             const sliceAngle = 360 / itemsPool.length;
             itemsPool.forEach((item, index) => {
-                const angle = index * sliceAngle;
+                const angle = index * sliceAngle + sliceAngle / 2;
                 const slice = document.createElement('div');
                 slice.className = 'wheel-slice';
-                slice.style.transform = `rotate(${angle}deg)`;
                 slice.dataset.itemId = item.id;
                 slice.innerHTML = `
-                    <div class="wheel-slice-bg"></div>
-                    <div class="wheel-slice-content">
+                    <div class="wheel-slice-content" style="transform: rotate(${angle}deg) translate(0, -78px) rotate(-${angle}deg);">
                         <i class="fa-solid ${item.icon}"></i>
                     </div>
                 `;
@@ -831,7 +846,6 @@
             track.style.transform = 'translateX(0px)';
 
             try {
-                // Передаем тип кейса вместо цены (защита на бэкенде)
                 const res = await fetch(`/api/roll/${userId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -900,7 +914,6 @@
             const wheel = document.getElementById('wheelTrack');
 
             try {
-                // Передаем фиксированный тип 'wheel' для проверки на сервере
                 const res = await fetch(`/api/roll/${userId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

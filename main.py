@@ -1,12 +1,17 @@
 import sqlite3
 import random
 import logging
+import threading
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import telebot
+from telebot import types
+
+# Настройка логирования
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 # --- Настройки бота и администратора ---
 BOT_TOKEN = "8643024766:AAFkb8a0NzGGz6DJ2ksE2aqDwWsQbhTAybI"
@@ -16,7 +21,7 @@ bot = telebot.TeleBot(BOT_TOKEN)
 
 app = FastAPI(title="CatRoll WebApp Backend")
 
-# CORS для работы внутри Telegram WebApp
+# CORS для стабильной работы внутри Telegram WebApp
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -25,7 +30,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Подключение папки со статикой (index.html)
+# Подключение статических файлов (index.html)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # ==========================================
@@ -54,7 +59,7 @@ def init_db():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             user_id INTEGER PRIMARY KEY,
-            balance INTEGER DEFAULT 200
+            balance INTEGER DEFAULT 267000
         )
     """)
     cursor.execute("""
@@ -72,6 +77,51 @@ def init_db():
 
 init_db()
 
+# --- Логика Telegram Бот Команд ---
+
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    user_id = message.from_user.id
+    username = message.from_user.username or "User"
+    
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT balance FROM users WHERE user_id = ?", (user_id,))
+    row = cursor.fetchone()
+    
+    if not row:
+        cursor.execute("INSERT INTO users (user_id, balance) VALUES (?, ?)", (user_id, 267000))
+        conn.commit()
+        balance = 267000
+    else:
+        balance = row[0]
+    conn.close()
+
+    markup = types.InlineKeyboardMarkup()
+    web_app_info = types.WebAppInfo(url="https://your-domain.com/static/index.html") # Замените на ваш URL
+    open_btn = types.InlineKeyboardButton(text="🐾 Открыть CatRoll", web_app=web_app_info)
+    markup.add(open_btn)
+
+    bot.send_message(
+        message.chat.id,
+        f"Привет, {username}! 🐾\n\n"
+        f"Добро пожаловать в **CatRoll** — играй, открывай сейфы и крути Колесо Фортуны!\n\n"
+        f"⭐ Твой текущий баланс: **{balance:,} ⭐**",
+        parse_mode="Markdown",
+        reply_markup=markup
+    )
+
+def start_bot_polling():
+    logging.info("Запуск поллинга Telegram бота...")
+    try:
+        bot.infinity_polling(timeout=10, long_polling_timeout=5)
+    except Exception as e:
+        logging.error(f"Ошибка в поллинге бота: {e}")
+
+# Запуск бота в отдельном потоке, чтобы не блокировать FastAPI
+bot_thread = threading.Thread(target=start_bot_polling, daemon=True)
+bot_thread.start()
+
 # --- Модели данных Pydantic ---
 class RollRequest(BaseModel):
     case_type: str = "starter"  # 'starter', 'rare', 'legend', 'wheel'
@@ -80,7 +130,7 @@ class RollRequest(BaseModel):
 class InvoiceRequest(BaseModel):
     amount: int
 
-# --- Роуты приложения ---
+# --- API Эндпоинты Приложения ---
 
 @app.get("/")
 def read_index():
@@ -93,9 +143,9 @@ def get_user_profile(user_id: int):
     cursor.execute("SELECT balance FROM users WHERE user_id = ?", (user_id,))
     row = cursor.fetchone()
     if not row:
-        cursor.execute("INSERT INTO users (user_id, balance) VALUES (?, ?)", (user_id, 200))
+        cursor.execute("INSERT INTO users (user_id, balance) VALUES (?, ?)", (user_id, 267000))
         conn.commit()
-        balance = 200
+        balance = 267000
     else:
         balance = row[0]
     conn.close()
@@ -110,7 +160,7 @@ async def roll_item(user_id: int, req: RollRequest):
     cursor = conn.cursor()
     cursor.execute("SELECT balance FROM users WHERE user_id = ?", (user_id,))
     row = cursor.fetchone()
-    current_balance = row[0] if row else 200
+    current_balance = row[0] if row else 267000
 
     if not req.is_demo:
         # БЕЗОПАСНОСТЬ: Серверная проверка недостаточности средств
@@ -197,26 +247,24 @@ def withdraw_inventory_item(item_id: int):
             parse_mode="Markdown"
         )
     except Exception as e:
-        logging.error(f" Ошибка отправки сообщения админу: {e}")
+        logging.error(f"Ошибка отправки сообщения админу: {e}")
 
     return {"success": True, "message": "Запрос на вывод отправлен администратору"}
 
 @app.post("/api/create-invoice/{user_id}")
 def create_stars_invoice(user_id: int, req: InvoiceRequest):
     try:
-        # Создание ссылки на оплату Telegram Stars (XTR)
         invoice_link = bot.create_invoice_link(
             title="Пополнение Stars",
             description=f"Пакет {req.amount} Telegram Stars для CatRoll",
             payload=f"topup_{user_id}_{req.amount}",
-            provider_token="",  # Для Telegram Stars оставляем пустым
+            provider_token="",
             currency="XTR",
             prices=[telebot.types.LabeledPrice(label=f"{req.amount} Stars", amount=req.amount)]
         )
         return {"success": True, "invoice_link": invoice_link}
     except Exception as e:
         logging.error(f"Ошибка создания счета Telegram Stars: {e}")
-        # Запасная ссылка в бота при локальном тестировании
         return {
             "success": True, 
             "invoice_link": f"https://t.me/CaaatRoll_Bot?start=topup_{req.amount}"
