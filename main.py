@@ -28,7 +28,7 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# СТРОГАЯ БЕЗОПАСНОСТЬ: Цены задаются только на сервере
+# СТРОГАЯ БЕЗОПАСНОСТЬ: Цены на сервере
 PRICES = {
     "starter": 50,
     "rare": 250,
@@ -51,7 +51,10 @@ def init_db():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             user_id INTEGER PRIMARY KEY,
-            balance INTEGER DEFAULT 267000
+            username TEXT DEFAULT 'Player',
+            photo_url TEXT DEFAULT '',
+            balance INTEGER DEFAULT 267000,
+            total_spent INTEGER DEFAULT 0
         )
     """)
     cursor.execute("""
@@ -72,19 +75,37 @@ init_db()
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     user_id = message.from_user.id
-    username = message.from_user.username or "User"
+    username = message.from_user.username or message.from_user.first_name or "Player"
     
+    # Получение аватарки пользователя
+    photo_url = ""
+    try:
+        photos = bot.get_user_profile_photos(user_id, limit=1)
+        if photos.total_count > 0:
+            file_id = photos.photos[0][0].file_id
+            file_info = bot.get_file(file_id)
+            photo_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_info.file_path}"
+    except Exception as e:
+        logging.error(f"Не удалось получить аватарку: {e}")
+
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
     cursor.execute("SELECT balance FROM users WHERE user_id = ?", (user_id,))
     row = cursor.fetchone()
     
     if not row:
-        cursor.execute("INSERT INTO users (user_id, balance) VALUES (?, ?)", (user_id, 267000))
-        conn.commit()
+        cursor.execute(
+            "INSERT INTO users (user_id, username, photo_url, balance, total_spent) VALUES (?, ?, ?, ?, 0)", 
+            (user_id, username, photo_url, 267000)
+        )
         balance = 267000
     else:
+        cursor.execute(
+            "UPDATE users SET username = ?, photo_url = ? WHERE user_id = ?",
+            (username, photo_url, user_id)
+        )
         balance = row[0]
+    conn.commit()
     conn.close()
 
     markup = types.InlineKeyboardMarkup()
@@ -136,20 +157,20 @@ def get_user_profile(user_id: int):
     conn.close()
     return {"user_id": user_id, "balance": balance}
 
-# --- Новый эндпоинт Таблицы лидеров с рассчетом ранга ---
+# --- ТАБЛИЦА ЛИДЕРОВ ПО ПОТРАЧЕННЫМ ЗВЕЗДАМ (БЕЗ USER_ID ДЛЯ ИГРОКОВ) ---
 @app.get("/api/leaderboard/{user_id}")
 def get_leaderboard(user_id: int):
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
     
-    # Топ-10 игроков
-    cursor.execute("SELECT user_id, balance FROM users ORDER BY balance DESC LIMIT 10")
+    # Топ-10 по потраченным звездам (возвращаем только публичные ники и фото)
+    cursor.execute("SELECT user_id, username, photo_url, total_spent FROM users ORDER BY total_spent DESC LIMIT 10")
     top_users = cursor.fetchall()
     
     # Определение места конкретного пользователя
     cursor.execute("""
         SELECT rank FROM (
-            SELECT user_id, ROW_NUMBER() OVER (ORDER BY balance DESC) as rank 
+            SELECT user_id, ROW_NUMBER() OVER (ORDER BY total_spent DESC) as rank 
             FROM users
         ) WHERE user_id = ?
     """, (user_id,))
@@ -157,8 +178,16 @@ def get_leaderboard(user_id: int):
     my_rank = user_rank_row[0] if user_rank_row else "-"
 
     conn.close()
+    
     return {
-        "top": [{"user_id": u[0], "balance": u[1]} for u in top_users],
+        "top": [
+            {
+                "username": u[1] or "Player",
+                "photo_url": u[2] or "",
+                "total_spent": u[3],
+                "is_me": u[0] == user_id
+            } for u in top_users
+        ],
         "my_rank": my_rank
     }
 
@@ -168,9 +197,10 @@ async def roll_item(user_id: int, req: RollRequest):
     
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT balance FROM users WHERE user_id = ?", (user_id,))
+    cursor.execute("SELECT balance, total_spent FROM users WHERE user_id = ?", (user_id,))
     row = cursor.fetchone()
     current_balance = row[0] if row else 267000
+    current_spent = row[1] if row else 0
 
     if not req.is_demo:
         if current_balance < cost:
@@ -178,7 +208,8 @@ async def roll_item(user_id: int, req: RollRequest):
             raise HTTPException(status_code=400, detail="Недостаточно звезд на балансе")
             
         current_balance -= cost
-        cursor.execute("UPDATE users SET balance = ? WHERE user_id = ?", (current_balance, user_id))
+        new_spent = current_spent + cost
+        cursor.execute("UPDATE users SET balance = ?, total_spent = ? WHERE user_id = ?", (current_balance, new_spent, user_id))
         conn.commit()
 
     won_item = random.choice(ITEMS_POOL)

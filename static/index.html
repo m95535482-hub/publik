@@ -416,25 +416,32 @@
         .withdraw-btn { background: rgba(108, 92, 231, 0.15); border-color: rgba(108, 92, 231, 0.4); color: var(--purple-bright); }
         .withdraw-btn:disabled { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: var(--text-secondary); cursor: not-allowed; }
 
-        /* Стиль таблицы лидеров */
+        /* Стиль таблицы лидеров с аватарками */
         .leaderboard-list {
             width: 100%; display: flex; flex-direction: column; gap: 8px; margin-top: 10px;
         }
         .leaderboard-item {
-            background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 12px 16px;
+            background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 10px 14px;
             display: flex; align-items: center; justify-content: space-between;
         }
         .leaderboard-item.me {
             border-color: var(--purple-bright); background: rgba(108, 92, 231, 0.2);
         }
         .leaderboard-rank {
-            font-size: 16px; font-weight: 900; width: 30px; text-align: center;
+            font-size: 15px; font-weight: 900; width: 28px; text-align: center;
         }
-        .leaderboard-user {
-            flex: 1; font-size: 13px; font-weight: 800; margin-left: 10px;
+        .user-avatar {
+            width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: #2c2c3d;
+            display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--purple-bright); border: 1px solid rgba(255,255,255,0.15);
+        }
+        .leaderboard-user-info {
+            flex: 1; display: flex; align-items: center; gap: 10px; margin-left: 8px;
+        }
+        .leaderboard-username {
+            font-size: 13px; font-weight: 800;
         }
         .leaderboard-score {
-            font-size: 14px; font-weight: 800; color: var(--gold); display: flex; align-items: center; gap: 5px;
+            font-size: 13px; font-weight: 800; color: var(--gold); display: flex; align-items: center; gap: 4px;
         }
 
         .live-feed { width: 100%; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 22px; padding: 16px; margin-top: 16px; }
@@ -495,7 +502,7 @@
             <div class="mode-icon"><i class="fa-solid fa-trophy"></i></div>
             <div class="mode-info">
                 <h3 data-i18n="topTitle">Leaderboard</h3>
-                <p data-i18n="topSub">Top players & your global position</p>
+                <p data-i18n="topSub">Top spenders & your global position</p>
             </div>
         </div>
 
@@ -669,7 +676,7 @@
             EN: {
                 mainTitle: "Select Mode", mainSub: "Spin roulette, test your luck & collect rewards",
                 dailyTitle: "Daily Reward", dailySub: "Claim free Telegram Stars right now",
-                topTitle: "Leaderboard", topSub: "Top players & your global position",
+                topTitle: "Leaderboard", topSub: "Top spenders & your global position",
                 walletTitle: "Top Up Balance", walletSub: "Purchase star packages for play",
                 casesTitle: "Mystery Vaults", casesSub: "Open vaults and win exclusive rewards",
                 wheelTitle: "Fortune Wheel", wheelSub: "Spin the wheel and get up to x10 multipliers",
@@ -689,7 +696,7 @@
             RU: {
                 mainTitle: "Выбор режима", mainSub: "Крутите рулетку, испытывайте удачу и собирайте награды",
                 dailyTitle: "Ежедневная награда", dailySub: "Заберите бесплатные Stars прямо сейчас",
-                topTitle: "Таблица лидеров", topSub: "Лучшие игроки и ваша позиция в мире",
+                topTitle: "Таблица лидеров", topSub: "Топ по потраченным звёздам и ваша позиция",
                 walletTitle: "Пополнить баланс", walletSub: "Покупка пакетов звезд для игры",
                 casesTitle: "Сейфы наград", casesSub: "Открывайте сейфы и выигрывайте ценные призы",
                 wheelTitle: "Колесо Фортуны", wheelSub: "Вращайте колесо и получайте до x10 множителей",
@@ -750,12 +757,18 @@
                     if (index === 1) rankBadge = '🥈';
                     if (index === 2) rankBadge = '🥉';
 
-                    const isMe = u.user_id === userId;
+                    const avatarHtml = u.photo_url 
+                        ? `<img src="${u.photo_url}" class="user-avatar" alt="Avatar">` 
+                        : `<div class="user-avatar"><i class="fa-solid fa-user"></i></div>`;
+
                     list.innerHTML += `
-                        <div class="leaderboard-item ${isMe ? 'me' : ''}">
+                        <div class="leaderboard-item ${u.is_me ? 'me' : ''}">
                             <div class="leaderboard-rank">${rankBadge}</div>
-                            <div class="leaderboard-user">User ${u.user_id} ${isMe ? '(You)' : ''}</div>
-                            <div class="leaderboard-score"><i class="fa-solid fa-star"></i> ${u.balance}</div>
+                            <div class="leaderboard-user-info">
+                                ${avatarHtml}
+                                <div class="leaderboard-username">${u.username} ${u.is_me ? '(You)' : ''}</div>
+                            </div>
+                            <div class="leaderboard-score"><i class="fa-solid fa-star"></i> ${u.total_spent}</div>
                         </div>
                     `;
                 });
