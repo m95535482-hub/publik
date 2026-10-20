@@ -1,6 +1,7 @@
 import sqlite3
 import random
 import logging
+import time
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,18 +10,22 @@ from pydantic import BaseModel
 import telebot
 from telebot import types
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+# Настройка логирования приложения
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
+# Конфигурационные данные бота и администратора
 BOT_TOKEN = "8643024766:AAFkb8a0NzGGz6DJ2ksE2aqDwWsQbhTAybI"
 ADMIN_ID = 1218168630
-WEBHOOK_HOST = "https://publik-4.onrender.com" 
-
-# Настройки канала для обязательной проверки подписки
-CHANNEL_USERNAME = "@CaaatRoll" # Укажите ваш канал
+WEBHOOK_HOST = "https://publik-4.onrender.com"
+CHANNEL_USERNAME = "@CaaatRoll"
 
 bot = telebot.TeleBot(BOT_TOKEN)
 app = FastAPI(title="CatRoll WebApp Backend")
 
+# Настройка CORS для безотказной работы Mini App
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -29,9 +34,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Подключение статических файлов фронтенда
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# СТРОГАЯ БЕЗОПАСНОСТЬ: Цены задаются строго на сервере
+# СТРОГАЯ БЕЗОПАСНОСТЬ: Все цены на сейфы и вращения задаются только на сервере
 PRICES = {
     "starter": 50,
     "rare": 250,
@@ -39,27 +45,64 @@ PRICES = {
     "wheel": 100
 }
 
+# Пул выигрываемых предметов
 ITEMS_POOL = [
-    {"id": 1, "name": "Bronze Star", "icon": "fa-star", "price": 10},
-    {"id": 2, "name": "Silver Pack", "icon": "fa-gift", "price": 25},
-    {"id": 3, "name": "Gold Box", "icon": "fa-box", "price": 50},
-    {"id": 4, "name": "Ruby Gem", "icon": "fa-gem", "price": 100},
-    {"id": 5, "name": "Crown", "icon": "fa-crown", "price": 250},
-    {"id": 6, "name": "Trophy", "icon": "fa-trophy", "price": 500}
+    {
+        "id": 1,
+        "name": "Bronze Star",
+        "icon": "fa-star",
+        "price": 10
+    },
+    {
+        "id": 2,
+        "name": "Silver Pack",
+        "icon": "fa-gift",
+        "price": 25
+    },
+    {
+        "id": 3,
+        "name": "Gold Box",
+        "icon": "fa-box",
+        "price": 50
+    },
+    {
+        "id": 4,
+        "name": "Ruby Gem",
+        "icon": "fa-gem",
+        "price": 100
+    },
+    {
+        "id": 5,
+        "name": "Crown",
+        "icon": "fa-crown",
+        "price": 250
+    },
+    {
+        "id": 6,
+        "name": "Trophy",
+        "icon": "fa-trophy",
+        "price": 500
+    }
 ]
 
+# Инициализация структуры базы данных SQLite
 def init_db():
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
+    
+    # Таблица пользователей
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             user_id INTEGER PRIMARY KEY,
             username TEXT DEFAULT 'Player',
             photo_url TEXT DEFAULT '',
             balance INTEGER DEFAULT 267000,
-            total_spent INTEGER DEFAULT 0
+            total_spent INTEGER DEFAULT 0,
+            last_daily INTEGER DEFAULT 0
         )
     """)
+    
+    # Таблица инвентаря
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS inventory (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -70,12 +113,14 @@ def init_db():
             status TEXT DEFAULT 'normal'
         )
     """)
+    
     conn.commit()
     conn.close()
 
+# Автоматический запуск базы данных при старте
 init_db()
 
-# --- WEBHOOK ЭНДПОИНТ ---
+# Эндпоинт для приема вебхуков от Telegram
 @app.post("/webhook")
 async def telegram_webhook(request: Request):
     json_bytes = await request.body()
@@ -84,6 +129,7 @@ async def telegram_webhook(request: Request):
     bot.process_new_updates([update])
     return {"status": "ok"}
 
+# Регистрация Webhook при запуск приложения
 @app.on_event("startup")
 def on_startup():
     try:
@@ -94,18 +140,17 @@ def on_startup():
     except Exception as e:
         logging.error(f"❌ Ошибка установки Webhook: {e}")
 
-# --- ФУНКЦИЯ ПРОВЕРКИ ПОДПИСКИ НА СЕРВЕРЕ ---
+# Серверная проверка подписки пользователя на Telegram-канал
 def check_user_subscription(user_id: int) -> bool:
     try:
         member = bot.get_chat_member(CHANNEL_USERNAME, user_id)
-        # Если статус входит в список активных, значит подписан
         if member.status in ['creator', 'administrator', 'member']:
             return True
     except Exception as e:
         logging.error(f"Ошибка проверки подписки для {user_id}: {e}")
     return False
 
-# --- ОБРАБОТКА КОМАНД БОТА ---
+# Обработка команды /start в боте
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     user_id = message.from_user.id
@@ -128,7 +173,7 @@ def send_welcome(message):
     
     if not row:
         cursor.execute(
-            "INSERT INTO users (user_id, username, photo_url, balance, total_spent) VALUES (?, ?, ?, ?, 0)", 
+            "INSERT INTO users (user_id, username, photo_url, balance, total_spent, last_daily) VALUES (?, ?, ?, ?, 0, 0)", 
             (user_id, username, photo_url, 267000)
         )
         balance = 267000
@@ -138,6 +183,7 @@ def send_welcome(message):
             (username, photo_url, user_id)
         )
         balance = row[0]
+        
     conn.commit()
     conn.close()
 
@@ -155,7 +201,7 @@ def send_welcome(message):
         reply_markup=markup
     )
 
-# --- МОДЕЛИ ДАННЫХ ДЛЯ API ---
+# Pydantic модели
 class RollRequest(BaseModel):
     case_type: str = "starter"
     is_demo: bool = False
@@ -163,31 +209,33 @@ class RollRequest(BaseModel):
 class InvoiceRequest(BaseModel):
     amount: int
 
-# --- API МАРШРУТЫ WEBAPP ---
+# Главная страница WebApp
 @app.get("/")
 def read_index():
     return FileResponse("static/index.html")
 
+# Получение профиля и баланса пользователя
 @app.get("/api/user/{user_id}")
 def get_user_profile(user_id: int):
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT balance FROM users WHERE user_id = ?", (user_id,))
+    cursor.execute("SELECT balance, last_daily FROM users WHERE user_id = ?", (user_id,))
     row = cursor.fetchone()
     if not row:
-        cursor.execute("INSERT INTO users (user_id, balance) VALUES (?, ?)", (user_id, 267000))
+        cursor.execute("INSERT INTO users (user_id, balance, last_daily) VALUES (?, ?, 0)", (user_id, 267000))
         conn.commit()
         balance = 267000
+        last_daily = 0
     else:
-        balance = row[0]
+        balance, last_daily = row[0], row[1]
     conn.close()
-    return {"user_id": user_id, "balance": balance}
+    return {"user_id": user_id, "balance": balance, "last_daily": last_daily}
 
+# Таблица лидеров
 @app.get("/api/leaderboard/{user_id}")
 def get_leaderboard(user_id: int):
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
-    
     cursor.execute("SELECT user_id, username, photo_url, total_spent FROM users ORDER BY total_spent DESC LIMIT 10")
     top_users = cursor.fetchall()
     
@@ -199,7 +247,6 @@ def get_leaderboard(user_id: int):
     """, (user_id,))
     user_rank_row = cursor.fetchone()
     my_rank = user_rank_row[0] if user_rank_row else "-"
-
     conn.close()
     
     return {
@@ -214,14 +261,53 @@ def get_leaderboard(user_id: int):
         "my_rank": my_rank
     }
 
-# --- ЗАЩИЩЕННЫЙ СЕРВЕРНЫЙ МЕХАНИЗМ ПРОКРУТКИ И ЕЖЕДНЕВНОГО БОНУСА ---
+# Защищенный ежедневный спин с проверкой подписки и таймера на 24 часа
+@app.post("/api/daily-spin/{user_id}")
+async def daily_spin(user_id: int):
+    if not check_user_subscription(user_id):
+        raise HTTPException(
+            status_code=403, 
+            detail="Подпишитесь на канал https://t.me/CaaatRoll для бесплатного вращения!"
+        )
+
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT last_daily FROM users WHERE user_id = ?", (user_id,))
+    row = cursor.fetchone()
+    
+    current_time = int(time.time() * 1000)
+    cooldown = 24 * 60 * 60 * 1000
+    
+    last_daily = row[0] if row else 0
+    if current_time - last_daily < cooldown:
+        conn.close()
+        raise HTTPException(
+            status_code=400, 
+            detail="Ежедневный спин будет доступен ровно через 24 часа."
+        )
+
+    cursor.execute("UPDATE users SET last_daily = ? WHERE user_id = ?", (current_time, user_id))
+    conn.commit()
+
+    won_item = random.choice(ITEMS_POOL)
+    cursor.execute(
+        "INSERT INTO inventory (user_id, name, icon, price, status) VALUES (?, ?, ?, ?, 'normal')",
+        (user_id, won_item["name"], won_item["icon"], won_item["price"])
+    )
+    conn.commit()
+    item_id = cursor.lastrowid
+    conn.close()
+
+    return {
+        "success": True,
+        "won_item": won_item,
+        "item_id": item_id,
+        "next_daily": current_time + cooldown
+    }
+
+# Логика обычного открытия сейфов и вращения колеса
 @app.post("/api/roll/{user_id}")
 async def roll_item(user_id: int, req: RollRequest):
-    # СТРОГАЯ СЕРВЕРНАЯ ПРОВЕРКА ПОДПИСКИ ДЛЯ ЕЖЕДНЕВНОГО БОНУСА (или всех бесплатных/особых режимов)
-    if req.case_type == "daily":
-        if not check_user_subscription(user_id):
-            raise HTTPException(status_code=403, detail="Для получения ежедневной награды необходимо подписаться на канал https://t.me/CaaatRoll")
-
     cost = PRICES.get(req.case_type, 50)
     
     conn = sqlite3.connect("database.db")
@@ -261,6 +347,7 @@ async def roll_item(user_id: int, req: RollRequest):
         "won_item": won_item
     }
 
+# Получение инвентаря пользователя
 @app.get("/api/inventory/{user_id}")
 def get_user_inventory(user_id: int):
     conn = sqlite3.connect("database.db")
@@ -270,6 +357,7 @@ def get_user_inventory(user_id: int):
     conn.close()
     return [{"id": r[0], "name": r[1], "icon": r[2], "price": r[3], "status": r[4]} for r in rows]
 
+# Продажа предмета из инвентаря
 @app.post("/api/sell/{item_id}")
 def sell_inventory_item(item_id: int):
     conn = sqlite3.connect("database.db")
@@ -289,6 +377,7 @@ def sell_inventory_item(item_id: int):
     conn.close()
     return {"success": True, "balance": new_balance}
 
+# Запрос на вывод предмета администратору
 @app.post("/api/withdraw/{item_id}")
 def withdraw_inventory_item(item_id: int):
     conn = sqlite3.connect("database.db")
@@ -318,6 +407,7 @@ def withdraw_inventory_item(item_id: int):
 
     return {"success": True, "message": "Запрос на вывод отправлен администратору"}
 
+# Генерация инвойсов Telegram Stars
 @app.post("/api/create-invoice/{user_id}")
 def create_stars_invoice(user_id: int, req: InvoiceRequest):
     try:
