@@ -319,18 +319,31 @@
         .wheel {
             width: 100%; height: 100%; border-radius: 50%; border: 7px solid #1a1a26; position: relative; overflow: hidden;
             will-change: transform; box-shadow: 0 0 40px rgba(0,0,0,0.9);
+            background: #0f0f18;
         }
+        
+        /* Четкие границы секторов колеса */
         .wheel-slice {
             position: absolute; width: 50%; height: 50%; top: 0; left: 50%; transform-origin: 0% 100%; pointer-events: none; display: flex; justify-content: center;
+            border-left: 2px solid rgba(255, 255, 255, 0.22);
+            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.5);
         }
+        .wheel-slice:nth-child(even) {
+            background: rgba(108, 92, 231, 0.15);
+        }
+        .wheel-slice:nth-child(odd) {
+            background: rgba(255, 184, 0, 0.08);
+        }
+
         .wheel-slice-content {
             position: absolute; left: 50%; top: 28%; transform: translate(-50%, -50%) rotate(calc(var(--item-angle) * 1deg));
             display: flex; flex-direction: column; align-items: center; justify-content: center; width: 50px; text-align: center;
         }
-        .wheel-slice-content i { font-size: 18px; color: var(--gold); }
+        .wheel-slice-content i { font-size: 20px; color: var(--gold); filter: drop-shadow(0 0 6px var(--gold-glow)); }
         .wheel-center-cap {
             position: absolute; width: 48px; height: 48px; background: linear-gradient(135deg, #2c2c3d, #121218);
             border: 3px solid var(--purple-accent); border-radius: 50%; z-index: 15; display: flex; align-items: center; justify-content: center; color: var(--purple-bright); font-size: 16px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.8);
         }
 
         .stars-grid {
@@ -401,7 +414,7 @@
 
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10, 10, 14, 0.92); backdrop-filter: blur(22px);
-            border-top: 1px solid var(--card-border); padding: 10px 24px 14px 24px; display: flex; justify-content: space-around; align-items: center; z-index: 50;
+            border-top: 1px solid var(--card-border); padding: 10px 24px 14px 24px; display: flex; justify-space-around; align-items: center; z-index: 50;
         }
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-secondary); font-size: 10px; font-weight: 800; cursor: pointer; }
         .nav-item i { font-size: 19px; }
@@ -905,7 +918,6 @@
                 });
                 const data = await res.json();
 
-                // Выбираем приз на клиенте и жестко привязываем его к сектору колеса
                 currentWinningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
 
                 state.balance = data.balance;
@@ -920,11 +932,9 @@
                 return;
             }
 
-            // Находим индекс сектора выпавшего предмета
             const prizeIndex = itemsPool.findIndex(i => i.id === currentWinningItem.id);
             const sliceAngle = 360 / itemsPool.length;
             
-            // Вычисляем точный угол поворота, чтобы стрелка (наверху, 0°) четко указала на центр сектора
             const targetOffset = 360 - (prizeIndex * sliceAngle + sliceAngle / 2);
             currentWheelRotation = Math.floor(currentWheelRotation / 360) * 360 + 360 * 5 + targetOffset;
 
