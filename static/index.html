@@ -317,7 +317,6 @@
             filter: drop-shadow(0 4px 14px rgba(255, 59, 48, 0.95)); z-index: 20;
         }
         
-        /* Классическое колесо фортуны с ровными секторами (как кусочки пиццы из центра) */
         .wheel {
             width: 100%; height: 100%; border-radius: 50%; border: 7px solid #1a1a26; position: relative; overflow: hidden;
             will-change: transform; box-shadow: 0 0 40px rgba(0,0,0,0.9);
@@ -332,7 +331,6 @@
             );
         }
 
-        /* Четкие линии-разделители от центра к краям */
         .wheel::before {
             content: '';
             position: absolute;
@@ -352,13 +350,24 @@
         }
 
         .wheel-slice-content {
-            position: absolute; left: 50%; top: 50%;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            width: 40px; height: 40px;
-            transform-origin: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            margin-top: -20px;
+            margin-left: -20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             z-index: 5;
+            pointer-events: none;
         }
-        .wheel-slice-content i { font-size: 20px; color: var(--gold); filter: drop-shadow(0 0 6px var(--gold-glow)); }
+        .wheel-slice-content i { 
+            font-size: 22px; 
+            color: var(--gold); 
+            filter: drop-shadow(0 0 6px var(--gold-glow)); 
+        }
         
         .wheel-center-cap {
             position: absolute; width: 48px; height: 48px; background: linear-gradient(135deg, #2c2c3d, #121218);
@@ -681,7 +690,7 @@
                 const res = await fetch(`/api/user/${userId}`);
                 const data = await res.json();
                 state.balance = data.balance;
-                document.getElementById('userBalance').textContent = state.balance.toLocaleString();
+                document.getElementById('userBalance').textContent = state.balance;
             } catch(e) { console.error(e); }
         }
 
@@ -798,14 +807,19 @@
             const track = document.getElementById('wheelTrack');
             if (!track) return;
             track.innerHTML = '';
-            const sliceAngle = 360 / itemsPool.length;
+            
+            const totalSlices = itemsPool.length;
+            const sliceAngle = 360 / totalSlices;
+
             itemsPool.forEach((item, index) => {
-                const angle = index * sliceAngle + sliceAngle / 2;
+                const centerAngle = index * sliceAngle + (sliceAngle / 2);
+                
                 const slice = document.createElement('div');
                 slice.className = 'wheel-slice';
                 slice.dataset.itemId = item.id;
+                
                 slice.innerHTML = `
-                    <div class="wheel-slice-content" style="transform: rotate(${angle}deg) translate(0, -78px) rotate(-${angle}deg);">
+                    <div class="wheel-slice-content" style="transform: rotate(${centerAngle}deg) translateY(-82px) rotate(-${centerAngle}deg);">
                         <i class="fa-solid ${item.icon}"></i>
                     </div>
                 `;
@@ -859,7 +873,7 @@
 
                 currentWinningItem = data.won_item;
                 state.balance = data.balance;
-                document.getElementById('userBalance').textContent = state.balance.toLocaleString();
+                document.getElementById('userBalance').textContent = state.balance;
                 if (!isDemo) {
                     lastWonItemId = data.item_id;
                 }
@@ -927,7 +941,7 @@
 
                 currentWinningItem = data.won_item;
                 state.balance = data.balance;
-                document.getElementById('userBalance').textContent = state.balance.toLocaleString();
+                document.getElementById('userBalance').textContent = state.balance;
                 if (!isDemo) {
                     lastWonItemId = data.item_id;
                 }
@@ -1021,7 +1035,7 @@
                 const data = await res.json();
                 if (data.success) {
                     state.balance = data.balance;
-                    document.getElementById('userBalance').textContent = state.balance.toLocaleString();
+                    document.getElementById('userBalance').textContent = state.balance;
                     if (updateUI) loadInventoryFromServer();
                 }
             } catch(e) { alert('Sell error'); }

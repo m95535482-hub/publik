@@ -10,18 +10,14 @@ from pydantic import BaseModel
 import telebot
 from telebot import types
 
-# Настройка логирования
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-# --- Настройки бота и администратора ---
 BOT_TOKEN = "8643024766:AAFkb8a0NzGGz6DJ2ksE2aqDwWsQbhTAybI"
 ADMIN_ID = 1218168630
 
 bot = telebot.TeleBot(BOT_TOKEN)
-
 app = FastAPI(title="CatRoll WebApp Backend")
 
-# CORS для стабильной работы внутри Telegram WebApp
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -30,17 +26,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Подключение статических файлов (index.html)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# ==========================================
-# СТРОГАЯ БЕЗОПАСНОСТЬ: ФИКСИРОВАННЫЕ ЦЕНЫ НА СЕРВЕРЕ
-# ==========================================
+# Строгая защита цен на бэкенде
 PRICES = {
-    "starter": 50,   # Сейф Starter
-    "rare": 250,     # Сейф Rare
-    "legend": 1000,  # Сейф Royal
-    "wheel": 100     # Колесо Фортуны
+    "starter": 50,
+    "rare": 250,
+    "legend": 1000,
+    "wheel": 100
 }
 
 ITEMS_POOL = [
@@ -52,7 +45,6 @@ ITEMS_POOL = [
     {"id": 6, "name": "Trophy", "icon": "fa-trophy", "price": 500}
 ]
 
-# --- Инициализация Базы Данных ---
 def init_db():
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
@@ -77,8 +69,6 @@ def init_db():
 
 init_db()
 
-# --- Логика Telegram Бот Команд ---
-
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     user_id = message.from_user.id
@@ -98,39 +88,34 @@ def send_welcome(message):
     conn.close()
 
     markup = types.InlineKeyboardMarkup()
-    web_app_info = types.WebAppInfo(url="https://your-domain.com/static/index.html") # Замените на ваш URL
+    web_app_info = types.WebAppInfo(url="https://your-domain.com/static/index.html")
     open_btn = types.InlineKeyboardButton(text="🐾 Открыть CatRoll", web_app=web_app_info)
     markup.add(open_btn)
 
     bot.send_message(
         message.chat.id,
         f"Привет, {username}! 🐾\n\n"
-        f"Добро пожаловать в **CatRoll** — играй, открывай сейфы и крути Колесо Фортуны!\n\n"
-        f"⭐ Твой текущий баланс: **{balance:,} ⭐**",
+        f"Добро пожаловать в **CatRoll**!\n\n"
+        f"⭐ Твой текущий баланс: **{balance} ⭐**",
         parse_mode="Markdown",
         reply_markup=markup
     )
 
 def start_bot_polling():
-    logging.info("Запуск поллинга Telegram бота...")
     try:
         bot.infinity_polling(timeout=10, long_polling_timeout=5)
     except Exception as e:
         logging.error(f"Ошибка в поллинге бота: {e}")
 
-# Запуск бота в отдельном потоке, чтобы не блокировать FastAPI
 bot_thread = threading.Thread(target=start_bot_polling, daemon=True)
 bot_thread.start()
 
-# --- Модели данных Pydantic ---
 class RollRequest(BaseModel):
-    case_type: str = "starter"  # 'starter', 'rare', 'legend', 'wheel'
+    case_type: str = "starter"
     is_demo: bool = False
 
 class InvoiceRequest(BaseModel):
     amount: int
-
-# --- API Эндпоинты Приложения ---
 
 @app.get("/")
 def read_index():
@@ -153,7 +138,6 @@ def get_user_profile(user_id: int):
 
 @app.post("/api/roll/{user_id}")
 async def roll_item(user_id: int, req: RollRequest):
-    # БЕЗОПАСНОСТЬ: Сервер берет цену из своего словаря, игнорируя любые данные с клиента
     cost = PRICES.get(req.case_type, 50)
     
     conn = sqlite3.connect("database.db")
@@ -163,7 +147,6 @@ async def roll_item(user_id: int, req: RollRequest):
     current_balance = row[0] if row else 267000
 
     if not req.is_demo:
-        # БЕЗОПАСНОСТЬ: Серверная проверка недостаточности средств
         if current_balance < cost:
             conn.close()
             raise HTTPException(status_code=400, detail="Недостаточно звезд на балансе")
@@ -172,7 +155,6 @@ async def roll_item(user_id: int, req: RollRequest):
         cursor.execute("UPDATE users SET balance = ? WHERE user_id = ?", (current_balance, user_id))
         conn.commit()
 
-    # Генерация выигранного предмета
     won_item = random.choice(ITEMS_POOL)
     item_id = None
 
@@ -236,7 +218,6 @@ def withdraw_inventory_item(item_id: int):
     conn.commit()
     conn.close()
 
-    # Отправка уведомления администратору в Telegram
     try:
         bot.send_message(
             ADMIN_ID,
@@ -264,7 +245,6 @@ def create_stars_invoice(user_id: int, req: InvoiceRequest):
         )
         return {"success": True, "invoice_link": invoice_link}
     except Exception as e:
-        logging.error(f"Ошибка создания счета Telegram Stars: {e}")
         return {
             "success": True, 
             "invoice_link": f"https://t.me/CaaatRoll_Bot?start=topup_{req.amount}"
