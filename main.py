@@ -13,8 +13,10 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 
 BOT_TOKEN = "8643024766:AAFkb8a0NzGGz6DJ2ksE2aqDwWsQbhTAybI"
 ADMIN_ID = 1218168630
-# Вкажите ваш домен на Render (без слэша в конце)
 WEBHOOK_HOST = "https://publik-4.onrender.com" 
+
+# Настройки канала для обязательной проверки подписки
+CHANNEL_USERNAME = "@CaaatRoll" # Укажите ваш канал
 
 bot = telebot.TeleBot(BOT_TOKEN)
 app = FastAPI(title="CatRoll WebApp Backend")
@@ -73,7 +75,7 @@ def init_db():
 
 init_db()
 
-# --- WEBHOOK ЭНДПОИНТ (ВМЕСТО ПОЛЛИНГА) ---
+# --- WEBHOOK ЭНДПОИНТ ---
 @app.post("/webhook")
 async def telegram_webhook(request: Request):
     json_bytes = await request.body()
@@ -91,6 +93,17 @@ def on_startup():
         logging.info(f"✅ Webhook успешно зарегистрирован: {webhook_url}")
     except Exception as e:
         logging.error(f"❌ Ошибка установки Webhook: {e}")
+
+# --- ФУНКЦИЯ ПРОВЕРКИ ПОДПИСКИ НА СЕРВЕРЕ ---
+def check_user_subscription(user_id: int) -> bool:
+    try:
+        member = bot.get_chat_member(CHANNEL_USERNAME, user_id)
+        # Если статус входит в список активных, значит подписан
+        if member.status in ['creator', 'administrator', 'member']:
+            return True
+    except Exception as e:
+        logging.error(f"Ошибка проверки подписки для {user_id}: {e}")
+    return False
 
 # --- ОБРАБОТКА КОМАНД БОТА ---
 @bot.message_handler(commands=['start'])
@@ -201,8 +214,14 @@ def get_leaderboard(user_id: int):
         "my_rank": my_rank
     }
 
+# --- ЗАЩИЩЕННЫЙ СЕРВЕРНЫЙ МЕХАНИЗМ ПРОКРУТКИ И ЕЖЕДНЕВНОГО БОНУСА ---
 @app.post("/api/roll/{user_id}")
 async def roll_item(user_id: int, req: RollRequest):
+    # СТРОГАЯ СЕРВЕРНАЯ ПРОВЕРКА ПОДПИСКИ ДЛЯ ЕЖЕДНЕВНОГО БОНУСА (или всех бесплатных/особых режимов)
+    if req.case_type == "daily":
+        if not check_user_subscription(user_id):
+            raise HTTPException(status_code=403, detail="Для получения ежедневной награды необходимо подписаться на канал https://t.me/CaaatRoll")
+
     cost = PRICES.get(req.case_type, 50)
     
     conn = sqlite3.connect("database.db")
