@@ -2,6 +2,7 @@ import sqlite3
 import random
 import logging
 import threading
+import time
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,7 +29,7 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# СТРОГАЯ БЕЗОПАСНОСТЬ: Цены на сервере
+# СТРОГАЯ БЕЗОПАСНОСТЬ: Цены задаются только на сервере
 PRICES = {
     "starter": 50,
     "rare": 250,
@@ -77,7 +78,7 @@ def send_welcome(message):
     user_id = message.from_user.id
     username = message.from_user.username or message.from_user.first_name or "Player"
     
-    # Получение аватарки пользователя
+    # Безопасное получение аватарки пользователя через Telegram API
     photo_url = ""
     try:
         photos = bot.get_user_profile_photos(user_id, limit=1)
@@ -122,11 +123,15 @@ def send_welcome(message):
         reply_markup=markup
     )
 
+# Безопасный защищенный поллинг с автоподключением при конфликтах (409)
 def start_bot_polling():
-    try:
-        bot.infinity_polling(timeout=10, long_polling_timeout=5)
-    except Exception as e:
-        logging.error(f"Ошибка в поллинге бота: {e}")
+    logging.info("Запуск поллинга Telegram бота...")
+    while True:
+        try:
+            bot.infinity_polling(timeout=10, long_polling_timeout=5, restart_on_change=False)
+        except Exception as e:
+            logging.error(f"Конфликт или ошибка поллинга (переподключение через 5 сек): {e}")
+            time.sleep(5)
 
 bot_thread = threading.Thread(target=start_bot_polling, daemon=True)
 bot_thread.start()
@@ -157,17 +162,15 @@ def get_user_profile(user_id: int):
     conn.close()
     return {"user_id": user_id, "balance": balance}
 
-# --- ТАБЛИЦА ЛИДЕРОВ ПО ПОТРАЧЕННЫМ ЗВЕЗДАМ (БЕЗ USER_ID ДЛЯ ИГРОКОВ) ---
+# Таблица лидеров по потраченным звездам (с аватарами, никами и скрытыми ID)
 @app.get("/api/leaderboard/{user_id}")
 def get_leaderboard(user_id: int):
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
     
-    # Топ-10 по потраченным звездам (возвращаем только публичные ники и фото)
     cursor.execute("SELECT user_id, username, photo_url, total_spent FROM users ORDER BY total_spent DESC LIMIT 10")
     top_users = cursor.fetchall()
     
-    # Определение места конкретного пользователя
     cursor.execute("""
         SELECT rank FROM (
             SELECT user_id, ROW_NUMBER() OVER (ORDER BY total_spent DESC) as rank 
