@@ -416,6 +416,27 @@
         .withdraw-btn { background: rgba(108, 92, 231, 0.15); border-color: rgba(108, 92, 231, 0.4); color: var(--purple-bright); }
         .withdraw-btn:disabled { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: var(--text-secondary); cursor: not-allowed; }
 
+        /* Стиль таблицы лидеров */
+        .leaderboard-list {
+            width: 100%; display: flex; flex-direction: column; gap: 8px; margin-top: 10px;
+        }
+        .leaderboard-item {
+            background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 12px 16px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .leaderboard-item.me {
+            border-color: var(--purple-bright); background: rgba(108, 92, 231, 0.2);
+        }
+        .leaderboard-rank {
+            font-size: 16px; font-weight: 900; width: 30px; text-align: center;
+        }
+        .leaderboard-user {
+            flex: 1; font-size: 13px; font-weight: 800; margin-left: 10px;
+        }
+        .leaderboard-score {
+            font-size: 14px; font-weight: 800; color: var(--gold); display: flex; align-items: center; gap: 5px;
+        }
+
         .live-feed { width: 100%; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 22px; padding: 16px; margin-top: 16px; }
         .live-feed-title { font-size: 11px; color: var(--text-secondary); margin-bottom: 12px; font-weight: 800; text-transform: uppercase; }
         .feed-list { display: flex; flex-direction: column; gap: 8px; max-height: 135px; overflow-y: auto; }
@@ -439,10 +460,10 @@
 
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10, 10, 14, 0.92); backdrop-filter: blur(22px);
-            border-top: 1px solid var(--card-border); padding: 10px 24px 14px 24px; display: flex; justify-content: space-around; align-items: center; z-index: 50;
+            border-top: 1px solid var(--card-border); padding: 10px 14px 14px 14px; display: flex; justify-content: space-around; align-items: center; z-index: 50;
         }
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-secondary); font-size: 10px; font-weight: 800; cursor: pointer; }
-        .nav-item i { font-size: 19px; }
+        .nav-item i { font-size: 18px; }
         .nav-item.active { color: var(--purple-bright); }
     </style>
 </head>
@@ -467,6 +488,14 @@
             <div class="mode-info">
                 <h3><span data-i18n="dailyTitle">Daily Reward</span><span class="timer-badge" id="bonusTimer">Ready</span></h3>
                 <p data-i18n="dailySub">Claim free Telegram Stars right now</p>
+            </div>
+        </div>
+
+        <div class="mode-card" onclick="switchScreen('leaderboard-screen')">
+            <div class="mode-icon"><i class="fa-solid fa-trophy"></i></div>
+            <div class="mode-info">
+                <h3 data-i18n="topTitle">Leaderboard</h3>
+                <p data-i18n="topSub">Top players & your global position</p>
             </div>
         </div>
 
@@ -506,6 +535,14 @@
             <div class="live-feed-title" data-i18n="liveFeed">Live Winners Feed</div>
             <div class="feed-list" id="feedList"></div>
         </div>
+    </main>
+
+    <main id="leaderboard-screen" class="screen">
+        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
+        <h1 class="menu-title" data-i18n="topTitle">Leaderboard</h1>
+        <p class="menu-subtitle" id="myRankInfo">Your Rank: #-</p>
+
+        <div class="leaderboard-list" id="leaderboardList"></div>
     </main>
 
     <main id="wallet-screen" class="screen">
@@ -608,6 +645,7 @@
 
     <nav class="bottom-nav">
         <div class="nav-item active" onclick="switchScreen('main-screen')"><i class="fa-solid fa-house"></i><span data-i18n="navHome">Home</span></div>
+        <div class="nav-item" onclick="switchScreen('leaderboard-screen')"><i class="fa-solid fa-trophy"></i><span data-i18n="navTop">Top</span></div>
         <div class="nav-item" onclick="switchScreen('cases-screen')"><i class="fa-solid fa-box-open"></i><span data-i18n="navCases">Vaults</span></div>
         <div class="nav-item" onclick="switchScreen('wheel-screen')"><i class="fa-solid fa-dharmachakra"></i><span data-i18n="navWheel">Fortune</span></div>
         <div class="nav-item" onclick="switchScreen('inventory-screen')"><i class="fa-solid fa-suitcase"></i><span data-i18n="navInv">Collection</span></div>
@@ -631,6 +669,7 @@
             EN: {
                 mainTitle: "Select Mode", mainSub: "Spin roulette, test your luck & collect rewards",
                 dailyTitle: "Daily Reward", dailySub: "Claim free Telegram Stars right now",
+                topTitle: "Leaderboard", topSub: "Top players & your global position",
                 walletTitle: "Top Up Balance", walletSub: "Purchase star packages for play",
                 casesTitle: "Mystery Vaults", casesSub: "Open vaults and win exclusive rewards",
                 wheelTitle: "Fortune Wheel", wheelSub: "Spin the wheel and get up to x10 multipliers",
@@ -641,7 +680,7 @@
                 walletHeader: "Top Up Stars", walletSubHeader: "Choose a package to top up your balance",
                 invHeader: "My Collection", invSubHeader: "Your items and rewards", sortNew: "Newest first",
                 sortExp: "Highest price", winTitle: "Congratulations!", claimBtn: "To Collection", sellBtnModal: "Sell",
-                navHome: "Home", navCases: "Vaults", navWheel: "Fortune", navInv: "Collection",
+                navHome: "Home", navTop: "Top", navCases: "Vaults", navWheel: "Fortune", navInv: "Collection",
                 emptyInv: "Collection is empty", sell: "Sell", withdraw: "Withdraw", ready: "Ready",
                 searchPlaceholder: "Search...", withdrawTitle: "Item Withdrawal",
                 withdrawDesc: "Request withdrawal of this reward from admin?",
@@ -650,6 +689,7 @@
             RU: {
                 mainTitle: "Выбор режима", mainSub: "Крутите рулетку, испытывайте удачу и собирайте награды",
                 dailyTitle: "Ежедневная награда", dailySub: "Заберите бесплатные Stars прямо сейчас",
+                topTitle: "Таблица лидеров", topSub: "Лучшие игроки и ваша позиция в мире",
                 walletTitle: "Пополнить баланс", walletSub: "Покупка пакетов звезд для игры",
                 casesTitle: "Сейфы наград", casesSub: "Открывайте сейфы и выигрывайте ценные призы",
                 wheelTitle: "Колесо Фортуны", wheelSub: "Вращайте колесо и получайте до x10 множителей",
@@ -660,7 +700,7 @@
                 walletHeader: "Пополнение звезд", walletSubHeader: "Выберите пакет для пополнения баланса",
                 invHeader: "Моя коллекция", invSubHeader: "Ваши предметы и награды", sortNew: "Сначала новые",
                 sortExp: "Сначала дороже", winTitle: "Поздравляем!", claimBtn: "В коллекцию", sellBtnModal: "Продать",
-                navHome: "Главная", navCases: "Сейфы", navWheel: "Колесо", navInv: "Коллекция",
+                navHome: "Главная", navTop: "Топ", navCases: "Сейфы", navWheel: "Колесо", navInv: "Коллекция",
                 emptyInv: "Коллекция пуста", sell: "Продать", withdraw: "Вывести", ready: "Готово",
                 searchPlaceholder: "Поиск...", withdrawTitle: "Вывод предмета",
                 withdrawDesc: "Запросить вывод этой награды у администратора?",
@@ -691,6 +731,34 @@
                 const data = await res.json();
                 state.balance = data.balance;
                 document.getElementById('userBalance').textContent = state.balance;
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadLeaderboard() {
+            try {
+                const res = await fetch(`/api/leaderboard/${userId}`);
+                const data = await res.json();
+                
+                document.getElementById('myRankInfo').textContent = state.lang === 'EN' ? `Your Rank: #${data.my_rank}` : `Ваша позиция: #${data.my_rank}`;
+                
+                const list = document.getElementById('leaderboardList');
+                list.innerHTML = '';
+
+                data.top.forEach((u, index) => {
+                    let rankBadge = `${index + 1}`;
+                    if (index === 0) rankBadge = '🥇';
+                    if (index === 1) rankBadge = '🥈';
+                    if (index === 2) rankBadge = '🥉';
+
+                    const isMe = u.user_id === userId;
+                    list.innerHTML += `
+                        <div class="leaderboard-item ${isMe ? 'me' : ''}">
+                            <div class="leaderboard-rank">${rankBadge}</div>
+                            <div class="leaderboard-user">User ${u.user_id} ${isMe ? '(You)' : ''}</div>
+                            <div class="leaderboard-score"><i class="fa-solid fa-star"></i> ${u.balance}</div>
+                        </div>
+                    `;
+                });
             } catch(e) { console.error(e); }
         }
 
@@ -752,10 +820,14 @@
 
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
             if(screenId === 'main-screen') document.querySelectorAll('.nav-item')[0].classList.add('active');
-            if(screenId === 'cases-screen') document.querySelectorAll('.nav-item')[1].classList.add('active');
-            if(screenId === 'wheel-screen') document.querySelectorAll('.nav-item')[2].classList.add('active');
+            if(screenId === 'leaderboard-screen') {
+                document.querySelectorAll('.nav-item')[1].classList.add('active');
+                loadLeaderboard();
+            }
+            if(screenId === 'cases-screen') document.querySelectorAll('.nav-item')[2].classList.add('active');
+            if(screenId === 'wheel-screen') document.querySelectorAll('.nav-item')[3].classList.add('active');
             if(screenId === 'inventory-screen') {
-                document.querySelectorAll('.nav-item')[3].classList.add('active');
+                document.querySelectorAll('.nav-item')[4].classList.add('active');
                 loadInventoryFromServer();
             }
         }

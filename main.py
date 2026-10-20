@@ -28,7 +28,7 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Строгая защита цен на бэкенде
+# СТРОГАЯ БЕЗОПАСНОСТЬ: Цены задаются только на сервере
 PRICES = {
     "starter": 50,
     "rare": 250,
@@ -135,6 +135,32 @@ def get_user_profile(user_id: int):
         balance = row[0]
     conn.close()
     return {"user_id": user_id, "balance": balance}
+
+# --- Новый эндпоинт Таблицы лидеров с рассчетом ранга ---
+@app.get("/api/leaderboard/{user_id}")
+def get_leaderboard(user_id: int):
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    
+    # Топ-10 игроков
+    cursor.execute("SELECT user_id, balance FROM users ORDER BY balance DESC LIMIT 10")
+    top_users = cursor.fetchall()
+    
+    # Определение места конкретного пользователя
+    cursor.execute("""
+        SELECT rank FROM (
+            SELECT user_id, ROW_NUMBER() OVER (ORDER BY balance DESC) as rank 
+            FROM users
+        ) WHERE user_id = ?
+    """, (user_id,))
+    user_rank_row = cursor.fetchone()
+    my_rank = user_rank_row[0] if user_rank_row else "-"
+
+    conn.close()
+    return {
+        "top": [{"user_id": u[0], "balance": u[1]} for u in top_users],
+        "my_rank": my_rank
+    }
 
 @app.post("/api/roll/{user_id}")
 async def roll_item(user_id: int, req: RollRequest):
