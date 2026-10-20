@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CatRoll — Cases & Rewards Mini App</title>
     
-    <!-- Внешние библиотеки -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -52,7 +51,6 @@
             overflow-x: hidden;
         }
 
-        /* Шапка приложения */
         .header {
             width: 100%;
             max-width: 380px;
@@ -121,7 +119,6 @@
             cursor: pointer;
         }
 
-        /* Экраны приложения */
         .screen {
             width: 100%;
             max-width: 380px;
@@ -161,7 +158,6 @@
             text-align: center;
         }
 
-        /* Карточки режимов главного меню */
         .mode-card {
             width: 100%;
             background: var(--card-bg);
@@ -243,7 +239,6 @@
             margin-bottom: 16px;
         }
 
-        /* Переключатель Демо-режима */
         .controls-row {
             display: flex;
             justify-content: space-between;
@@ -319,7 +314,6 @@
             cursor: pointer;
         }
 
-        /* Контейнеры рулетки и сейфов */
         .case-container {
             width: 100%;
             background: rgba(12, 12, 18, 0.95);
@@ -433,7 +427,6 @@
             cursor: not-allowed;
         }
 
-        /* Экран Пополнения Stars */
         .stars-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -469,7 +462,6 @@
             color: var(--gold);
         }
 
-        /* Экран Инвентаря */
         .inventory-controls {
             width: 100%;
             display: flex;
@@ -566,7 +558,6 @@
             cursor: not-allowed;
         }
 
-        /* Список Таблицы лидеров */
         .leaderboard-list {
             width: 100%;
             display: flex;
@@ -633,7 +624,6 @@
             gap: 4px;
         }
 
-        /* Лента последних победителей */
         .live-feed {
             width: 100%;
             background: var(--card-bg);
@@ -675,7 +665,6 @@
             margin-right: 4px;
         }
 
-        /* Модальные окна */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -712,7 +701,6 @@
             filter: drop-shadow(0 4px 15px rgba(255, 184, 0, 0.4));
         }
 
-        /* Нижнее навигационное меню */
         .bottom-nav {
             position: fixed;
             bottom: 0; left: 0; right: 0;
@@ -744,11 +732,26 @@
         .nav-item.active {
             color: var(--purple-bright);
         }
+
+        .channel-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #0088cc, #00a8ff);
+            color: #fff;
+            font-weight: 800;
+            border-radius: 16px;
+            text-decoration: none;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 15px rgba(0, 136, 204, 0.4);
+        }
     </style>
 </head>
 <body>
 
-    <!-- Верхний блок управления -->
     <header class="header">
         <div class="logo" onclick="switchScreen('main-screen')">
             <div class="logo-icon"><i class="fa-solid fa-paw"></i></div> CatRoll
@@ -762,7 +765,6 @@
         </div>
     </header>
 
-    <!-- 1. Главный экран -->
     <main id="main-screen" class="screen active">
         <h1 class="menu-title" data-i18n="mainTitle">Select Mode</h1>
         <p class="menu-subtitle" data-i18n="mainSub">Spin roulette, test your luck & collect rewards</p>
@@ -824,7 +826,6 @@
         </div>
     </main>
 
-    <!-- 2. Экран Ежедневной Бесплатной Рулетки -->
     <main id="daily-screen" class="screen">
         <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
         <h1 class="menu-title" data-i18n="dailyTitle">Daily Reward</h1>
@@ -852,7 +853,6 @@
         <div id="dailyErrorMsg" style="color: #ff3b30; font-size: 12px; font-weight: 800; margin-top: 10px; text-align: center;"></div>
     </main>
 
-    <!-- 3. Экран Таблицы лидеров -->
     <main id="leaderboard-screen" class="screen">
         <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
         <h1 class="menu-title" data-i18n="topTitle">Leaderboard</h1>
@@ -860,7 +860,6 @@
         <div class="leaderboard-list" id="leaderboardList"></div>
     </main>
 
-    <!-- 4. Экран Пополнения Stars -->
     <main id="wallet-screen" class="screen">
         <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
         <h1 class="menu-title" data-i18n="walletHeader">Top Up Stars</h1>
@@ -876,7 +875,6 @@
         <div id="topupMsg" style="margin-top: 15px; font-weight: 800; font-size: 13px; text-align: center;"></div>
     </main>
 
-    <!-- 5. Экран Сейфов Наград -->
     <main id="cases-screen" class="screen">
         <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
         <h1 class="menu-title" data-i18n="casesHeader">Mystery Vaults</h1>
@@ -909,7 +907,6 @@
         <button class="action-btn" id="spinCaseBtn" onclick="spinRoulette()" data-i18n="spinBtn">Open Vault</button>
     </main>
 
-    <!-- 6. Экран Колеса Фортуны -->
     <main id="wheel-screen" class="screen">
         <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
         <h1 class="menu-title" data-i18n="wheelHeader">Fortune Wheel</h1>
@@ -935,7 +932,6 @@
         <button class="action-btn" id="spinWheelBtn" onclick="spinWheel()" data-i18n="spinWheelBtn">Spin Wheel</button>
     </main>
 
-    <!-- 7. Экран Инвентаря -->
     <main id="inventory-screen" class="screen">
         <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
         <h1 class="menu-title" data-i18n="invHeader">My Collection</h1>
@@ -952,7 +948,7 @@
         <div class="inventory-grid" id="inventoryGrid"></div>
     </main>
 
-    <!-- Модальное окно выигрыша -->
+    <!-- Модальное окно ВЫИГРЫША -->
     <div class="modal-overlay" id="winModal">
         <div class="modal-card">
             <h2 class="menu-title" data-i18n="winTitle">Congratulations!</h2>
@@ -966,7 +962,22 @@
         </div>
     </div>
 
-    <!-- Модальное окно подтверждения вывода -->
+    <!-- Модальное окно ПОДПИСКИ НА КАНАЛ -->
+    <div class="modal-overlay" id="subModal">
+        <div class="modal-card">
+            <h2 class="menu-title" style="font-size: 20px;" data-i18n="subTitle">Channel Subscription</h2>
+            <div class="win-image-box" style="font-size: 52px; color: #0088cc;"><i class="fa-brands fa-telegram"></i></div>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 18px;" data-i18n="subDesc">Please subscribe to our official Telegram channel to unlock the daily free spin!</p>
+            
+            <a href="https://t.me/CaaatRoll" target="_blank" class="channel-btn">
+                <i class="fa-brands fa-telegram"></i> <span data-i18n="subBtnLink">Subscribe to @CaaatRoll</span>
+            </a>
+            
+            <button class="action-btn" onclick="checkSubAndSpin()" data-i18n="checkSubBtn">I Subscribed ✅</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно подтверждения ВЫВОДА -->
     <div class="modal-overlay" id="withdrawModal">
         <div class="modal-card">
             <h2 class="menu-title" style="font-size: 20px;" data-i18n="withdrawTitle">Item Withdrawal</h2>
@@ -979,7 +990,6 @@
         </div>
     </div>
 
-    <!-- Нижняя навигация -->
     <nav class="bottom-nav">
         <div class="nav-item active" onclick="switchScreen('main-screen')"><i class="fa-solid fa-house"></i><span data-i18n="navHome">Home</span></div>
         <div class="nav-item" onclick="switchScreen('leaderboard-screen')"><i class="fa-solid fa-trophy"></i><span data-i18n="navTop">Top</span></div>
@@ -1055,7 +1065,11 @@
                 confirmBtn: "Confirm",
                 rejectBtn: "Reject",
                 pending: "Pending",
-                demoMode: "Demo mode"
+                demoMode: "Demo mode",
+                subTitle: "Channel Subscription",
+                subDesc: "Please subscribe to our official Telegram channel to unlock the daily free spin!",
+                subBtnLink: "Subscribe to @CaaatRoll",
+                checkSubBtn: "I Subscribed ✅"
             },
             RU: {
                 mainTitle: "Выбор режима",
@@ -1106,7 +1120,11 @@
                 confirmBtn: "Подтвердить",
                 rejectBtn: "Отклонить",
                 pending: "Ожидает",
-                demoMode: "Демо-режим"
+                demoMode: "Демо-режим",
+                subTitle: "Подписка на канал",
+                subDesc: "Для получения бесплатного спина необходимо подписаться на наш официальный Telegram-канал!",
+                subBtnLink: "Подписаться на @CaaatRoll",
+                checkSubBtn: "Я подписался ✅"
             }
         };
 
@@ -1369,8 +1387,15 @@
                 const res = await fetch(`/api/daily-spin/${userId}`, { method: 'POST' });
                 const data = await res.json();
                 
-                if (!res.ok || !data.success) {
-                    throw new Error(data.detail || 'Error');
+                if (!res.ok) {
+                    if (data.detail === "NOT_SUBSCRIBED") {
+                        document.getElementById('subModal').classList.add('active');
+                    } else if (data.detail === "COOLDOWN_ACTIVE") {
+                        errorMsgEl.textContent = state.lang === 'EN' ? '24 hours have not passed yet!' : 'Ещё не прошли 24 часа!';
+                    } else {
+                        errorMsgEl.textContent = data.detail || 'Error';
+                    }
+                    throw new Error('Spin blocked');
                 }
 
                 currentWinningItem = data.won_item;
@@ -1381,7 +1406,6 @@
             } catch(e) {
                 state.isSpinning = false;
                 document.getElementById('spinDailyBtn').disabled = false;
-                errorMsgEl.textContent = e.message || (state.lang === 'EN' ? 'Subscription required or cooldown active!' : 'Нужна подписка на канал или еще не прошли 24 часа!');
                 return;
             }
             
@@ -1400,6 +1424,21 @@
             dailyTimeout = setTimeout(async () => {
                 finishDailySpin(!isDemo);
             }, 4600);
+        }
+
+        async function checkSubAndSpin() {
+            try {
+                const res = await fetch(`/api/check-sub/${userId}`);
+                const data = await res.json();
+                if (data.subscribed) {
+                    document.getElementById('subModal').classList.remove('active');
+                    spinDailyRoulette();
+                } else {
+                    alert(state.lang === 'EN' ? 'Subscription not detected yet. Make sure you joined @CaaatRoll' : 'Подписка не обнаружена. Перейдите по ссылке и подпишитесь на @CaaatRoll');
+                }
+            } catch(e) {
+                alert('Connection error');
+            }
         }
 
         function skipDailyAnimation() {
