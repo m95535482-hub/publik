@@ -1,8 +1,6 @@
 import sqlite3
 import random
 import logging
-import threading
-import time
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,6 +13,8 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 
 BOT_TOKEN = "8643024766:AAFkb8a0NzGGz6DJ2ksE2aqDwWsQbhTAybI"
 ADMIN_ID = 1218168630
+# Вкажите ваш домен на Render (без слэша в конце)
+WEBHOOK_HOST = "https://publik-4.onrender.com" 
 
 bot = telebot.TeleBot(BOT_TOKEN)
 app = FastAPI(title="CatRoll WebApp Backend")
@@ -29,7 +29,7 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# СТРОГАЯ БЕЗОПАСНОСТЬ: Цены задаются только на сервере
+# СТРОГАЯ БЕЗОПАСНОСТЬ: Цены задаются строго на сервере
 PRICES = {
     "starter": 50,
     "rare": 250,
@@ -73,12 +73,31 @@ def init_db():
 
 init_db()
 
+# --- WEBHOOK ЭНДПОИНТ (ВМЕСТО ПОЛЛИНГА) ---
+@app.post("/webhook")
+async def telegram_webhook(request: Request):
+    json_bytes = await request.body()
+    json_str = json_bytes.decode('utf-8')
+    update = telebot.types.Update.de_json(json_str)
+    bot.process_new_updates([update])
+    return {"status": "ok"}
+
+@app.on_event("startup")
+def on_startup():
+    try:
+        webhook_url = f"{WEBHOOK_HOST}/webhook"
+        bot.remove_webhook()
+        bot.set_webhook(url=webhook_url)
+        logging.info(f"✅ Webhook успешно зарегистрирован: {webhook_url}")
+    except Exception as e:
+        logging.error(f"❌ Ошибка установки Webhook: {e}")
+
+# --- ОБРАБОТКА КОМАНД БОТА ---
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     user_id = message.from_user.id
     username = message.from_user.username or message.from_user.first_name or "Player"
     
-    # Безопасное получение аватарки пользователя через Telegram API
     photo_url = ""
     try:
         photos = bot.get_user_profile_photos(user_id, limit=1)
@@ -110,7 +129,7 @@ def send_welcome(message):
     conn.close()
 
     markup = types.InlineKeyboardMarkup()
-    web_app_info = types.WebAppInfo(url="https://your-domain.com/static/index.html")
+    web_app_info = types.WebAppInfo(url=f"{WEBHOOK_HOST}/static/index.html")
     open_btn = types.InlineKeyboardButton(text="🐾 Открыть CatRoll", web_app=web_app_info)
     markup.add(open_btn)
 
@@ -123,19 +142,7 @@ def send_welcome(message):
         reply_markup=markup
     )
 
-# Безопасный защищенный поллинг с автоподключением при конфликтах (409)
-def start_bot_polling():
-    logging.info("Запуск поллинга Telegram бота...")
-    while True:
-        try:
-            bot.infinity_polling(timeout=10, long_polling_timeout=5, restart_on_change=False)
-        except Exception as e:
-            logging.error(f"Конфликт или ошибка поллинга (переподключение через 5 сек): {e}")
-            time.sleep(5)
-
-bot_thread = threading.Thread(target=start_bot_polling, daemon=True)
-bot_thread.start()
-
+# --- МОДЕЛИ ДАННЫХ ДЛЯ API ---
 class RollRequest(BaseModel):
     case_type: str = "starter"
     is_demo: bool = False
@@ -143,6 +150,7 @@ class RollRequest(BaseModel):
 class InvoiceRequest(BaseModel):
     amount: int
 
+# --- API МАРШРУТЫ WEBAPP ---
 @app.get("/")
 def read_index():
     return FileResponse("static/index.html")
@@ -162,7 +170,6 @@ def get_user_profile(user_id: int):
     conn.close()
     return {"user_id": user_id, "balance": balance}
 
-# Таблица лидеров по потраченным звездам (с аватарами, никами и скрытыми ID)
 @app.get("/api/leaderboard/{user_id}")
 def get_leaderboard(user_id: int):
     conn = sqlite3.connect("database.db")
