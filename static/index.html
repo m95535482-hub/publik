@@ -1073,8 +1073,6 @@
         let selectedItemIdForWithdraw = null;
         let currentWheelRotation = 0;
         let lastWonItemId = null;
-        let rouletteTimeout = null;
-        let dailyTimeout = null;
         let wheelTimeout = null;
         let currentWinningItem = null;
         let activeAnimationFrame = null;
@@ -1300,11 +1298,11 @@
                 `;
             }
 
-            // Запускаем непрерывную фоновую прокрутку (показ ассортимента призов)
+            // Плавный, слегка замедленный бесконечный показ призов в режиме ожидания
             let currentX = 0;
             function runIdleScroll() {
                 if (state.isSpinning) return;
-                currentX -= 2.5;
+                currentX -= 1.4; // Чуть медленнее для комфортного просмотра призов
                 if (Math.abs(currentX) > 4000) currentX = 0;
                 track.style.transform = `translateX(${currentX}px)`;
                 idleScrollAnimation = requestAnimationFrame(runIdleScroll);
@@ -1390,7 +1388,7 @@
             let currentPos = 0;
             const loopInterval = setInterval(() => {
                 if (!state.isSpinning) { clearInterval(loopInterval); return; }
-                currentPos -= 14;
+                currentPos -= 10;
                 if (Math.abs(currentPos) > 4000) currentPos = 0;
                 track.style.transform = `translateX(${currentPos}px)`;
                 if (Math.abs(currentPos) % 107 < 15) { playTickSound(); }
@@ -1507,7 +1505,6 @@
             document.getElementById('userBalance').textContent = state.balance;
             if (!isDemo) lastWonItemId = serverData.item_id;
 
-            // Внедряем выигранный приз на фиксированную позицию 70
             const cards = track.querySelectorAll('.prize-card');
             if (cards.length > 70) {
                 cards[70].querySelector('.icon').innerHTML = `<i class="fa-solid ${currentWinningItem.icon}"></i>`;
@@ -1625,6 +1622,8 @@
             loadUserData();
             loadInventoryFromServer();
             lastWonItemId = null;
+            // После закрытия модалки возобновляем плавный показ в рулетке сейфов
+            initRouletteTrack();
         }
 
         function renderInventory() {
