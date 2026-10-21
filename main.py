@@ -5,7 +5,7 @@ import sqlite3
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 from pydantic import BaseModel
 import telebot
 
@@ -88,7 +88,12 @@ class InvoiceRequest(BaseModel):
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
     with open("static/index.html", "r", encoding="utf-8") as f:
-        return f.read()
+        html_content = f.read()
+    return Response(content=html_content, media_type="text/html", headers={
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0"
+    })
 
 @app.get("/api/user/{user_id}")
 async def get_user(user_id: int):
