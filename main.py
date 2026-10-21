@@ -33,7 +33,7 @@ def init_db():
             user_id INTEGER PRIMARY KEY,
             username TEXT,
             photo_url TEXT,
-            balance INTEGER DEFAULT 1000,
+            balance INTEGER DEFAULT 267000,
             total_spent INTEGER DEFAULT 0,
             last_daily INTEGER DEFAULT 0
         )
@@ -97,7 +97,7 @@ async def get_user(user_id: int):
     cursor.execute("SELECT * FROM users WHERE user_id = ?", (user_id,))
     user = cursor.fetchone()
     if not user:
-        cursor.execute("INSERT INTO users (user_id, username, balance) VALUES (?, ?, ?)", (user_id, f"User_{user_id}", 1000))
+        cursor.execute("INSERT INTO users (user_id, username, balance) VALUES (?, ?, ?)", (user_id, f"User_{user_id}", 267000))
         conn.commit()
         cursor.execute("SELECT * FROM users WHERE user_id = ?", (user_id,))
         user = cursor.fetchone()
