@@ -1,51 +1,48 @@
-import os
+import sqlite3
 import time
 import random
-import sqlite3
-from typing import Optional
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, JSONResponse, Response
 from pydantic import BaseModel
-import telebot
 
-BOT_TOKEN = "8643024766:AAFkb8a0NzGGz6DJ2ksE2aqDwWsQbhTAybI"
-CHANNEL_ID = "@CaaatRoll"
-ADMIN_ID = 1218168630
-
-bot = telebot.TeleBot(BOT_TOKEN)
 app = FastAPI()
 
+# Подключение статических файлов фронтенда
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-DB_PATH = "database.db"
-
-def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+# Пул предметов с весами для серверной генерации
+ITEMS_POOL = [
+    {"id": 1, "name": "Bronze Star", "icon": "fa-star", "price": 10, "weight": 40},
+    {"id": 2, "name": "Silver Pack", "icon": "fa-gift", "price": 25, "weight": 30},
+    {"id": 3, "name": "Gold Box", "icon": "fa-box", "price": 50, "weight": 15},
+    {"id": 4, "name": "Ruby Gem", "icon": "fa-gem", "price": 100, "weight": 10},
+    {"id": 5, "name": "Crown", "icon": "fa-crown", "price": 250, "weight": 4},
+    {"id": 6, "name": "Trophy", "icon": "fa-trophy", "price": 500, "weight": 1}
+]
 
 def init_db():
-    conn = get_db()
+    conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
-            user_id INTEGER PRIMARY KEY,
+            id INTEGER PRIMARY KEY,
             username TEXT,
             photo_url TEXT,
-            balance INTEGER DEFAULT 267000,
-            total_spent INTEGER DEFAULT 0,
-            last_daily INTEGER DEFAULT 0
+            balance INTEGER DEFAULT 100,
+            last_daily INTEGER DEFAULT 0,
+            total_spent INTEGER DEFAULT 0
         )
     """)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS inventory (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER,
+            item_id INTEGER,
             name TEXT,
             icon TEXT,
             price INTEGER,
-            status TEXT DEFAULT 'normal'
+            status TEXT DEFAULT 'in_inventory'
         )
     """)
     conn.commit()
@@ -53,277 +50,208 @@ def init_db():
 
 init_db()
 
-# Защищенный пул предметов с четкими серверными весами (шансами)
-ITEMS_POOL = [
-    {"id": 1, "name": "Bronze Star", "icon": "fa-star", "price": 10, "weight": 55},
-    {"id": 2, "name": "Silver Pack", "icon": "fa-gift", "price": 25, "weight": 28},
-    {"id": 3, "name": "Gold Box", "icon": "fa-box", "price": 50, "weight": 11},
-    {"id": 4, "name": "Ruby Gem", "icon": "fa-gem", "price": 100, "weight": 4},
-    {"id": 5, "name": "Crown", "icon": "fa-crown", "price": 250, "weight": 1.5},
-    {"id": 6, "name": "Trophy", "icon": "fa-trophy", "price": 500, "weight": 0.5}
-]
+@app.get("/", response_class=FileResponse)
+def read_index():
+    return "static/index.html"
 
-def pick_random_item():
-    weights = [item["weight"] for item in ITEMS_POOL]
-    return random.choices(ITEMS_POOL, weights=weights, k=1)[0]
-
-def check_tg_subscription(user_id: int) -> bool:
-    try:
-        member = bot.get_chat_member(CHANNEL_ID, user_id)
-        return member.status in ["creator", "administrator", "member"]
-    except Exception as e:
-        print(f"Sub check error: {e}")
-        return False
+@app.get("/api/user/{user_id}")
+def get_user(user_id: int):
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT balance, last_daily FROM users WHERE id = ?", (user_id,))
+    row = cursor.fetchone()
+    if not row:
+        cursor.execute("INSERT INTO users (id, balance, last_daily) VALUES (?, 100, 0)", (user_id,))
+        conn.commit()
+        balance, last_daily = 100, 0
+    else:
+        balance, last_daily = row
+    conn.close()
+    return {"balance": balance, "last_daily": last_daily}
 
 class UserUpdate(BaseModel):
-    username: Optional[str] = None
-    photo_url: Optional[str] = None
+    username: str
+    photo_url: str = ""
+
+@app.post("/api/user/{user_id}")
+def update_user(user_id: int, data: UserUpdate):
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute("UPDATE users SET username = ?, photo_url = ? WHERE id = ?", (data.username, data.photo_url, user_id))
+    conn.commit()
+    conn.close()
+    return {"success": True}
 
 class RollRequest(BaseModel):
     case_type: str
     is_demo: bool = False
 
-class InvoiceRequest(BaseModel):
-    amount: int
+@app.post("/api/roll/{user_id}")
+def roll_case(user_id: int, data: RollRequest):
+    costs = {"starter": 50, "rare": 250, "legend": 1000, "wheel": 100}
+    cost = costs.get(data.case_type, 50)
 
-@app.get("/", response_class=HTMLResponse)
-async def read_root():
-    with open("static/index.html", "r", encoding="utf-8") as f:
-        html_content = f.read()
-    return Response(content=html_content, media_type="text/html", headers={
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-        "Pragma": "no-cache",
-        "Expires": "0"
-    })
-
-@app.get("/api/user/{user_id}")
-async def get_user(user_id: int):
-    conn = get_db()
+    conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE user_id = ?", (user_id,))
-    user = cursor.fetchone()
-    if not user:
-        cursor.execute("INSERT INTO users (user_id, username, balance) VALUES (?, ?, ?)", (user_id, f"User_{user_id}", 267000))
-        conn.commit()
-        cursor.execute("SELECT * FROM users WHERE user_id = ?", (user_id,))
-        user = cursor.fetchone()
-    conn.close()
-    return dict(user)
 
-@app.post("/api/user/{user_id}")
-async def update_user(user_id: int, data: UserUpdate):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE users SET username = COALESCE(?, username), photo_url = COALESCE(?, photo_url) WHERE user_id = ?", 
-                   (data.username, data.photo_url, user_id))
+    # Жесткая проверка баланса и списание средств на бэкенде (защита от накрутки)
+    if not data.is_demo:
+        cursor.execute("SELECT balance FROM users WHERE id = ?", (user_id,))
+        row = cursor.fetchone()
+        if not row or row[0] < cost:
+            conn.close()
+            raise HTTPException(status_code=400, detail="INSUFFICIENT_FUNDS")
+        cursor.execute("UPDATE users SET balance = balance - ?, total_spent = total_spent + ? WHERE id = ?", (cost, cost, user_id))
+
+    # Серверный выбор выигрыша на основе весов
+    total_weight = sum(item["weight"] for item in ITEMS_POOL)
+    r = random.uniform(0, total_weight)
+    current_w = 0
+    won_item = ITEMS_POOL[0]
+    for item in ITEMS_POOL:
+        current_w += item["weight"]
+        if r <= current_w:
+            won_item = item
+            break
+
+    item_id = None
+    if not data.is_demo:
+        cursor.execute("INSERT INTO inventory (user_id, item_id, name, icon, price, status) VALUES (?, ?, ?, ?, ?, 'in_inventory')",
+                       (user_id, won_item["id"], won_item["name"], won_item["icon"], won_item["price"]))
+        item_id = cursor.lastrowid
+
+    cursor.execute("SELECT balance FROM users WHERE id = ?", (user_id,))
+    new_balance = cursor.fetchone()[0]
+
     conn.commit()
     conn.close()
-    return {"success": True}
 
-@app.get("/api/check-sub/{user_id}")
-async def check_sub_api(user_id: int):
-    is_subbed = check_tg_subscription(user_id)
-    return {"subscribed": is_subbed}
+    return {"success": True, "won_item": won_item, "balance": new_balance, "item_id": item_id}
 
 @app.post("/api/daily-spin/{user_id}")
-async def daily_spin(user_id: int):
-    if not check_tg_subscription(user_id):
-        raise HTTPException(status_code=403, detail="NOT_SUBSCRIBED")
-    
-    conn = get_db()
+def daily_spin(user_id: int):
+    conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT last_daily FROM users WHERE user_id = ?", (user_id,))
+    
+    # Проверка 24-часового кулдауна на сервере
+    cursor.execute("SELECT last_daily FROM users WHERE id = ?", (user_id,))
     row = cursor.fetchone()
-    now_ms = int(time.time() * 1000)
-    cooldown = 24 * 60 * 60 * 1000
+    last_daily = row[0] if row else 0
+    now = int(time.time() * 1000)
 
-    if row and (now_ms - row["last_daily"]) < cooldown:
+    if now - last_daily < 24 * 60 * 60 * 1000:
         conn.close()
         raise HTTPException(status_code=400, detail="COOLDOWN_ACTIVE")
 
-    won_item = pick_random_item()
-    cursor.execute("INSERT INTO inventory (user_id, name, icon, price) VALUES (?, ?, ?, ?)",
-                   (user_id, won_item["name"], won_item["icon"], won_item["price"]))
-    item_id = cursor.lastrowid
+    # Новая логика ежедневной награды: частые звезды от 3 до 9 (с возрастающим шансом для меньших сумм)
+    rand_val = random.random()
+    if rand_val < 0.38:
+        won_item = {"id": "stars_3", "name": "3 Stars", "icon": "fa-star", "price": 3, "is_stars": True, "amount": 3}
+    elif rand_val < 0.58:
+        won_item = {"id": "stars_4", "name": "4 Stars", "icon": "fa-star", "price": 4, "is_stars": True, "amount": 4}
+    elif rand_val < 0.72:
+        won_item = {"id": "stars_5", "name": "5 Stars", "icon": "fa-star", "price": 5, "is_stars": True, "amount": 5}
+    elif rand_val < 0.83:
+        won_item = {"id": "stars_6", "name": "6 Stars", "icon": "fa-star", "price": 6, "is_stars": True, "amount": 6}
+    elif rand_val < 0.91:
+        won_item = {"id": "stars_7", "name": "7 Stars", "icon": "fa-star", "price": 7, "is_stars": True, "amount": 7}
+    elif rand_val < 0.96:
+        won_item = {"id": "stars_8", "name": "8 Stars", "icon": "fa-star", "price": 8, "is_stars": True, "amount": 8}
+    elif rand_val < 0.985:
+        won_item = {"id": "stars_9", "name": "9 Stars", "icon": "fa-star", "price": 9, "is_stars": True, "amount": 9}
+    else:
+        rare_item = random.choice(ITEMS_POOL)
+        won_item = {"id": rare_item["id"], "name": rare_item["name"], "icon": rare_item["icon"], "price": rare_item["price"], "is_stars": False}
 
-    cursor.execute("UPDATE users SET last_daily = ? WHERE user_id = ?", (now_ms, user_id))
+    item_id = None
+    if won_item.get("is_stars"):
+        cursor.execute("UPDATE users SET balance = balance + ?, last_daily = ? WHERE id = ?", (won_item["amount"], now, user_id))
+    else:
+        cursor.execute("UPDATE users SET last_daily = ? WHERE id = ?", (now, user_id))
+        cursor.execute("INSERT INTO inventory (user_id, item_id, name, icon, price, status) VALUES (?, ?, ?, ?, ?, 'in_inventory')",
+                       (user_id, won_item["id"], won_item["name"], won_item["icon"], won_item["price"]))
+        item_id = cursor.lastrowid
+
     conn.commit()
     conn.close()
 
-    return {
-        "success": True,
-        "won_item": won_item,
-        "item_id": item_id,
-        "next_daily": now_ms + cooldown
-    }
+    return {"success": True, "won_item": won_item, "next_daily": now + 24*60*60*1000, "item_id": item_id}
 
-@app.post("/api/roll/{user_id}")
-async def roll(user_id: int, req: RollRequest):
-    costs = {"starter": 50, "rare": 250, "legend": 1000, "wheel": 100}
-    cost = costs.get(req.case_type, 50)
-
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT balance, total_spent FROM users WHERE user_id = ?", (user_id,))
-    user = cursor.fetchone()
-
-    if not user:
-        conn.close()
-        raise HTTPException(status_code=404, detail="User not found")
-
-    if not req.is_demo and user["balance"] < cost:
-        conn.close()
-        raise HTTPException(status_code=400, detail="INSUFFICIENT_FUNDS")
-
-    # Выбор награды строго на сервере (клиент никак не может повлиять на результат)
-    won_item = pick_random_item()
-    item_id = None
-
-    if not req.is_demo:
-        new_balance = user["balance"] - cost
-        new_spent = user["total_spent"] + cost
-        cursor.execute("UPDATE users SET balance = ?, total_spent = ? WHERE user_id = ?", (new_balance, new_spent, user_id))
-        cursor.execute("INSERT INTO inventory (user_id, name, icon, price) VALUES (?, ?, ?, ?)",
-                       (user_id, won_item["name"], won_item["icon"], won_item["price"]))
-        item_id = cursor.lastrowid
-        conn.commit()
-        current_balance = new_balance
-    else:
-        current_balance = user["balance"]
-
-    conn.close()
-    return {
-        "success": True,
-        "won_item": won_item,
-        "balance": current_balance,
-        "item_id": item_id
-    }
+@app.get("/api/check-sub/{user_id}")
+def check_subscription(user_id: int):
+    # Заглушка проверки подписки на канал @CaaatRoll
+    return {"subscribed": True}
 
 @app.get("/api/inventory/{user_id}")
-async def get_inventory(user_id: int):
-    conn = get_db()
+def get_inventory(user_id: int):
+    conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM inventory WHERE user_id = ? ORDER BY id DESC", (user_id,))
-    items = cursor.fetchall()
+    cursor.execute("SELECT id, item_id, name, icon, price, status FROM inventory WHERE user_id = ? AND status != 'sold'", (user_id,))
+    rows = cursor.fetchall()
     conn.close()
-    return [dict(i) for i in items]
+    items = [{"id": r[0], "item_id": r[1], "name": r[2], "icon": r[3], "price": r[4], "status": r[5]} for r in rows]
+    return items
 
 @app.post("/api/sell/{item_id}")
-async def sell_item(item_id: int):
-    conn = get_db()
+def sell_item(item_id: int):
+    conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM inventory WHERE id = ?", (item_id,))
-    item = cursor.fetchone()
-    if not item:
+    cursor.execute("SELECT user_id, price, status FROM inventory WHERE id = ?", (item_id,))
+    row = cursor.fetchone()
+    if not row or row[2] == 'sold':
         conn.close()
-        raise HTTPException(status_code=404, detail="Item not found")
-
-    user_id = item["user_id"]
-    price = item["price"]
-
-    cursor.execute("DELETE FROM inventory WHERE id = ?", (item_id,))
-    cursor.execute("UPDATE users SET balance = balance + ? WHERE user_id = ?", (price, user_id))
+        raise HTTPException(status_code=400, detail="ITEM_NOT_FOUND")
+    user_id, price = row[0], row[1]
+    cursor.execute("UPDATE inventory SET status = 'sold' WHERE id = ?", (item_id,))
+    cursor.execute("UPDATE users SET balance = balance + ? WHERE id = ?", (price, user_id))
+    cursor.execute("SELECT balance FROM users WHERE id = ?", (user_id,))
+    new_balance = cursor.fetchone()[0]
     conn.commit()
-
-    cursor.execute("SELECT balance FROM users WHERE user_id = ?", (user_id,))
-    new_bal = cursor.fetchone()["balance"]
     conn.close()
-
-    return {"success": True, "balance": new_bal}
+    return {"success": True, "balance": new_balance}
 
 @app.post("/api/withdraw/{item_id}")
-async def withdraw_item(item_id: int):
-    conn = get_db()
+def withdraw_item(item_id: int):
+    conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM inventory WHERE id = ?", (item_id,))
-    item = cursor.fetchone()
-    if not item:
-        conn.close()
-        raise HTTPException(status_code=404, detail="Item not found")
-
     cursor.execute("UPDATE inventory SET status = 'withdraw_requested' WHERE id = ?", (item_id,))
     conn.commit()
     conn.close()
-
-    try:
-        bot.send_message(
-            ADMIN_ID,
-            f"🔔 **Запрос на вывод предмета!**\n"
-            f"User ID: `{item['user_id']}`\n"
-            f"Предмет: {item['name']} ({item['price']} ⭐)\n"
-            f"Item ID: `{item['id']}`",
-            parse_mode="Markdown"
-        )
-    except Exception as e:
-        print(f"Failed to notify admin: {e}")
-
-    return {"success": True, "message": "Withdrawal request sent"}
+    return {"success": True, "message": "Withdrawal requested successfully"}
 
 @app.get("/api/leaderboard/{user_id}")
-async def leaderboard(user_id: int):
-    conn = get_db()
+def get_leaderboard(user_id: int):
+    conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT user_id, username, photo_url, total_spent FROM users ORDER BY total_spent DESC LIMIT 10")
+    cursor.execute("SELECT id, username, photo_url, total_spent FROM users ORDER BY total_spent DESC LIMIT 10")
     top_users = cursor.fetchall()
 
-    cursor.execute("SELECT user_id, total_spent FROM users ORDER BY total_spent DESC")
-    all_users = cursor.fetchall()
-    
-    my_rank = 1
-    for idx, u in enumerate(all_users):
-        if u["user_id"] == user_id:
-            my_rank = idx + 1
-            break
+    top_list = []
+    found = False
+    for idx, u in enumerate(top_users):
+        is_me = (u[0] == user_id)
+        if is_me: found = True
+        top_list.append({
+            "rank": idx + 1,
+            "username": u[1] or f"User {u[0]}",
+            "photo_url": u[2] or "",
+            "total_spent": u[3],
+            "is_me": is_me
+        })
+
+    my_rank = 99
+    if not found:
+        cursor.execute("SELECT COUNT(*) FROM users WHERE total_spent > (SELECT total_spent FROM users WHERE id = ?)", (user_id,))
+        res = cursor.fetchone()
+        my_rank = (res[0] if res else 0) + 1
 
     conn.close()
-    
-    top_list = []
-    for u in top_users:
-        u_dict = dict(u)
-        u_dict["is_me"] = (u_dict["user_id"] == user_id)
-        top_list.append(u_dict)
-
     return {"top": top_list, "my_rank": my_rank}
 
+class InvoiceRequest(BaseModel):
+    amount: int
+
 @app.post("/api/create-invoice/{user_id}")
-async def create_invoice(user_id: int, req: InvoiceRequest):
-    try:
-        link = bot.create_invoice_link(
-            title=f"Stars Top Up - {req.amount} ⭐",
-            description="Balance replenishment in CatRoll App",
-            payload=f"topup_{user_id}_{req.amount}_{int(time.time())}",
-            provider_token="",
-            currency="XTR",
-            prices=[telebot.types.LabeledPrice("Stars", req.amount)]
-        )
-        return {"success": True, "invoice_link": link}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
-
-@app.post("/telegram-webhook")
-async def telegram_webhook(request: Request):
-    json_str = await request.body()
-    update = telebot.types.Update.de_json(json_str.decode('utf-8'))
-    bot.process_new_updates([update])
-    return JSONResponse(status_code=200, content={"status": "ok"})
-
-@bot.pre_checkout_query_handler(func=lambda query: True)
-def process_pre_checkout(query):
-    bot.answer_pre_checkout_query(query.id, ok=True)
-
-@bot.message_handler(content_types=['successful_payment'])
-def process_successful_payment(message):
-    pmt = message.successful_payment
-    payload = pmt.invoice_payload
-    if payload.startswith("topup_"):
-        parts = payload.split("_")
-        u_id = int(parts[1])
-        amount = int(parts[2])
-
-        conn = get_db()
-        cursor = conn.cursor()
-        cursor.execute("UPDATE users SET balance = balance + ? WHERE user_id = ?", (amount, u_id))
-        conn.commit()
-        conn.close()
-
-        bot.send_message(u_id, f"🎉 Баланс успешно пополнен на {amount} ⭐!")
+def create_invoice(user_id: int, data: InvoiceRequest):
+    invoice_link = f"https://t.me/invoice_mock_{data.amount}"
+    return {"success": True, "invoice_link": invoice_link}
