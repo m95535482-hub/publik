@@ -2,7 +2,6 @@ import os
 import time
 import random
 import sqlite3
-import requests
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
