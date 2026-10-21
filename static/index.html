@@ -368,11 +368,6 @@
             will-change: transform;
         }
 
-        @keyframes caseSpinLoop {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-3210px); }
-        }
-
         .prize-card {
             min-width: 95px;
             height: 115px;
@@ -978,22 +973,6 @@
             } catch(e) {}
         }
 
-        function startSpinTicks() {
-            let count = 0;
-            const maxTicks = 48;
-            let interval = 55;
-
-            function nextTick() {
-                if (!state.isSpinning || count >= maxTicks) return;
-                playTickSound();
-                triggerHaptic('light');
-                count++;
-                interval += 10;
-                setTimeout(nextTick, interval);
-            }
-            nextTick();
-        }
-
         function playWinSound() {
             if (!state.soundEnabled) return;
             try {
@@ -1098,6 +1077,7 @@
         let dailyTimeout = null;
         let wheelTimeout = null;
         let currentWinningItem = null;
+        let activeAnimationFrame = null;
 
         async function loadUserData() {
             try {
@@ -1303,14 +1283,14 @@
         function initRouletteTrack() {
             const track = document.getElementById('rouletteTrack');
             if (!track) return;
+            if (activeAnimationFrame) cancelAnimationFrame(activeAnimationFrame);
             track.style.transition = 'none';
-            track.style.animation = 'none';
             track.style.transform = 'translateX(0px)';
             track.innerHTML = '';
-            for (let i = 0; i < 60; i++) {
+            for (let i = 0; i < 70; i++) {
                 const randItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
                 track.innerHTML += `
-                    <div class="prize-card">
+                    <div class="prize-card" data-index="${i}">
                         <div class="icon"><i class="fa-solid ${randItem.icon}"></i></div>
                         <div class="p-name">${randItem.name}</div>
                         <div class="p-price">${randItem.price} ⭐</div>
@@ -1322,14 +1302,14 @@
         function initDailyRouletteTrack() {
             const track = document.getElementById('dailyRouletteTrack');
             if (!track) return;
+            if (activeAnimationFrame) cancelAnimationFrame(activeAnimationFrame);
             track.style.transition = 'none';
-            track.style.animation = 'none';
             track.style.transform = 'translateX(0px)';
             track.innerHTML = '';
-            for (let i = 0; i < 60; i++) {
+            for (let i = 0; i < 70; i++) {
                 const randItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
                 track.innerHTML += `
-                    <div class="prize-card">
+                    <div class="prize-card" data-index="${i}">
                         <div class="icon"><i class="fa-solid ${randItem.icon}"></i></div>
                         <div class="p-name">${randItem.name}</div>
                         <div class="p-price">${randItem.price} ⭐</div>
@@ -1348,6 +1328,43 @@
             initRouletteTrack();
         }
 
+        // Плавная JS анимация прокрутки с точным звуковым тиком при прохождении каждой карточки
+        function startSmoothJSSpin(trackEl, targetTranslateX, durationMs, onComplete) {
+            let startPos = 0;
+            const match = trackEl.style.transform.match(/translateX\((-?\d+\.?\d*)px\)/);
+            if (match) startPos = parseFloat(match[1]);
+
+            const startTime = performance.now();
+            let lastCardIndex = 0;
+            const cardWidth = 107; // 95px ширина + 12px отступы
+
+            function step(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / durationMs, 1);
+                
+                // Плавная кубическая функция торможения (easeOutCubic)
+                const easeProgress = 1 - Math.pow(1 - progress, 3);
+                const currentPos = startPos + (targetTranslateX - startPos) * easeProgress;
+
+                trackEl.style.transform = `translateX(${currentPos}px)`;
+
+                // Считаем пересеченные карточки для звука тиков
+                const currentCard = Math.floor(Math.abs(currentPos) / cardWidth);
+                if (currentCard !== lastCardIndex) {
+                    playTickSound();
+                    triggerHaptic('light');
+                    lastCardIndex = currentCard;
+                }
+
+                if (progress < 1) {
+                    activeAnimationFrame = requestAnimationFrame(step);
+                } else {
+                    if (onComplete) onComplete();
+                }
+            }
+            activeAnimationFrame = requestAnimationFrame(step);
+        }
+
         async function spinDailyRoulette() {
             if (state.isSpinning) return;
             getAudioContext();
@@ -1359,59 +1376,63 @@
             document.getElementById('spinDailyBtn').disabled = true;
             const track = document.getElementById('dailyRouletteTrack');
             
-            track.style.transition = 'none';
-            track.style.transform = 'translateX(0px)';
-            track.style.animation = 'caseSpinLoop 3s linear infinite';
+            initDailyRouletteTrack();
 
+            // Предварительная плавная прокрутка пока ждем сервер
+            let currentPos = 0;
+            const loopInterval = setInterval(() => {
+                if (!state.isSpinning) { clearInterval(loopInterval); return; }
+                currentPos -= 18;
+                track.style.transform = `translateX(${currentPos}px)`;
+                if (Math.abs(currentPos) % 107 < 20) { playTickSound(); }
+            }, 16);
+
+            let serverData = null;
             try {
                 const res = await fetch(`/api/daily-spin/${userId}`, { method: 'POST' });
-                const data = await res.json();
+                serverData = await res.json();
                 
                 if (!res.ok) {
-                    track.style.animation = 'none';
-                    if (data.detail === "NOT_SUBSCRIBED") {
+                    clearInterval(loopInterval);
+                    state.isSpinning = false;
+                    document.getElementById('spinDailyBtn').disabled = false;
+                    if (serverData.detail === "NOT_SUBSCRIBED") {
                         document.getElementById('subModal').classList.add('active');
-                    } else if (data.detail === "COOLDOWN_ACTIVE") {
+                    } else if (serverData.detail === "COOLDOWN_ACTIVE") {
                         errorMsgEl.textContent = state.lang === 'EN' ? '24 hours have not passed yet!' : 'Ещё не прошли 24 часа!';
                     } else {
-                        errorMsgEl.textContent = data.detail || 'Error';
+                        errorMsgEl.textContent = serverData.detail || 'Error';
                     }
-                    throw new Error('Spin blocked');
+                    return;
                 }
-
-                currentWinningItem = data.won_item;
-                state.lastDailyTime = data.next_daily - (24 * 60 * 60 * 1000);
-                if (!isDemo) lastWonItemId = data.item_id;
             } catch(e) {
+                clearInterval(loopInterval);
                 state.isSpinning = false;
                 document.getElementById('spinDailyBtn').disabled = false;
                 return;
             }
+
+            clearInterval(loopInterval);
+
+            currentWinningItem = serverData.won_item;
+            state.lastDailyTime = serverData.next_daily - (24 * 60 * 60 * 1000);
+            if (!isDemo) lastWonItemId = serverData.item_id;
             
-            startSpinTicks();
+            // Внедряем выигранный приз строго на позицию 45
+            const cards = track.querySelectorAll('.prize-card');
+            if (cards.length > 45) {
+                cards[45].querySelector('.icon').innerHTML = `<i class="fa-solid ${currentWinningItem.icon}"></i>`;
+                cards[45].querySelector('.p-name').textContent = currentWinningItem.name;
+                cards[45].querySelector('.p-price').textContent = currentWinningItem.price + ' ⭐';
+            }
 
-            setTimeout(() => {
-                track.style.animation = 'none';
-                const cards = track.querySelectorAll('.prize-card');
-                if (cards.length > 35) {
-                    cards[35].querySelector('.icon').innerHTML = `<i class="fa-solid ${currentWinningItem.icon}"></i>`;
-                    cards[35].querySelector('.p-name').textContent = currentWinningItem.name;
-                    cards[35].querySelector('.p-price').textContent = currentWinningItem.price + ' ⭐';
-                }
+            const cardWidth = 107;
+            const centerOffset = 200;
+            const targetOffset = (45 * cardWidth) - centerOffset + (Math.random() * 20 - 10);
 
-                track.style.transform = `translateX(0px)`;
-                setTimeout(() => {
-                    track.style.transition = 'transform 2s cubic-bezier(0.1, 0.8, 0.3, 1)';
-                    const cardWidth = 107;
-                    const centerOffset = 200;
-                    const targetOffset = (35 * cardWidth) - centerOffset + (Math.random() * 20 - 10);
-                    track.style.transform = `translateX(-${targetOffset}px)`;
-                }, 50);
-            }, 3000);
-
-            dailyTimeout = setTimeout(async () => {
+            startSmoothJSSpin(track, -targetOffset, 4500, () => {
                 finishDailySpin(!isDemo);
-            }, 5100);
+            });
         }
 
         async function checkSubAndSpin() {
@@ -1431,7 +1452,7 @@
 
         function skipDailyAnimation() {
             if (!state.isSpinning) return;
-            clearTimeout(dailyTimeout);
+            if (activeAnimationFrame) cancelAnimationFrame(activeAnimationFrame);
             finishDailySpin(true);
         }
 
@@ -1454,10 +1475,16 @@
             document.getElementById('spinCaseBtn').disabled = true;
             const track = document.getElementById('rouletteTrack');
 
-            // Мгновенно запускаем бесконечную крутку показа призов
-            track.style.transition = 'none';
-            track.style.transform = 'translateX(0px)';
-            track.style.animation = 'caseSpinLoop 3s linear infinite';
+            initRouletteTrack();
+
+            // Плавная предварительная прокрутка во время запроса к серверу
+            let currentPos = 0;
+            const loopInterval = setInterval(() => {
+                if (!state.isSpinning) { clearInterval(loopInterval); return; }
+                currentPos -= 18;
+                track.style.transform = `translateX(${currentPos}px)`;
+                if (Math.abs(currentPos) % 107 < 20) { playTickSound(); }
+            }, 16);
 
             let serverData = null;
             try {
@@ -1469,59 +1496,47 @@
                 serverData = await res.json();
                 if(!serverData.success) throw new Error(serverData.detail);
             } catch(e) {
+                clearInterval(loopInterval);
                 state.isSpinning = false;
                 document.getElementById('spinCaseBtn').disabled = false;
-                track.style.animation = 'none';
                 alert(state.lang === 'EN' ? 'Insufficient balance or error!' : 'Недостаточно средств или ошибка!');
                 return;
             }
+
+            clearInterval(loopInterval);
 
             currentWinningItem = serverData.won_item;
             state.balance = serverData.balance;
             document.getElementById('userBalance').textContent = state.balance;
             if (!isDemo) lastWonItemId = serverData.item_id;
 
-            // Запускаем звуки тиков («стук»)
-            startSpinTicks();
+            // Гарантируем выпадение приза на позиции 45
+            const cards = track.querySelectorAll('.prize-card');
+            if (cards.length > 45) {
+                cards[45].querySelector('.icon').innerHTML = `<i class="fa-solid ${currentWinningItem.icon}"></i>`;
+                cards[45].querySelector('.p-name').textContent = currentWinningItem.name;
+                cards[45].querySelector('.p-price').textContent = currentWinningItem.price + ' ⭐';
+            }
 
-            // Через 3 секунды останавливаем бесконечную прокрутку и плавно доводим до честно выигранного сервером приза
-            setTimeout(() => {
-                track.style.animation = 'none';
-                const cards = track.querySelectorAll('.prize-card');
-                if (cards.length > 35) {
-                    cards[35].querySelector('.icon').innerHTML = `<i class="fa-solid ${currentWinningItem.icon}"></i>`;
-                    cards[35].querySelector('.p-name').textContent = currentWinningItem.name;
-                    cards[35].querySelector('.p-price').textContent = currentWinningItem.price + ' ⭐';
-                }
+            const cardWidth = 107;
+            const centerOffset = 200;
+            const targetOffset = (45 * cardWidth) - centerOffset + (Math.random() * 20 - 10);
 
-                track.style.transition = 'none';
-                track.style.transform = `translateX(0px)`;
-
-                setTimeout(() => {
-                    track.style.transition = 'transform 2s cubic-bezier(0.1, 0.8, 0.3, 1)';
-                    const cardWidth = 107;
-                    const centerOffset = 200;
-                    const targetOffset = (35 * cardWidth) - centerOffset + (Math.random() * 20 - 10);
-                    track.style.transform = `translateX(-${targetOffset}px)`;
-                }, 50);
-
-            }, 3000);
-
-            rouletteTimeout = setTimeout(async () => {
+            startSmoothJSSpin(track, -targetOffset, 4500, () => {
                 state.isSpinning = false;
                 document.getElementById('spinCaseBtn').disabled = false;
                 playWinSound();
                 triggerHaptic('heavy');
                 if (window.confetti) confetti({ particleCount: 80, spread: 90 });
-                if (!isDemo) await loadInventoryFromServer();
+                if (!isDemo) loadInventoryFromServer();
                 showWinModal(currentWinningItem);
                 addFeedItem(currentWinningItem);
-            }, 5100);
+            });
         }
 
         function skipCaseAnimation() {
             if (!state.isSpinning) return;
-            clearTimeout(rouletteTimeout);
+            if (activeAnimationFrame) cancelAnimationFrame(activeAnimationFrame);
             state.isSpinning = false;
             document.getElementById('spinCaseBtn').disabled = false;
             playWinSound();
@@ -1561,12 +1576,20 @@
             const targetOffset = 360 - (prizeIndex * sliceAngle + sliceAngle / 2);
             currentWheelRotation = Math.floor(currentWheelRotation / 360) * 360 + 360 * 5 + targetOffset;
 
-            startSpinTicks();
-
-            wheel.style.transition = 'transform 4.8s cubic-bezier(0.12, 0.82, 0.38, 1.02)';
+            wheel.style.transition = 'transform 4.5s cubic-bezier(0.12, 0.82, 0.38, 1.02)';
             wheel.style.transform = `rotate(${currentWheelRotation}deg)`;
 
+            let tickCounter = 0;
+            const wheelInterval = setInterval(() => {
+                if (!state.isSpinning) { clearInterval(wheelInterval); return; }
+                playTickSound();
+                triggerHaptic('light');
+                tickCounter++;
+                if (tickCounter > 30) clearInterval(wheelInterval);
+            }, 120);
+
             wheelTimeout = setTimeout(async () => {
+                clearInterval(wheelInterval);
                 state.isSpinning = false;
                 document.getElementById('spinWheelBtn').disabled = false;
                 playWinSound();
@@ -1575,7 +1598,7 @@
                 if (!isDemo) await loadInventoryFromServer();
                 showWinModal(currentWinningItem);
                 addFeedItem(currentWinningItem);
-            }, 4900);
+            }, 4600);
         }
 
         function skipWheelAnimation() {
