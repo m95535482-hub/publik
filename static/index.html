@@ -1078,6 +1078,7 @@
         let wheelTimeout = null;
         let currentWinningItem = null;
         let activeAnimationFrame = null;
+        let idleScrollAnimation = null;
 
         async function loadUserData() {
             try {
@@ -1284,9 +1285,11 @@
             const track = document.getElementById('rouletteTrack');
             if (!track) return;
             if (activeAnimationFrame) cancelAnimationFrame(activeAnimationFrame);
+            if (idleScrollAnimation) cancelAnimationFrame(idleScrollAnimation);
+
             track.style.transform = 'translateX(0px)';
             track.innerHTML = '';
-            for (let i = 0; i < 80; i++) {
+            for (let i = 0; i < 90; i++) {
                 const randItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
                 track.innerHTML += `
                     <div class="prize-card" data-index="${i}">
@@ -1296,6 +1299,17 @@
                     </div>
                 `;
             }
+
+            // Запускаем непрерывную фоновую прокрутку (показ ассортимента призов)
+            let currentX = 0;
+            function runIdleScroll() {
+                if (state.isSpinning) return;
+                currentX -= 2.5;
+                if (Math.abs(currentX) > 4000) currentX = 0;
+                track.style.transform = `translateX(${currentX}px)`;
+                idleScrollAnimation = requestAnimationFrame(runIdleScroll);
+            }
+            runIdleScroll();
         }
 
         function initDailyRouletteTrack() {
@@ -1304,7 +1318,7 @@
             if (activeAnimationFrame) cancelAnimationFrame(activeAnimationFrame);
             track.style.transform = 'translateX(0px)';
             track.innerHTML = '';
-            for (let i = 0; i < 80; i++) {
+            for (let i = 0; i < 90; i++) {
                 const randItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
                 track.innerHTML += `
                     <div class="prize-card" data-index="${i}">
@@ -1326,7 +1340,6 @@
             initRouletteTrack();
         }
 
-        // Плавная JS анимация остановки на выигрыше с точным звуковым тиком
         function startSmoothJSSpin(trackEl, targetTranslateX, durationMs, onComplete) {
             let startPos = 0;
             const match = trackEl.style.transform.match(/translateX\((-?\d+\.?\d*)px\)/);
@@ -1334,13 +1347,12 @@
 
             const startTime = performance.now();
             let lastCardIndex = 0;
-            const cardWidth = 107; // 95px ширина + 12px отступы
+            const cardWidth = 107;
 
             function step(currentTime) {
                 const elapsed = currentTime - startTime;
                 const progress = Math.min(elapsed / durationMs, 1);
                 
-                // Плавная кубическая функция замедления (easeOutCubic)
                 const easeProgress = 1 - Math.pow(1 - progress, 3);
                 const currentPos = startPos + (targetTranslateX - startPos) * easeProgress;
 
@@ -1375,12 +1387,10 @@
             
             initDailyRouletteTrack();
 
-            // Бесконечный показ призов до получения ответа от сервера (как на видео)
             let currentPos = 0;
             const loopInterval = setInterval(() => {
                 if (!state.isSpinning) { clearInterval(loopInterval); return; }
                 currentPos -= 14;
-                // Зацикливание ленты бесшовно
                 if (Math.abs(currentPos) > 4000) currentPos = 0;
                 track.style.transform = `translateX(${currentPos}px)`;
                 if (Math.abs(currentPos) % 107 < 15) { playTickSound(); }
@@ -1417,17 +1427,16 @@
             state.lastDailyTime = serverData.next_daily - (24 * 60 * 60 * 1000);
             if (!isDemo) lastWonItemId = serverData.item_id;
             
-            // Жестко внедряем выигранный сервером приз на позицию 55
             const cards = track.querySelectorAll('.prize-card');
-            if (cards.length > 55) {
-                cards[55].querySelector('.icon').innerHTML = `<i class="fa-solid ${currentWinningItem.icon}"></i>`;
-                cards[55].querySelector('.p-name').textContent = currentWinningItem.name;
-                cards[55].querySelector('.p-price').textContent = currentWinningItem.price + ' ⭐';
+            if (cards.length > 70) {
+                cards[70].querySelector('.icon').innerHTML = `<i class="fa-solid ${currentWinningItem.icon}"></i>`;
+                cards[70].querySelector('.p-name').textContent = currentWinningItem.name;
+                cards[70].querySelector('.p-price').textContent = currentWinningItem.price + ' ⭐';
             }
 
             const cardWidth = 107;
             const centerOffset = 200;
-            const targetOffset = (55 * cardWidth) - centerOffset + (Math.random() * 20 - 10);
+            const targetOffset = (70 * cardWidth) - centerOffset + (Math.random() * 20 - 10);
 
             startSmoothJSSpin(track, -targetOffset, 4500, () => {
                 finishDailySpin(!isDemo);
@@ -1474,17 +1483,7 @@
             document.getElementById('spinCaseBtn').disabled = true;
             const track = document.getElementById('rouletteTrack');
 
-            initRouletteTrack();
-
-            // Плавный бесконечный показ призов во время запроса к серверу (как на видео)
-            let currentPos = 0;
-            const loopInterval = setInterval(() => {
-                if (!state.isSpinning) { clearInterval(loopInterval); return; }
-                currentPos -= 14;
-                if (Math.abs(currentPos) > 4000) currentPos = 0;
-                track.style.transform = `translateX(${currentPos}px)`;
-                if (Math.abs(currentPos) % 107 < 15) { playTickSound(); }
-            }, 16);
+            if (idleScrollAnimation) cancelAnimationFrame(idleScrollAnimation);
 
             let serverData = null;
             try {
@@ -1496,31 +1495,29 @@
                 serverData = await res.json();
                 if(!serverData.success) throw new Error(serverData.detail);
             } catch(e) {
-                clearInterval(loopInterval);
                 state.isSpinning = false;
                 document.getElementById('spinCaseBtn').disabled = false;
+                initRouletteTrack();
                 alert(state.lang === 'EN' ? 'Insufficient balance or error!' : 'Недостаточно средств или ошибка!');
                 return;
             }
-
-            clearInterval(loopInterval);
 
             currentWinningItem = serverData.won_item;
             state.balance = serverData.balance;
             document.getElementById('userBalance').textContent = state.balance;
             if (!isDemo) lastWonItemId = serverData.item_id;
 
-            // Гарантируем выпадение приза на позиции 55
+            // Внедряем выигранный приз на фиксированную позицию 70
             const cards = track.querySelectorAll('.prize-card');
-            if (cards.length > 55) {
-                cards[55].querySelector('.icon').innerHTML = `<i class="fa-solid ${currentWinningItem.icon}"></i>`;
-                cards[55].querySelector('.p-name').textContent = currentWinningItem.name;
-                cards[55].querySelector('.p-price').textContent = currentWinningItem.price + ' ⭐';
+            if (cards.length > 70) {
+                cards[70].querySelector('.icon').innerHTML = `<i class="fa-solid ${currentWinningItem.icon}"></i>`;
+                cards[70].querySelector('.p-name').textContent = currentWinningItem.name;
+                cards[70].querySelector('.p-price').textContent = currentWinningItem.price + ' ⭐';
             }
 
             const cardWidth = 107;
             const centerOffset = 200;
-            const targetOffset = (55 * cardWidth) - centerOffset + (Math.random() * 20 - 10);
+            const targetOffset = (70 * cardWidth) - centerOffset + (Math.random() * 20 - 10);
 
             startSmoothJSSpin(track, -targetOffset, 4500, () => {
                 state.isSpinning = false;
