@@ -1440,6 +1440,7 @@
             state.lastDailyTime = serverData.next_daily - (24 * 60 * 60 * 1000);
             if (!isDemo && !currentWinningItem.is_stars) lastWonItemId = serverData.item_id;
 
+            // Точно синхронизируем карточку №70 с ответом сервера без рассинхрона
             const cards = track.querySelectorAll('.prize-card');
             if (cards.length > 70) {
                 cards[70].querySelector('.icon').innerHTML = `<i class="fa-solid ${currentWinningItem.icon}"></i>`;

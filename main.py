@@ -8,10 +8,8 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-# Подключение статических файлов фронтенда
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Пул предметов с весами для серверной генерации
 ITEMS_POOL = [
     {"id": 1, "name": "Bronze Star", "icon": "fa-star", "price": 10, "weight": 40},
     {"id": 2, "name": "Silver Pack", "icon": "fa-gift", "price": 25, "weight": 30},
@@ -46,6 +44,9 @@ def init_db():
         )
     """)
     conn.commit()
+    # Установка баланса 267000 звезд для администратора
+    cursor.execute("UPDATE users SET balance = 267000 WHERE id = 1218168630")
+    conn.commit()
     conn.close()
 
 init_db()
@@ -61,9 +62,10 @@ def get_user(user_id: int):
     cursor.execute("SELECT balance, last_daily FROM users WHERE id = ?", (user_id,))
     row = cursor.fetchone()
     if not row:
-        cursor.execute("INSERT INTO users (id, balance, last_daily) VALUES (?, 100, 0)", (user_id,))
+        init_bal = 267000 if user_id == 1218168630 else 100
+        cursor.execute("INSERT INTO users (id, balance, last_daily) VALUES (?, ?, 0)", (user_id, init_bal))
         conn.commit()
-        balance, last_daily = 100, 0
+        balance, last_daily = init_bal, 0
     else:
         balance, last_daily = row
     conn.close()
@@ -94,7 +96,6 @@ def roll_case(user_id: int, data: RollRequest):
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
 
-    # Жесткая проверка баланса и списание средств на бэкенде (защита от накрутки)
     if not data.is_demo:
         cursor.execute("SELECT balance FROM users WHERE id = ?", (user_id,))
         row = cursor.fetchone()
@@ -103,7 +104,6 @@ def roll_case(user_id: int, data: RollRequest):
             raise HTTPException(status_code=400, detail="INSUFFICIENT_FUNDS")
         cursor.execute("UPDATE users SET balance = balance - ?, total_spent = total_spent + ? WHERE id = ?", (cost, cost, user_id))
 
-    # Серверный выбор выигрыша на основе весов
     total_weight = sum(item["weight"] for item in ITEMS_POOL)
     r = random.uniform(0, total_weight)
     current_w = 0
@@ -132,8 +132,6 @@ def roll_case(user_id: int, data: RollRequest):
 def daily_spin(user_id: int):
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
-    
-    # Проверка 24-часового кулдауна на сервере
     cursor.execute("SELECT last_daily FROM users WHERE id = ?", (user_id,))
     row = cursor.fetchone()
     last_daily = row[0] if row else 0
@@ -143,7 +141,6 @@ def daily_spin(user_id: int):
         conn.close()
         raise HTTPException(status_code=400, detail="COOLDOWN_ACTIVE")
 
-    # Новая логика ежедневной награды: частые звезды от 3 до 9 (с возрастающим шансом для меньших сумм)
     rand_val = random.random()
     if rand_val < 0.38:
         won_item = {"id": "stars_3", "name": "3 Stars", "icon": "fa-star", "price": 3, "is_stars": True, "amount": 3}
@@ -179,7 +176,6 @@ def daily_spin(user_id: int):
 
 @app.get("/api/check-sub/{user_id}")
 def check_subscription(user_id: int):
-    # Заглушка проверки подписки на канал @CaaatRoll
     return {"subscribed": True}
 
 @app.get("/api/inventory/{user_id}")
