@@ -89,15 +89,18 @@
             align-items: center;
         }
 
-        .lang-btn {
+        .icon-btn {
             background: var(--glass-card);
             border: 1px solid var(--glass-border);
             color: #ffffff;
             padding: 7px 12px;
             border-radius: 14px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 800;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .pill-badge {
@@ -133,9 +136,7 @@
             animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .screen.active {
-            display: flex;
-        }
+        .screen.active { display: flex; }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px) scale(0.98); }
@@ -182,9 +183,7 @@
             overflow: hidden;
         }
 
-        .dashboard-card:active {
-            transform: scale(0.95);
-        }
+        .dashboard-card:active { transform: scale(0.95); }
 
         .dashboard-card.featured {
             grid-column: span 2;
@@ -311,7 +310,6 @@
             cursor: pointer;
         }
 
-        /* Премиальная арена сейфов с бесконечной демо-лентой подарков */
         .case-arena {
             width: 100%;
             background: rgba(15, 7, 30, 0.9);
@@ -404,7 +402,6 @@
             margin-top: 2px;
         }
 
-        /* Колесо Фортуны */
         .wheel-container {
             position: relative;
             width: 250px;
@@ -460,7 +457,6 @@
             justify-content: center;
             color: var(--gold);
             font-size: 18px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.6);
         }
 
         .multipliers-row {
@@ -505,9 +501,7 @@
             transition: transform 0.1s;
         }
 
-        .action-main-btn:active {
-            transform: scale(0.97);
-        }
+        .action-main-btn:active { transform: scale(0.97); }
 
         .action-main-btn:disabled {
             opacity: 0.5;
@@ -576,7 +570,6 @@
             border-radius: 20px;
             padding: 14px;
             margin-top: 16px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
         }
 
         .live-feed-title {
@@ -635,7 +628,6 @@
             font-size: 64px;
             color: var(--gold);
             margin: 15px 0;
-            filter: drop-shadow(0 0 20px rgba(255,193,7,0.5));
         }
 
         .channel-btn {
@@ -651,7 +643,6 @@
             border-radius: 16px;
             text-decoration: none;
             margin-bottom: 12px;
-            box-shadow: 0 4px 15px rgba(0, 136, 204, 0.4);
         }
 
         .bottom-nav {
@@ -659,14 +650,12 @@
             bottom: 0; left: 0; right: 0;
             background: rgba(11, 4, 20, 0.92);
             backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
             border-top: 1px solid var(--glass-border);
             padding: 10px 14px 14px 14px;
             display: flex;
             justify-content: space-around;
             align-items: center;
             z-index: 50;
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
         }
 
         .nav-item {
@@ -678,7 +667,6 @@
             font-size: 10px;
             font-weight: 800;
             cursor: pointer;
-            transition: 0.2s;
         }
 
         .nav-item i { font-size: 18px; }
@@ -692,7 +680,8 @@
             <div class="logo-icon"><i class="fa-solid fa-paw"></i></div> CatRoll
         </div>
         <div class="header-group">
-            <button class="lang-btn" onclick="toggleLanguage()" id="langBtn">🌐 EN</button>
+            <button class="icon-btn" onclick="toggleSound()" id="soundToggleBtn"><i class="fa-solid fa-volume-high"></i></button>
+            <button class="icon-btn" onclick="toggleLanguage()" id="langBtn">🌐 EN</button>
             <div class="pill-badge gold" onclick="switchScreen('wallet-screen')">
                 <i class="fa-solid fa-star"></i>
                 <span id="userBalance">0</span>
@@ -780,7 +769,7 @@
         <div id="dailyErrorMsg" style="color: #ff3b30; font-size: 12px; font-weight: 800; margin-top: 10px; text-align: center;"></div>
     </main>
 
-    <!-- 3. Кейсы / Сейфы с автоматической демонстрационной прокруткой подарков -->
+    <!-- 3. Кейсы / Сейфы -->
     <main id="cases-screen" class="screen">
         <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
         <h1 class="menu-title" data-i18n="casesHeader">Mystery Vaults</h1>
@@ -804,13 +793,12 @@
         </div>
 
         <div class="case-arena">
-            <!-- Демо-показ призов вверху (автоматически крутящаяся витрина подарков) -->
-            <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">📦 Possible Vault Prizes (Preview)</div>
+            <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">📦 Vault Prizes Preview</div>
             <div class="roulette-viewport" style="height: 95px; margin-bottom: 14px;">
                 <div class="roulette-track" id="casePreviewTrack"></div>
             </div>
 
-            <div style="font-size: 11px; font-weight: 800; color: var(--gold); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">🎯 Opening Roulette</div>
+            <div style="font-size: 11px; font-weight: 800; color: var(--gold); text-transform: uppercase; margin-bottom: 6px;">🎯 Opening Roulette</div>
             <div class="roulette-viewport">
                 <div class="roulette-pointer"></div>
                 <div class="roulette-track" id="rouletteTrack"></div>
@@ -887,7 +875,7 @@
         <div id="topupMsg" style="margin-top: 15px; font-weight: 800; font-size: 13px; text-align: center;"></div>
     </main>
 
-    <!-- МОДАЛЬНОЕ ОКНО ПОБЕДЫ -->
+    <!-- МОДАЛЬНЫЕ ОКНА -->
     <div class="modal-overlay" id="winModal">
         <div class="modal-card">
             <h2 class="menu-title" data-i18n="winTitle">Congratulations!</h2>
@@ -901,7 +889,6 @@
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО ПОДПИСКИ -->
     <div class="modal-overlay" id="subModal">
         <div class="modal-card">
             <h2 class="menu-title" style="font-size: 20px;" data-i18n="subTitle">Channel Subscription</h2>
@@ -914,7 +901,6 @@
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО ВЫВОДА -->
     <div class="modal-overlay" id="withdrawModal">
         <div class="modal-card">
             <h2 class="menu-title" style="font-size: 20px;" data-i18n="withdrawTitle">Item Withdrawal</h2>
@@ -927,7 +913,7 @@
         </div>
     </div>
 
-    <!-- НИЖНЯЯ НАВИГАЦИЯ -->
+    <!-- НАВИГАЦИЯ -->
     <nav class="bottom-nav">
         <div class="nav-item active" onclick="switchScreen('main-screen')"><i class="fa-solid fa-house"></i><span data-i18n="navHome">Home</span></div>
         <div class="nav-item" onclick="switchScreen('cases-screen')"><i class="fa-solid fa-box-open"></i><span data-i18n="navCases">Vaults</span></div>
@@ -950,8 +936,63 @@
             currentCaseType: 'starter',
             isSpinning: false,
             lang: localStorage.getItem('catroll_lang') || 'EN',
-            lastDailyTime: 0
+            lastDailyTime: 0,
+            soundEnabled: true
         };
+
+        // --- WEB AUDIO API ENGINE ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playTickSound() {
+            if (!state.soundEnabled) return;
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.04);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.04);
+            } catch(e){}
+        }
+
+        function playWinSound() {
+            if (!state.soundEnabled) return;
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const notes = [261.63, 329.63, 392.00, 523.25];
+                notes.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.08);
+                    gain.gain.setValueAtTime(0.12, audioCtx.currentTime + idx * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.08 + 0.3);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(audioCtx.currentTime + idx * 0.08);
+                    osc.stop(audioCtx.currentTime + idx * 0.08 + 0.3);
+                });
+            } catch(e){}
+        }
+
+        function triggerHaptic(style = 'light') {
+            if (TG && TG.HapticFeedback) {
+                TG.HapticFeedback.impactOccurred(style);
+            }
+        }
+
+        function toggleSound() {
+            state.soundEnabled = !state.soundEnabled;
+            const btn = document.getElementById('soundToggleBtn');
+            btn.innerHTML = state.soundEnabled ? `<i class="fa-solid fa-volume-high"></i>` : `<i class="fa-solid fa-volume-xmark" style="color:#ff3b30"></i>`;
+            triggerHaptic('light');
+        }
 
         const translations = {
             EN: {
@@ -993,7 +1034,7 @@
                 invHeader: "Моя коллекция", invSubHeader: "Ваши предметы и награды", sortNew: "Сначала новые",
                 sortExp: "Сначала дороже", winTitle: "Поздравляем!", claimBtn: "В коллекцию", sellBtnModal: "Продать",
                 navHome: "Главная", navTop: "Топ", navCases: "Сейфы", navWheel: "Колесо", navInv: "Коллекция",
-                emptyInv: "Коллекция пуст", sell: "Продать", withdraw: "Вывести", ready: "Готово",
+                emptyInv: "Коллекция пуста", sell: "Продать", withdraw: "Вывести", ready: "Готово",
                 searchPlaceholder: "Поиск...", withdrawTitle: "Вывод предмета",
                 withdrawDesc: "Запросить вывод этой награды у администратора?",
                 confirmBtn: "Подтвердить", rejectBtn: "Отклонить", pending: "Ожидает", demoMode: "Демо-режим",
@@ -1038,15 +1079,10 @@
                     fetch(`/api/user/${userId}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            username: currentUsername,
-                            photo_url: currentPhoto
-                        })
+                        body: JSON.stringify({ username: currentUsername, photo_url: currentPhoto })
                     }).catch(() => {});
                 }
-            } catch(e) {
-                console.error(e);
-            }
+            } catch(e) { console.error(e); }
         }
 
         function updateDailyTimerState() {
@@ -1105,12 +1141,11 @@
                         </div>
                     `;
                 });
-            } catch(e) {
-                console.error(e);
-            }
+            } catch(e) { console.error(e); }
         }
 
         async function topUpStars(amount) {
+            triggerHaptic('medium');
             const msgEl = document.getElementById('topupMsg');
             msgEl.style.color = 'var(--gold)';
             msgEl.textContent = state.lang === 'EN' ? 'Creating invoice...' : 'Формирование счета...';
@@ -1127,6 +1162,7 @@
                     if (TG && TG.openInvoice) {
                         TG.openInvoice(data.invoice_link, function(status) {
                             if (status === 'paid') {
+                                playWinSound();
                                 msgEl.style.color = 'var(--green)';
                                 msgEl.textContent = state.lang === 'EN' ? 'Payment successful!' : 'Оплата прошла успешно!';
                                 setTimeout(loadUserData, 1500);
@@ -1157,13 +1193,12 @@
                     status: item.status
                 }));
                 renderInventory();
-            } catch(e) {
-                console.error(e);
-            }
+            } catch(e) { console.error(e); }
         }
 
         function switchScreen(screenId) {
             if (state.isSpinning) return;
+            triggerHaptic('light');
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
 
@@ -1191,6 +1226,7 @@
         }
 
         function toggleLanguage() {
+            triggerHaptic('light');
             state.lang = state.lang === 'EN' ? 'RU' : 'EN';
             document.getElementById('langBtn').textContent = `🌐 ${state.lang}`;
             localStorage.setItem('catroll_lang', state.lang);
@@ -1245,7 +1281,6 @@
             }
         }
 
-        // Автоматическая бесконечная демонстрационная прокрутка подарков в сейфах
         function initPreviewTrack() {
             const track = document.getElementById('casePreviewTrack');
             if (!track) return;
@@ -1291,11 +1326,26 @@
 
         function selectCase(caseType, cost, el) {
             if (state.isSpinning) return;
+            triggerHaptic('light');
             document.querySelectorAll('.multiplier-btn').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
             state.currentCaseType = caseType;
             document.getElementById('caseCostSubtitle').textContent = state.lang === 'EN' ? `Vault cost: ${cost} ⭐` : `Стоимость сейфа: ${cost} ⭐`;
             initRouletteTrack();
+        }
+
+        function playTickLoop(durationMs) {
+            let interval = 50;
+            let elapsed = 0;
+            function tick() {
+                if (elapsed >= durationMs || !state.isSpinning) return;
+                playTickSound();
+                triggerHaptic('light');
+                elapsed += interval;
+                interval += 12;
+                setTimeout(tick, interval);
+            }
+            tick();
         }
 
         async function spinDailyRoulette() {
@@ -1340,6 +1390,8 @@
             cards[30].querySelector('.p-name').textContent = currentWinningItem.name;
             cards[30].querySelector('.p-price').textContent = currentWinningItem.price + ' ⭐';
 
+            playTickLoop(4500);
+
             setTimeout(() => {
                 track.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.85, 0.35, 1.05)';
                 const offset = (30 * 107) - 130 + (Math.random() * 40 - 20);
@@ -1352,6 +1404,7 @@
         }
 
         async function checkSubAndSpin() {
+            triggerHaptic('medium');
             try {
                 const res = await fetch(`/api/check-sub/${userId}`);
                 const data = await res.json();
@@ -1361,9 +1414,7 @@
                 } else {
                     alert(state.lang === 'EN' ? 'Subscription not detected yet. Make sure you joined @CaaatRoll' : 'Подписка не обнаружена. Перейдите по ссылке и подпишитесь на @CaaatRoll');
                 }
-            } catch(e) {
-                alert('Connection error');
-            }
+            } catch(e) { alert('Connection error'); }
         }
 
         function skipDailyAnimation() {
@@ -1375,6 +1426,8 @@
         async function finishDailySpin(isReal) {
             state.isSpinning = false;
             updateDailyTimerState();
+            playWinSound();
+            triggerHaptic('heavy');
             if (window.confetti) confetti({ particleCount: 80, spread: 90 });
             if (isReal) await loadInventoryFromServer();
             showWinModal(currentWinningItem);
@@ -1416,6 +1469,8 @@
             cards[30].querySelector('.p-name').textContent = currentWinningItem.name;
             cards[30].querySelector('.p-price').textContent = currentWinningItem.price + ' ⭐';
 
+            playTickLoop(4500);
+
             setTimeout(() => {
                 track.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.85, 0.35, 1.05)';
                 const offset = (30 * 107) - 130 + (Math.random() * 40 - 20);
@@ -1425,6 +1480,8 @@
             rouletteTimeout = setTimeout(async () => {
                 state.isSpinning = false;
                 document.getElementById('spinCaseBtn').disabled = false;
+                playWinSound();
+                triggerHaptic('heavy');
                 if (window.confetti) confetti({ particleCount: 80, spread: 90 });
                 if (!isDemo) await loadInventoryFromServer();
                 showWinModal(currentWinningItem);
@@ -1437,6 +1494,7 @@
             clearTimeout(rouletteTimeout);
             state.isSpinning = false;
             document.getElementById('spinCaseBtn').disabled = false;
+            playWinSound();
             showWinModal(currentWinningItem);
         }
 
@@ -1472,12 +1530,16 @@
             const targetOffset = 360 - (prizeIndex * sliceAngle + sliceAngle / 2);
             currentWheelRotation = Math.floor(currentWheelRotation / 360) * 360 + 360 * 5 + targetOffset;
 
+            playTickLoop(4500);
+
             wheel.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.85, 0.35, 1.05)';
             wheel.style.transform = `rotate(${currentWheelRotation}deg)`;
 
             wheelTimeout = setTimeout(async () => {
                 state.isSpinning = false;
                 document.getElementById('spinWheelBtn').disabled = false;
+                playWinSound();
+                triggerHaptic('heavy');
                 if (window.confetti) confetti({ particleCount: 80, spread: 90 });
                 if (!isDemo) await loadInventoryFromServer();
                 showWinModal(currentWinningItem);
@@ -1490,6 +1552,7 @@
             clearTimeout(wheelTimeout);
             state.isSpinning = false;
             document.getElementById('spinWheelBtn').disabled = false;
+            playWinSound();
             showWinModal(currentWinningItem);
         }
 
@@ -1502,6 +1565,7 @@
         }
 
         async function closeModal(action) {
+            triggerHaptic('light');
             document.getElementById('winModal').classList.remove('active');
             if (action === 'sell' && lastWonItemId) {
                 await sellItem(lastWonItemId, false);
@@ -1536,6 +1600,7 @@
         }
 
         async function sellItem(itemId, updateUI = true) {
+            triggerHaptic('light');
             try {
                 const res = await fetch(`/api/sell/${itemId}`, { method: 'POST' });
                 const data = await res.json();
@@ -1544,17 +1609,17 @@
                     document.getElementById('userBalance').textContent = state.balance;
                     if (updateUI) loadInventoryFromServer();
                 }
-            } catch(e) {
-                alert('Sell error');
-            }
+            } catch(e) { alert('Sell error'); }
         }
 
         function promptWithdraw(itemId) {
+            triggerHaptic('light');
             selectedItemIdForWithdraw = itemId;
             document.getElementById('withdrawModal').classList.add('active');
         }
 
         async function closeWithdrawModal(confirmed) {
+            triggerHaptic('light');
             document.getElementById('withdrawModal').classList.remove('active');
             if (confirmed && selectedItemIdForWithdraw) {
                 try {
@@ -1562,9 +1627,7 @@
                     const data = await res.json();
                     alert(data.message || 'Success');
                     loadInventoryFromServer();
-                } catch(e) {
-                    alert('Withdrawal error');
-                }
+                } catch(e) { alert('Withdrawal error'); }
             }
             selectedItemIdForWithdraw = null;
         }
