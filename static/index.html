@@ -1284,10 +1284,9 @@
             const track = document.getElementById('rouletteTrack');
             if (!track) return;
             if (activeAnimationFrame) cancelAnimationFrame(activeAnimationFrame);
-            track.style.transition = 'none';
             track.style.transform = 'translateX(0px)';
             track.innerHTML = '';
-            for (let i = 0; i < 70; i++) {
+            for (let i = 0; i < 80; i++) {
                 const randItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
                 track.innerHTML += `
                     <div class="prize-card" data-index="${i}">
@@ -1303,10 +1302,9 @@
             const track = document.getElementById('dailyRouletteTrack');
             if (!track) return;
             if (activeAnimationFrame) cancelAnimationFrame(activeAnimationFrame);
-            track.style.transition = 'none';
             track.style.transform = 'translateX(0px)';
             track.innerHTML = '';
-            for (let i = 0; i < 70; i++) {
+            for (let i = 0; i < 80; i++) {
                 const randItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
                 track.innerHTML += `
                     <div class="prize-card" data-index="${i}">
@@ -1328,7 +1326,7 @@
             initRouletteTrack();
         }
 
-        // Плавная JS анимация прокрутки с точным звуковым тиком при прохождении каждой карточки
+        // Плавная JS анимация остановки на выигрыше с точным звуковым тиком
         function startSmoothJSSpin(trackEl, targetTranslateX, durationMs, onComplete) {
             let startPos = 0;
             const match = trackEl.style.transform.match(/translateX\((-?\d+\.?\d*)px\)/);
@@ -1342,13 +1340,12 @@
                 const elapsed = currentTime - startTime;
                 const progress = Math.min(elapsed / durationMs, 1);
                 
-                // Плавная кубическая функция торможения (easeOutCubic)
+                // Плавная кубическая функция замедления (easeOutCubic)
                 const easeProgress = 1 - Math.pow(1 - progress, 3);
                 const currentPos = startPos + (targetTranslateX - startPos) * easeProgress;
 
                 trackEl.style.transform = `translateX(${currentPos}px)`;
 
-                // Считаем пересеченные карточки для звука тиков
                 const currentCard = Math.floor(Math.abs(currentPos) / cardWidth);
                 if (currentCard !== lastCardIndex) {
                     playTickSound();
@@ -1378,13 +1375,15 @@
             
             initDailyRouletteTrack();
 
-            // Предварительная плавная прокрутка пока ждем сервер
+            // Бесконечный показ призов до получения ответа от сервера (как на видео)
             let currentPos = 0;
             const loopInterval = setInterval(() => {
                 if (!state.isSpinning) { clearInterval(loopInterval); return; }
-                currentPos -= 18;
+                currentPos -= 14;
+                // Зацикливание ленты бесшовно
+                if (Math.abs(currentPos) > 4000) currentPos = 0;
                 track.style.transform = `translateX(${currentPos}px)`;
-                if (Math.abs(currentPos) % 107 < 20) { playTickSound(); }
+                if (Math.abs(currentPos) % 107 < 15) { playTickSound(); }
             }, 16);
 
             let serverData = null;
@@ -1418,17 +1417,17 @@
             state.lastDailyTime = serverData.next_daily - (24 * 60 * 60 * 1000);
             if (!isDemo) lastWonItemId = serverData.item_id;
             
-            // Внедряем выигранный приз строго на позицию 45
+            // Жестко внедряем выигранный сервером приз на позицию 55
             const cards = track.querySelectorAll('.prize-card');
-            if (cards.length > 45) {
-                cards[45].querySelector('.icon').innerHTML = `<i class="fa-solid ${currentWinningItem.icon}"></i>`;
-                cards[45].querySelector('.p-name').textContent = currentWinningItem.name;
-                cards[45].querySelector('.p-price').textContent = currentWinningItem.price + ' ⭐';
+            if (cards.length > 55) {
+                cards[55].querySelector('.icon').innerHTML = `<i class="fa-solid ${currentWinningItem.icon}"></i>`;
+                cards[55].querySelector('.p-name').textContent = currentWinningItem.name;
+                cards[55].querySelector('.p-price').textContent = currentWinningItem.price + ' ⭐';
             }
 
             const cardWidth = 107;
             const centerOffset = 200;
-            const targetOffset = (45 * cardWidth) - centerOffset + (Math.random() * 20 - 10);
+            const targetOffset = (55 * cardWidth) - centerOffset + (Math.random() * 20 - 10);
 
             startSmoothJSSpin(track, -targetOffset, 4500, () => {
                 finishDailySpin(!isDemo);
@@ -1477,13 +1476,14 @@
 
             initRouletteTrack();
 
-            // Плавная предварительная прокрутка во время запроса к серверу
+            // Плавный бесконечный показ призов во время запроса к серверу (как на видео)
             let currentPos = 0;
             const loopInterval = setInterval(() => {
                 if (!state.isSpinning) { clearInterval(loopInterval); return; }
-                currentPos -= 18;
+                currentPos -= 14;
+                if (Math.abs(currentPos) > 4000) currentPos = 0;
                 track.style.transform = `translateX(${currentPos}px)`;
-                if (Math.abs(currentPos) % 107 < 20) { playTickSound(); }
+                if (Math.abs(currentPos) % 107 < 15) { playTickSound(); }
             }, 16);
 
             let serverData = null;
@@ -1510,17 +1510,17 @@
             document.getElementById('userBalance').textContent = state.balance;
             if (!isDemo) lastWonItemId = serverData.item_id;
 
-            // Гарантируем выпадение приза на позиции 45
+            // Гарантируем выпадение приза на позиции 55
             const cards = track.querySelectorAll('.prize-card');
-            if (cards.length > 45) {
-                cards[45].querySelector('.icon').innerHTML = `<i class="fa-solid ${currentWinningItem.icon}"></i>`;
-                cards[45].querySelector('.p-name').textContent = currentWinningItem.name;
-                cards[45].querySelector('.p-price').textContent = currentWinningItem.price + ' ⭐';
+            if (cards.length > 55) {
+                cards[55].querySelector('.icon').innerHTML = `<i class="fa-solid ${currentWinningItem.icon}"></i>`;
+                cards[55].querySelector('.p-name').textContent = currentWinningItem.name;
+                cards[55].querySelector('.p-price').textContent = currentWinningItem.price + ' ⭐';
             }
 
             const cardWidth = 107;
             const centerOffset = 200;
-            const targetOffset = (45 * cardWidth) - centerOffset + (Math.random() * 20 - 10);
+            const targetOffset = (55 * cardWidth) - centerOffset + (Math.random() * 20 - 10);
 
             startSmoothJSSpin(track, -targetOffset, 4500, () => {
                 state.isSpinning = false;
