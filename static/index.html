@@ -11,17 +11,18 @@
     
     <style>
         :root {
-            --bg-base: #0f071e;
-            --bg-gradient: radial-gradient(circle at 50% 10%, #3f1a6d 0%, #15092a 50%, #080310 100%);
-            --glass-bg: rgba(35, 18, 64, 0.55);
-            --glass-border: rgba(184, 168, 255, 0.18);
+            --bg-base: #0b0414;
+            --bg-gradient: radial-gradient(circle at 50% 15%, #35145b 0%, #130722 55%, #07020d 100%);
+            --glass-card: rgba(28, 14, 51, 0.65);
+            --glass-border: rgba(184, 155, 255, 0.15);
             --neon-purple: #8c7ae6;
-            --neon-glow: rgba(140, 122, 230, 0.45);
-            --text-primary: #ffffff;
-            --text-muted: #ab9fc9;
-            --gold: #ffd700;
-            --gold-glow: rgba(255, 215, 0, 0.4);
-            --green: #2ed573;
+            --neon-glow: rgba(140, 122, 230, 0.35);
+            --text-main: #ffffff;
+            --text-muted: #a496cc;
+            --gold: #ffc107;
+            --gold-glow: rgba(255, 193, 7, 0.4);
+            --green: #2ecc71;
+            --red: #e74c3c;
         }
 
         * {
@@ -37,14 +38,14 @@
             background-color: var(--bg-base);
             background-image: var(--bg-gradient);
             background-attachment: fixed;
-            color: var(--text-primary);
+            color: var(--text-main);
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
             padding: 16px;
-            padding-bottom: 110px;
+            padding-bottom: 105px;
             overflow-x: hidden;
         }
 
@@ -54,7 +55,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 22px;
+            margin-bottom: 20px;
         }
 
         .logo {
@@ -65,20 +66,21 @@
             align-items: center;
             gap: 8px;
             letter-spacing: -0.5px;
-            text-shadow: 0 0 16px var(--neon-glow);
+            text-shadow: 0 0 20px var(--neon-glow);
         }
 
         .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--neon-purple), #a29bfe);
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--neon-purple), #6c5ce7);
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 16px;
             color: #ffffff;
-            box-shadow: 0 4px 15px var(--neon-glow);
+            box-shadow: 0 4px 18px var(--neon-glow);
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .header-group {
@@ -88,36 +90,36 @@
         }
 
         .lang-btn {
-            background: var(--glass-bg);
+            background: var(--glass-card);
             border: 1px solid var(--glass-border);
             color: #ffffff;
             padding: 7px 12px;
-            border-radius: 18px;
+            border-radius: 14px;
             font-size: 12px;
             font-weight: 800;
             cursor: pointer;
         }
 
         .pill-badge {
-            background: var(--glass-bg);
+            background: var(--glass-card);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border);
             padding: 7px 14px;
-            border-radius: 24px;
+            border-radius: 16px;
             font-size: 13px;
             font-weight: 800;
             display: flex;
             align-items: center;
             gap: 6px;
-            color: var(--text-primary);
+            color: var(--text-main);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             cursor: pointer;
         }
 
         .pill-badge.gold {
-            background: rgba(255, 215, 0, 0.12);
-            border-color: rgba(255, 215, 0, 0.35);
+            background: rgba(255, 193, 7, 0.12);
+            border-color: rgba(255, 193, 7, 0.35);
             color: var(--gold);
             box-shadow: 0 4px 20px var(--gold-glow);
         }
@@ -128,31 +130,30 @@
             display: none;
             flex-direction: column;
             align-items: center;
-            animation: screenSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .screen.active {
             display: flex;
         }
 
-        @keyframes screenSlideIn {
-            from { opacity: 0; transform: translateY(12px) scale(0.98); }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .menu-title {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 900;
             margin-bottom: 4px;
             text-align: center;
             letter-spacing: -0.5px;
-            text-shadow: 0 2px 10px rgba(140, 122, 230, 0.4);
         }
 
         .menu-subtitle {
             font-size: 13px;
             color: var(--text-muted);
-            margin-bottom: 22px;
+            margin-bottom: 20px;
             text-align: center;
         }
 
@@ -164,11 +165,11 @@
         }
 
         .dashboard-card {
-            background: var(--glass-bg);
+            background: var(--glass-card);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
-            border-radius: 24px;
+            border-radius: 22px;
             padding: 18px 14px;
             display: flex;
             flex-direction: column;
@@ -176,7 +177,7 @@
             text-align: center;
             cursor: pointer;
             transition: all 0.25s ease;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
             position: relative;
             overflow: hidden;
         }
@@ -187,21 +188,21 @@
 
         .dashboard-card.featured {
             grid-column: span 2;
-            background: linear-gradient(135deg, rgba(140, 122, 230, 0.35) 0%, rgba(45, 18, 88, 0.8) 100%);
-            border-color: rgba(184, 168, 255, 0.4);
+            background: linear-gradient(135deg, rgba(140, 122, 230, 0.3) 0%, rgba(35, 14, 51, 0.8) 100%);
+            border-color: rgba(184, 155, 255, 0.35);
             box-shadow: 0 10px 35px var(--neon-glow);
         }
 
         .card-icon-box {
-            width: 56px;
-            height: 56px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 18px;
+            width: 52px;
+            height: 52px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 22px;
             color: var(--gold);
             margin-bottom: 10px;
         }
@@ -226,23 +227,23 @@
         .timer-badge {
             font-size: 10px;
             color: var(--gold);
-            background: rgba(255, 215, 0, 0.15);
+            background: rgba(255, 193, 7, 0.15);
             padding: 2px 6px;
             border-radius: 6px;
-            border: 1px solid rgba(255, 215, 0, 0.3);
+            border: 1px solid rgba(255, 193, 7, 0.3);
         }
 
         .back-btn {
             align-self: flex-start;
-            background: var(--glass-bg);
+            background: var(--glass-card);
             border: 1px solid var(--glass-border);
-            border-radius: 14px;
-            padding: 8px 14px;
+            border-radius: 12px;
+            padding: 7px 12px;
             color: var(--text-muted);
             font-size: 12px;
             font-weight: 700;
             cursor: pointer;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
 
         .controls-row {
@@ -251,7 +252,7 @@
             align-items: center;
             width: 100%;
             margin-bottom: 14px;
-            background: var(--glass-bg);
+            background: var(--glass-card);
             padding: 10px 14px;
             border-radius: 16px;
             border: 1px solid var(--glass-border);
@@ -300,39 +301,40 @@
         input:checked + .slider:before { transform: translateX(18px); }
 
         .skip-btn-mini {
-            background: var(--glass-bg);
+            background: var(--glass-card);
             border: 1px solid var(--glass-border);
             color: var(--text-muted);
             padding: 6px 12px;
-            border-radius: 12px;
+            border-radius: 10px;
             font-size: 11px;
             font-weight: 700;
             cursor: pointer;
         }
 
-        /* Кейсы и рулетка */
+        /* Премиальная арена сейфов с бесконечной демо-лентой подарков */
         .case-arena {
             width: 100%;
-            background: rgba(15, 7, 30, 0.85);
+            background: rgba(15, 7, 30, 0.9);
             border: 1px solid var(--glass-border);
-            border-radius: 30px;
+            border-radius: 26px;
             padding: 20px 14px;
             display: flex;
             flex-direction: column;
             align-items: center;
             position: relative;
             margin-bottom: 16px;
-            box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.7);
+            box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.8), 0 10px 30px rgba(0,0,0,0.5);
         }
 
         .roulette-viewport {
             position: relative;
             width: 100%;
-            height: 120px;
+            height: 125px;
             overflow: hidden;
-            border-radius: 18px;
-            background: #080312;
-            border: 1px solid rgba(184, 168, 255, 0.25);
+            border-radius: 16px;
+            background: #06020c;
+            border: 1px solid rgba(184, 155, 255, 0.25);
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.9);
         }
 
         .roulette-pointer {
@@ -370,21 +372,23 @@
 
         .prize-card {
             min-width: 95px;
-            height: 100px;
+            height: 105px;
             margin: 0 6px;
-            background: linear-gradient(145deg, #2a164d, #140826);
+            background: linear-gradient(145deg, #281447, #130724);
             border-radius: 16px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border: 1px solid rgba(184, 168, 255, 0.2);
+            border: 1px solid rgba(184, 155, 255, 0.18);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
         .prize-card .icon {
             font-size: 34px;
             color: var(--gold);
             margin-bottom: 4px;
+            filter: drop-shadow(0 2px 6px rgba(255,193,7,0.3));
         }
 
         .prize-card .p-name {
@@ -422,17 +426,18 @@
             border-right: 12px solid transparent;
             border-top: 22px solid #ff3b30;
             z-index: 20;
+            filter: drop-shadow(0 2px 6px rgba(255, 59, 48, 0.6));
         }
 
         .wheel {
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            border: 6px solid #2b144d;
+            border: 6px solid #281447;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 0 30px rgba(140, 122, 230, 0.4);
-            background: #15092a;
+            box-shadow: 0 0 35px rgba(140, 122, 230, 0.4);
+            background: #130724;
         }
 
         .wheel-slice {
@@ -444,9 +449,9 @@
 
         .wheel-center-cap {
             position: absolute;
-            width: 46px;
-            height: 46px;
-            background: linear-gradient(135deg, #2b144d, #3f1a6d);
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #281447, #3f1e6d);
             border: 3px solid var(--neon-purple);
             border-radius: 50%;
             z-index: 15;
@@ -455,6 +460,7 @@
             justify-content: center;
             color: var(--gold);
             font-size: 18px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.6);
         }
 
         .multipliers-row {
@@ -466,7 +472,7 @@
 
         .multiplier-btn {
             flex: 1;
-            background: var(--glass-bg);
+            background: var(--glass-card);
             border: 1px solid var(--glass-border);
             padding: 12px;
             border-radius: 16px;
@@ -475,26 +481,32 @@
             font-weight: 900;
             cursor: pointer;
             text-align: center;
+            transition: 0.2s;
         }
 
         .multiplier-btn.active {
             background: linear-gradient(135deg, var(--neon-purple), #6c5ce7);
-            border-color: #b8a8ff;
+            border-color: #b89bff;
             color: #fff;
-            box-shadow: 0 6px 22px var(--neon-glow);
+            box-shadow: 0 6px 20px var(--neon-glow);
         }
 
         .action-main-btn {
             width: 100%;
             padding: 16px;
-            background: linear-gradient(135deg, #ffffff 0%, #dcd6f7 100%);
+            background: linear-gradient(135deg, #ffffff 0%, #e2dafc 100%);
             border: none;
-            border-radius: 22px;
-            color: #0f071e;
+            border-radius: 20px;
+            color: #0b0414;
             font-weight: 900;
             font-size: 16px;
             cursor: pointer;
             box-shadow: 0 8px 25px rgba(255, 255, 255, 0.25);
+            transition: transform 0.1s;
+        }
+
+        .action-main-btn:active {
+            transform: scale(0.97);
         }
 
         .action-main-btn:disabled {
@@ -510,15 +522,16 @@
         }
 
         .inv-item-card {
-            background: var(--glass-bg);
+            background: var(--glass-card);
             backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border);
-            border-radius: 22px;
+            border-radius: 20px;
             padding: 16px;
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
         }
 
         .inv-item-card .icon {
@@ -545,8 +558,8 @@
         }
 
         .sell-btn {
-            background: rgba(46, 213, 115, 0.15);
-            border-color: rgba(46, 213, 115, 0.4);
+            background: rgba(46, 204, 113, 0.15);
+            border-color: rgba(46, 204, 113, 0.4);
             color: var(--green);
         }
 
@@ -558,11 +571,12 @@
 
         .live-feed {
             width: 100%;
-            background: var(--glass-bg);
+            background: var(--glass-card);
             border: 1px solid var(--glass-border);
-            border-radius: 22px;
+            border-radius: 20px;
             padding: 14px;
             margin-top: 16px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
         }
 
         .live-feed-title {
@@ -595,7 +609,7 @@
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(8, 3, 16, 0.85);
+            background: rgba(7, 2, 13, 0.85);
             backdrop-filter: blur(14px);
             display: none;
             align-items: center;
@@ -607,19 +621,21 @@
         .modal-overlay.active { display: flex; }
 
         .modal-card {
-            background: linear-gradient(145deg, #2b144d, #120722);
-            border: 1px solid rgba(184, 168, 255, 0.3);
+            background: linear-gradient(145deg, #281447, #130724);
+            border: 1px solid rgba(184, 155, 255, 0.3);
             border-radius: 28px;
             padding: 24px;
             width: 100%;
             max-width: 320px;
             text-align: center;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.6);
         }
 
         .win-icon-box {
             font-size: 64px;
             color: var(--gold);
             margin: 15px 0;
+            filter: drop-shadow(0 0 20px rgba(255,193,7,0.5));
         }
 
         .channel-btn {
@@ -635,19 +651,22 @@
             border-radius: 16px;
             text-decoration: none;
             margin-bottom: 12px;
+            box-shadow: 0 4px 15px rgba(0, 136, 204, 0.4);
         }
 
         .bottom-nav {
             position: fixed;
             bottom: 0; left: 0; right: 0;
-            background: rgba(15, 7, 30, 0.92);
+            background: rgba(11, 4, 20, 0.92);
             backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             border-top: 1px solid var(--glass-border);
             padding: 10px 14px 14px 14px;
             display: flex;
             justify-content: space-around;
             align-items: center;
             z-index: 50;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
         }
 
         .nav-item {
@@ -659,10 +678,11 @@
             font-size: 10px;
             font-weight: 800;
             cursor: pointer;
+            transition: 0.2s;
         }
 
         .nav-item i { font-size: 18px; }
-        .nav-item.active { color: #d7d0ff; }
+        .nav-item.active { color: #d7d0ff; text-shadow: 0 0 10px var(--neon-purple); }
     </style>
 </head>
 <body>
@@ -708,7 +728,7 @@
             </div>
 
             <div class="dashboard-card" onclick="switchScreen('inventory-screen')">
-                <div class="card-icon-box"><i class="fa-solid fa-suitcase" style="color: #b8a8ff;"></i></div>
+                <div class="card-icon-box"><i class="fa-solid fa-suitcase" style="color: #b89bff;"></i></div>
                 <h3 data-i18n="inventoryTitle">Collection</h3>
                 <p data-i18n="inventorySub">My items</p>
             </div>
@@ -732,7 +752,7 @@
         </div>
     </main>
 
-    <!-- 2. Ежедневная награда (Daily Free Spin + Telegram Sub Check) -->
+    <!-- 2. Ежедневный бонус -->
     <main id="daily-screen" class="screen">
         <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
         <h1 class="menu-title" data-i18n="dailyTitle">Daily Reward</h1>
@@ -760,7 +780,7 @@
         <div id="dailyErrorMsg" style="color: #ff3b30; font-size: 12px; font-weight: 800; margin-top: 10px; text-align: center;"></div>
     </main>
 
-    <!-- 3. Кейсы / Сейфы -->
+    <!-- 3. Кейсы / Сейфы с автоматической демонстрационной прокруткой подарков -->
     <main id="cases-screen" class="screen">
         <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
         <h1 class="menu-title" data-i18n="casesHeader">Mystery Vaults</h1>
@@ -784,6 +804,13 @@
         </div>
 
         <div class="case-arena">
+            <!-- Демо-показ призов вверху (автоматически крутящаяся витрина подарков) -->
+            <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">📦 Possible Vault Prizes (Preview)</div>
+            <div class="roulette-viewport" style="height: 95px; margin-bottom: 14px;">
+                <div class="roulette-track" id="casePreviewTrack"></div>
+            </div>
+
+            <div style="font-size: 11px; font-weight: 800; color: var(--gold); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">🎯 Opening Roulette</div>
             <div class="roulette-viewport">
                 <div class="roulette-pointer"></div>
                 <div class="roulette-track" id="rouletteTrack"></div>
@@ -826,8 +853,8 @@
         <p class="menu-subtitle" data-i18n="invSubHeader">Your items and rewards</p>
 
         <div style="display: flex; gap: 8px; width: 100%; margin-bottom: 14px;">
-            <input type="text" id="searchInput" placeholder="Search..." oninput="filterInventory(this.value)" style="flex:1; background:var(--glass-bg); border:1px solid var(--glass-border); padding:10px 14px; border-radius:14px; color:#fff; outline:none;">
-            <select onchange="sortInventory(this.value)" style="background:var(--glass-bg); border:1px solid var(--glass-border); padding:10px; border-radius:14px; color:#fff; outline:none;">
+            <input type="text" id="searchInput" placeholder="Search..." oninput="filterInventory(this.value)" style="flex:1; background:var(--glass-card); border:1px solid var(--glass-border); padding:10px 14px; border-radius:14px; color:#fff; outline:none;">
+            <select onchange="sortInventory(this.value)" style="background:var(--glass-card); border:1px solid var(--glass-border); padding:10px; border-radius:14px; color:#fff; outline:none;">
                 <option value="new" data-i18n="sortNew">Newest</option>
                 <option value="expensive" data-i18n="sortExp">Highest price</option>
             </select>
@@ -844,7 +871,7 @@
         <div id="leaderboardList" style="width: 100%; display: flex; flex-direction: column; gap: 8px;"></div>
     </main>
 
-    <!-- 7. Кошелек / Звезды -->
+    <!-- 7. Кошелек -->
     <main id="wallet-screen" class="screen">
         <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
         <h1 class="menu-title" data-i18n="walletHeader">Top Up Stars</h1>
@@ -874,7 +901,7 @@
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО ПОДПИСКИ TG -->
+    <!-- МОДАЛЬНОЕ ОКНО ПОДПИСКИ -->
     <div class="modal-overlay" id="subModal">
         <div class="modal-card">
             <h2 class="menu-title" style="font-size: 20px;" data-i18n="subTitle">Channel Subscription</h2>
@@ -966,7 +993,7 @@
                 invHeader: "Моя коллекция", invSubHeader: "Ваши предметы и награды", sortNew: "Сначала новые",
                 sortExp: "Сначала дороже", winTitle: "Поздравляем!", claimBtn: "В коллекцию", sellBtnModal: "Продать",
                 navHome: "Главная", navTop: "Топ", navCases: "Сейфы", navWheel: "Колесо", navInv: "Коллекция",
-                emptyInv: "Коллекция пуста", sell: "Продать", withdraw: "Вывести", ready: "Готово",
+                emptyInv: "Коллекция пуст", sell: "Продать", withdraw: "Вывести", ready: "Готово",
                 searchPlaceholder: "Поиск...", withdrawTitle: "Вывод предмета",
                 withdrawDesc: "Запросить вывод этой награды у администратора?",
                 confirmBtn: "Подтвердить", rejectBtn: "Отклонить", pending: "Ожидает", demoMode: "Демо-режим",
@@ -992,6 +1019,7 @@
         let dailyTimeout = null;
         let wheelTimeout = null;
         let currentWinningItem = null;
+        let previewAnimInterval = null;
 
         async function loadUserData() {
             try {
@@ -1067,7 +1095,7 @@
                         : `<div style="width:32px; height:32px; border-radius:50%; background:var(--neon-purple); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800;">${u.username.charAt(0).toUpperCase()}</div>`;
 
                     list.innerHTML += `
-                        <div style="background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:16px; padding:10px 14px; display:flex; align-items:center; justify-content:space-between;">
+                        <div style="background:var(--glass-card); border:1px solid var(--glass-border); border-radius:16px; padding:10px 14px; display:flex; align-items:center; justify-content:space-between;">
                             <div style="font-weight:900; width:24px;">${rankBadge}</div>
                             <div style="flex:1; display:flex; align-items:center; gap:10px; margin-left:8px;">
                                 ${avatarHtml}
@@ -1145,6 +1173,7 @@
             if (screenId === 'cases-screen') {
                 document.querySelectorAll('.nav-item')[1].classList.add('active');
                 initRouletteTrack();
+                initPreviewTrack();
             }
             if (screenId === 'wheel-screen') {
                 document.querySelectorAll('.nav-item')[2].classList.add('active');
@@ -1181,7 +1210,7 @@
             track.innerHTML = '';
             const totalSlices = itemsPool.length;
             const sliceAngle = 360 / totalSlices;
-            const colors = ['#2b144d', '#3f1a6d', '#1e0c38', '#4c227d', '#251042', '#35165c'];
+            const colors = ['#281447', '#3f1e6d', '#1d0b36', '#4c227d', '#230f3f', '#36175e'];
 
             itemsPool.forEach((item, index) => {
                 const centerAngle = index * sliceAngle + (sliceAngle / 2);
@@ -1214,6 +1243,32 @@
                     </div>
                 `;
             }
+        }
+
+        // Автоматическая бесконечная демонстрационная прокрутка подарков в сейфах
+        function initPreviewTrack() {
+            const track = document.getElementById('casePreviewTrack');
+            if (!track) return;
+            track.innerHTML = '';
+            for (let i = 0; i < 30; i++) {
+                const randItem = itemsPool[i % itemsPool.length];
+                track.innerHTML += `
+                    <div class="prize-card" style="min-width: 85px; height: 85px;">
+                        <div class="icon" style="font-size: 28px;"><i class="fa-solid ${randItem.icon}"></i></div>
+                        <div class="p-name">${randItem.name}</div>
+                        <div class="p-price">${randItem.price} ⭐</div>
+                    </div>
+                `;
+            }
+
+            if (previewAnimInterval) clearInterval(previewAnimInterval);
+            let previewPos = 0;
+            previewAnimInterval = setInterval(() => {
+                if (!document.getElementById('cases-screen').classList.contains('active')) return;
+                previewPos += 1;
+                if (previewPos >= 1500) previewPos = 0;
+                track.style.transform = `translateX(-${previewPos}px)`;
+            }, 30);
         }
 
         function initDailyRouletteTrack() {
@@ -1536,6 +1591,7 @@
         if (state.lang === 'RU') toggleLanguage();
         initWheel();
         initRouletteTrack();
+        initPreviewTrack();
         initDailyRouletteTrack();
         loadUserData();
         loadInventoryFromServer();
