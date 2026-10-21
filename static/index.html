@@ -940,52 +940,65 @@
             soundEnabled: true
         };
 
-        // --- WEB AUDIO API ENGINE ---
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
-        // Авторазблокировка звука при первом касании/клике
-        document.addEventListener('click', () => {
+        // --- ОБНОВЛЕННЫЙ ЗВУКОВОЙ ДВИЖОК (WEB AUDIO API) ---
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
-        }, { once: true });
+            return audioCtx;
+        }
+
+        document.addEventListener('touchstart', () => { getAudioContext(); }, { once: true });
+        document.addEventListener('click', () => { getAudioContext(); }, { once: true });
 
         function playTickSound() {
             if (!state.soundEnabled) return;
             try {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(700, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(180, audioCtx.currentTime + 0.03);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.03);
+                const ctx = getAudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(800, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.05);
+                
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+                
                 osc.connect(gain);
-                gain.connect(audioCtx.destination);
+                gain.connect(ctx.destination);
+                
                 osc.start();
-                osc.stop(audioCtx.currentTime + 0.03);
-            } catch(e){}
+                osc.stop(ctx.currentTime + 0.05);
+            } catch(e) {}
         }
 
         function playWinSound() {
             if (!state.soundEnabled) return;
             try {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const notes = [261.63, 329.63, 392.00, 523.25];
+                const ctx = getAudioContext();
+                const notes = [261.63, 329.63, 392.00, 523.25, 659.25];
                 notes.forEach((freq, idx) => {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.08);
-                    gain.gain.setValueAtTime(0.12, audioCtx.currentTime + idx * 0.08);
-                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.08 + 0.3);
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.07);
+                    
+                    gain.gain.setValueAtTime(0.25, ctx.currentTime + idx * 0.07);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.07 + 0.35);
+                    
                     osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    osc.start(audioCtx.currentTime + idx * 0.08);
-                    osc.stop(audioCtx.currentTime + idx * 0.08 + 0.3);
+                    gain.connect(ctx.destination);
+                    
+                    osc.start(ctx.currentTime + idx * 0.07);
+                    osc.stop(ctx.currentTime + idx * 0.07 + 0.35);
                 });
-            } catch(e){}
+            } catch(e) {}
         }
 
         function triggerHaptic(style = 'light') {
@@ -1205,6 +1218,7 @@
 
         function switchScreen(screenId) {
             if (state.isSpinning) return;
+            getAudioContext(); // Принудительная разблокировка звука при смене экранов/клике
             triggerHaptic('light');
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
@@ -1357,6 +1371,7 @@
 
         async function spinDailyRoulette() {
             if (state.isSpinning) return;
+            getAudioContext(); // Разблокировка аудио при нажатии на спин
             const isDemo = document.getElementById('dailyDemoToggle').checked;
             const errorMsgEl = document.getElementById('dailyErrorMsg');
             errorMsgEl.textContent = '';
@@ -1411,6 +1426,7 @@
         }
 
         async function checkSubAndSpin() {
+            getAudioContext();
             triggerHaptic('medium');
             try {
                 const res = await fetch(`/api/check-sub/${userId}`);
@@ -1443,6 +1459,7 @@
 
         async function spinRoulette() {
             if (state.isSpinning) return;
+            getAudioContext(); // Разблокировка аудио при нажатии на открытие сейфа
             const isDemo = document.getElementById('casesDemoToggle').checked;
             state.isSpinning = true;
             document.getElementById('spinCaseBtn').disabled = true;
@@ -1507,6 +1524,7 @@
 
         async function spinWheel() {
             if (state.isSpinning) return;
+            getAudioContext(); // Разблокировка аудио при вращении колеса
             const isDemo = document.getElementById('wheelDemoToggle').checked;
             state.isSpinning = true;
             document.getElementById('spinWheelBtn').disabled = true;
@@ -1572,6 +1590,7 @@
         }
 
         async function closeModal(action) {
+            getAudioContext();
             triggerHaptic('light');
             document.getElementById('winModal').classList.remove('active');
             if (action === 'sell' && lastWonItemId) {
@@ -1607,6 +1626,7 @@
         }
 
         async function sellItem(itemId, updateUI = true) {
+            getAudioContext();
             triggerHaptic('light');
             try {
                 const res = await fetch(`/api/sell/${itemId}`, { method: 'POST' });
@@ -1620,12 +1640,14 @@
         }
 
         function promptWithdraw(itemId) {
+            getAudioContext();
             triggerHaptic('light');
             selectedItemIdForWithdraw = itemId;
             document.getElementById('withdrawModal').classList.add('active');
         }
 
         async function closeWithdrawModal(confirmed) {
+            getAudioContext();
             triggerHaptic('light');
             document.getElementById('withdrawModal').classList.remove('active');
             if (confirmed && selectedItemIdForWithdraw) {
