@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CatRoll — Cases & Rewards Full Application</title>
+    <title>CatRoll — Mystery Cases & Rewards</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,14 +11,15 @@
     
     <style>
         :root {
-            --bg-color: #07070a;
-            --card-bg: rgba(18, 18, 26, 0.75);
-            --card-border: rgba(255, 255, 255, 0.08);
-            --accent-glow: rgba(108, 92, 231, 0.45);
+            --bg-color: #12081f;
+            --bg-gradient: radial-gradient(circle at 50% 20%, #3b1b5e 0%, #12081f 70%);
+            --card-bg: rgba(36, 20, 58, 0.65);
+            --card-border: rgba(162, 155, 254, 0.15);
+            --accent-glow: rgba(108, 92, 231, 0.4);
             --text-main: #ffffff;
-            --text-secondary: #9090a7;
+            --text-secondary: #b8b3d1;
             --gold: #ffb800;
-            --gold-glow: rgba(255, 184, 0, 0.4);
+            --gold-glow: rgba(255, 184, 0, 0.3);
             --green: #2ecc71;
             --purple-accent: #6c5ce7;
             --purple-bright: #a29bfe;
@@ -35,10 +36,7 @@
 
         body {
             background-color: var(--bg-color);
-            background-image: 
-                radial-gradient(circle at 50% 0%, rgba(108, 92, 231, 0.28) 0%, transparent 65%),
-                radial-gradient(circle at 100% 100%, rgba(255, 184, 0, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 0% 50%, rgba(46, 204, 113, 0.08) 0%, transparent 50%);
+            background-image: var(--bg-gradient);
             background-attachment: fixed;
             color: var(--text-main);
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -47,108 +45,69 @@
             align-items: center;
             min-height: 100vh;
             padding: 16px;
-            padding-bottom: 95px;
+            padding-bottom: 100px;
             overflow-x: hidden;
         }
 
         .header {
             width: 100%;
-            max-width: 380px;
+            max-width: 400px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 18px;
+            margin-bottom: 20px;
         }
 
-        .logo {
-            font-size: 20px;
-            font-weight: 900;
-            cursor: pointer;
+        .top-btn-group {
             display: flex;
-            align-items: center;
-            gap: 10px;
-            letter-spacing: -0.5px;
-            text-shadow: 0 0 16px var(--accent-glow);
-        }
-
-        .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--purple-accent), var(--purple-bright));
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            box-shadow: 0 4px 20px var(--accent-glow);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: #ffffff;
-        }
-        
-        .header-actions {
-            display: flex;
-            align-items: center;
             gap: 8px;
+            align-items: center;
         }
 
-        .lang-btn {
+        .pill-badge {
             background: var(--card-bg);
-            backdrop-filter: blur(16px);
+            backdrop-filter: blur(12px);
             border: 1px solid var(--card-border);
-            color: #ffffff;
-            padding: 8px 12px;
-            border-radius: 14px;
-            font-size: 12px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .balance-pill {
-            background: rgba(255, 184, 0, 0.12);
-            border: 1px solid rgba(255, 184, 0, 0.4);
-            padding: 7px 14px;
-            border-radius: 14px;
-            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
             font-weight: 800;
             display: flex;
             align-items: center;
             gap: 6px;
-            color: var(--gold);
-            box-shadow: 0 4px 22px var(--gold-glow);
+            color: var(--text-main);
             cursor: pointer;
+        }
+
+        .pill-badge.gold {
+            background: rgba(255, 184, 0, 0.15);
+            border-color: rgba(255, 184, 0, 0.4);
+            color: var(--gold);
         }
 
         .screen {
             width: 100%;
-            max-width: 380px;
+            max-width: 400px;
             display: none;
             flex-direction: column;
             align-items: center;
-            animation: screenFadeIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+            animation: fadeIn 0.3s ease;
         }
 
         .screen.active {
             display: flex;
         }
 
-        @keyframes screenFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px) scale(0.98);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .menu-title {
             font-size: 24px;
             font-weight: 900;
-            margin: 6px 0 4px 0;
+            margin-bottom: 6px;
             text-align: center;
-            letter-spacing: -0.5px;
         }
 
         .menu-subtitle {
@@ -158,183 +117,96 @@
             text-align: center;
         }
 
-        .mode-card {
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
             width: 100%;
+        }
+
+        .dashboard-card {
             background: var(--card-bg);
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(16px);
             border: 1px solid var(--card-border);
-            border-radius: 22px;
-            padding: 16px;
-            margin-bottom: 12px;
+            border-radius: 24px;
+            padding: 18px 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
             cursor: pointer;
-            transition: all 0.25s ease;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
         }
 
-        .mode-card:active {
-            transform: scale(0.97);
+        .dashboard-card:active {
+            transform: scale(0.96);
         }
 
-        .daily-bonus-card {
-            background: linear-gradient(135deg, rgba(108, 92, 231, 0.35), rgba(22, 22, 32, 0.9));
-            border: 1px solid rgba(108, 92, 231, 0.55);
-            box-shadow: 0 8px 25px var(--accent-glow);
+        .dashboard-card.featured {
+            grid-column: span 2;
+            background: linear-gradient(135deg, rgba(108, 92, 231, 0.3), rgba(40, 20, 70, 0.8));
+            border-color: rgba(108, 92, 231, 0.5);
         }
 
-        .mode-icon {
-            width: 52px;
-            height: 52px;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.08);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            font-size: 20px;
-            flex-shrink: 0;
-            color: var(--purple-bright);
-        }
-
-        .mode-info {
-            flex: 1;
-        }
-
-        .mode-info h3 {
-            font-size: 16px;
-            font-weight: 800;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .mode-info p {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-top: 4px;
-        }
-
-        .timer-badge {
-            font-size: 11px;
+        .card-icon-img {
+            font-size: 42px;
             color: var(--gold);
-            background: rgba(255, 184, 0, 0.15);
-            padding: 3px 8px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 184, 0, 0.35);
+            margin-bottom: 10px;
+            filter: drop-shadow(0 4px 12px rgba(255, 184, 0, 0.3));
+        }
+
+        .dashboard-card h3 {
+            font-size: 15px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .dashboard-card p {
+            font-size: 11px;
+            color: var(--text-secondary);
         }
 
         .back-btn {
             align-self: flex-start;
             background: var(--card-bg);
-            backdrop-filter: blur(12px);
             border: 1px solid var(--card-border);
             border-radius: 12px;
-            padding: 8px 14px;
-            color: var(--text-secondary);
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-bottom: 16px;
-        }
-
-        .controls-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            margin-bottom: 14px;
-            background: var(--card-bg);
-            padding: 10px 14px;
-            border-radius: 14px;
-            border: 1px solid var(--card-border);
-        }
-
-        .toggle-label {
-            font-size: 13px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-        }
-
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 40px;
-            height: 22px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(255, 255, 255, 0.15);
-            transition: .3s;
-            border-radius: 22px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 3px;
-            bottom: 2px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: var(--purple-accent);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(18px);
-        }
-
-        .skip-btn-mini {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            color: var(--text-secondary);
             padding: 6px 12px;
-            border-radius: 12px;
+            color: var(--text-secondary);
             font-size: 12px;
             font-weight: 700;
             cursor: pointer;
+            margin-bottom: 14px;
         }
 
-        .case-container {
+        /* Аренда кейса и лента прокрутки */
+        .case-arena {
             width: 100%;
-            background: rgba(12, 12, 18, 0.95);
+            background: rgba(20, 10, 35, 0.8);
             border: 1px solid var(--card-border);
-            border-radius: 24px;
-            padding: 18px;
+            border-radius: 28px;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             position: relative;
-            margin-bottom: 18px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.5);
         }
 
-        .roulette-wrapper {
+        .roulette-viewport {
             position: relative;
             width: 100%;
-            height: 120px;
+            height: 130px;
             overflow: hidden;
             border-radius: 18px;
-            background: #060608;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: #090410;
+            border: 1px solid rgba(162, 155, 254, 0.2);
         }
 
-        .pointer {
+        .roulette-pointer {
             position: absolute;
             top: 0;
             left: 50%;
@@ -342,12 +214,12 @@
             width: 4px;
             height: 100%;
             background: linear-gradient(to bottom, #ff3b30, #ff9500);
-            box-shadow: 0 0 16px #ff3b30;
+            box-shadow: 0 0 12px #ff3b30;
             z-index: 10;
             border-radius: 2px;
         }
 
-        .pointer::before {
+        .roulette-pointer::before {
             content: '';
             position: absolute;
             left: -6px;
@@ -367,120 +239,88 @@
             will-change: transform;
         }
 
-        .item-card {
-            min-width: 95px;
-            height: 100px;
+        .prize-card {
+            min-width: 100px;
+            height: 110px;
             margin: 0 6px;
-            background: linear-gradient(145deg, #181824, #101018);
+            background: linear-gradient(145deg, #281545, #160b24);
             border-radius: 16px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(162, 155, 254, 0.15);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
-        .item-icon-wrap {
-            font-size: 32px;
+        .prize-card .icon {
+            font-size: 36px;
             color: var(--gold);
-            margin-bottom: 2px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            margin-bottom: 6px;
         }
 
-        .item-card .name {
-            font-size: 9px;
+        .prize-card .p-name {
+            font-size: 10px;
             color: var(--text-secondary);
-            margin-top: 2px;
             font-weight: 700;
-            text-align: center;
         }
 
-        .item-card .price-tag {
-            font-size: 11px;
+        .prize-card .p-price {
+            font-size: 12px;
             color: var(--gold);
-            font-weight: 800;
+            font-weight: 900;
             margin-top: 2px;
         }
 
-        .action-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, var(--purple-accent), var(--purple-bright));
-            border: none;
-            border-radius: 18px;
-            color: #ffffff;
-            font-weight: 900;
-            font-size: 16px;
-            cursor: pointer;
-            box-shadow: 0 8px 25px var(--accent-glow);
-        }
-
-        .action-btn:active {
-            transform: scale(0.96);
-            opacity: 0.9;
-        }
-
-        .action-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .stars-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 12px;
-            width: 100%;
-        }
-
-        .star-package-btn {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 16px;
-            padding: 14px;
-            color: #ffffff;
-            font-size: 15px;
-            font-weight: 800;
-            cursor: pointer;
+        .multipliers-row {
             display: flex;
-            align-items: center;
-            justify-content: center;
             gap: 8px;
-            transition: 0.2s;
-        }
-
-        .star-package-btn i {
-            color: var(--gold);
-        }
-
-        .star-package-btn.full-width {
-            grid-column: span 2;
-            background: linear-gradient(135deg, rgba(255, 184, 0, 0.25), rgba(255, 138, 0, 0.15));
-            border-color: rgba(255, 184, 0, 0.5);
-            color: var(--gold);
-        }
-
-        .inventory-controls {
             width: 100%;
-            display: flex;
-            gap: 10px;
             margin-bottom: 16px;
         }
 
-        .search-input, .sort-select {
+        .multiplier-btn {
+            flex: 1;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            padding: 12px 14px;
-            border-radius: 14px;
-            color: #ffffff;
+            padding: 12px;
+            border-radius: 16px;
+            color: var(--text-secondary);
             font-size: 13px;
-            outline: none;
+            font-weight: 900;
+            cursor: pointer;
+            text-align: center;
+            transition: 0.2s;
         }
 
-        .search-input {
-            flex: 1;
+        .multiplier-btn.active {
+            background: linear-gradient(135deg, var(--purple-accent), #8073f4);
+            border-color: var(--purple-bright);
+            color: #fff;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+
+        .action-main-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #fff, #e0dcfc);
+            border: none;
+            border-radius: 20px;
+            color: #12081f;
+            font-weight: 900;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(255,255,255,0.2);
+            transition: transform 0.1s;
+        }
+
+        .action-main-btn:active {
+            transform: scale(0.97);
+        }
+
+        .action-main-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .inventory-grid {
@@ -490,7 +330,7 @@
             width: 100%;
         }
 
-        .inventory-card {
+        .inv-item-card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             border-radius: 20px;
@@ -501,41 +341,26 @@
             text-align: center;
         }
 
-        .inventory-card .item-icon-wrap {
-            font-size: 42px;
+        .inv-item-card .icon {
+            font-size: 44px;
             color: var(--gold);
             margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
-        .inventory-card .name {
-            font-size: 13px;
-            font-weight: 800;
-            margin-bottom: 3px;
-        }
-
-        .inventory-card .price {
-            font-size: 12px;
-            color: var(--gold);
-            font-weight: 800;
-            margin-bottom: 10px;
-        }
-
-        .inventory-actions {
+        .inv-actions {
             display: flex;
             gap: 6px;
             width: 100%;
+            margin-top: 10px;
         }
 
-        .sell-btn, .withdraw-btn {
-            padding: 8px 4px;
+        .inv-btn {
+            flex: 1;
+            padding: 8px;
             border-radius: 10px;
             font-size: 11px;
             font-weight: 800;
             cursor: pointer;
-            flex: 1;
             border: 1px solid;
         }
 
@@ -551,125 +376,11 @@
             color: var(--purple-bright);
         }
 
-        .withdraw-btn:disabled {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.1);
-            color: var(--text-secondary);
-            cursor: not-allowed;
-        }
-
-        .leaderboard-list {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 10px;
-        }
-
-        .leaderboard-item {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 16px;
-            padding: 10px 14px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .leaderboard-item.me {
-            border-color: var(--purple-bright);
-            background: rgba(108, 92, 231, 0.2);
-        }
-
-        .leaderboard-rank {
-            font-size: 15px;
-            font-weight: 900;
-            width: 28px;
-            text-align: center;
-        }
-
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            object-fit: cover;
-            background: #2c2c3d;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            color: var(--purple-bright);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-        }
-
-        .leaderboard-user-info {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-left: 8px;
-        }
-
-        .leaderboard-username {
-            font-size: 13px;
-            font-weight: 800;
-        }
-
-        .leaderboard-score {
-            font-size: 13px;
-            font-weight: 800;
-            color: var(--gold);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .live-feed {
-            width: 100%;
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 22px;
-            padding: 16px;
-            margin-top: 16px;
-        }
-
-        .live-feed-title {
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-            font-weight: 800;
-            text-transform: uppercase;
-        }
-
-        .feed-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            max-height: 135px;
-            overflow-y: auto;
-        }
-
-        .feed-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 12px;
-            color: var(--text-secondary);
-            background: rgba(0, 0, 0, 0.25);
-            padding: 8px 12px;
-            border-radius: 12px;
-        }
-
-        .feed-item i {
-            color: var(--gold);
-            margin-right: 4px;
-        }
-
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(14px);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
             display: none;
             align-items: center;
             justify-content: center;
@@ -682,7 +393,7 @@
         }
 
         .modal-card {
-            background: linear-gradient(145deg, #181824, #0f0f16);
+            background: linear-gradient(145deg, #24143a, #150b24);
             border: 1px solid var(--card-border);
             border-radius: 28px;
             padding: 24px;
@@ -691,21 +402,18 @@
             text-align: center;
         }
 
-        .win-image-box {
+        .win-icon-box {
             font-size: 64px;
             color: var(--gold);
-            margin: 15px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            filter: drop-shadow(0 4px 15px rgba(255, 184, 0, 0.4));
+            margin: 15px 0;
+            filter: drop-shadow(0 0 20px rgba(255,184,0,0.5));
         }
 
         .bottom-nav {
             position: fixed;
             bottom: 0; left: 0; right: 0;
-            background: rgba(10, 10, 14, 0.92);
-            backdrop-filter: blur(22px);
+            background: rgba(18, 8, 31, 0.95);
+            backdrop-filter: blur(20px);
             border-top: 1px solid var(--card-border);
             padding: 10px 14px 14px 14px;
             display: flex;
@@ -732,267 +440,125 @@
         .nav-item.active {
             color: var(--purple-bright);
         }
-
-        .channel-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #0088cc, #00a8ff);
-            color: #fff;
-            font-weight: 800;
-            border-radius: 16px;
-            text-decoration: none;
-            margin-bottom: 12px;
-            box-shadow: 0 4px 15px rgba(0, 136, 204, 0.4);
-        }
     </style>
 </head>
 <body>
 
     <header class="header">
-        <div class="logo" onclick="switchScreen('main-screen')">
-            <div class="logo-icon"><i class="fa-solid fa-paw"></i></div> CatRoll
+        <div class="pill-badge" onclick="switchScreen('wallet-screen')">
+            <i class="fa-solid fa-ticket" style="color: var(--purple-bright);"></i>
+            <span id="userTickets">13</span>
         </div>
-        <div class="header-actions">
-            <button class="lang-btn" onclick="toggleLanguage()" id="langBtn">🌐 EN</button>
-            <div class="balance-pill" onclick="switchScreen('wallet-screen')">
+        <div class="top-btn-group">
+            <div class="pill-badge gold" onclick="switchScreen('wallet-screen')">
                 <i class="fa-solid fa-star"></i>
                 <span id="userBalance">0</span>
+            </div>
+            <div class="pill-badge" onclick="switchScreen('inventory-screen')">
+                <i class="fa-solid fa-box-open" style="color: var(--gold);"></i>
             </div>
         </div>
     </header>
 
+    <!-- ГЛАВНЫЙ ЭКРАН -->
     <main id="main-screen" class="screen active">
-        <h1 class="menu-title" data-i18n="mainTitle">Select Mode</h1>
-        <p class="menu-subtitle" data-i18n="mainSub">Spin roulette, test your luck & collect rewards</p>
+        <h1 class="menu-title">CatRoll Vaults</h1>
+        <p class="menu-subtitle">Открывайте кейсы с подарками и выигрывайте призы</p>
 
-        <div class="mode-card daily-bonus-card" onclick="switchScreen('daily-screen')">
-            <div class="mode-icon"><i class="fa-solid fa-gift"></i></div>
-            <div class="mode-info">
-                <h3>
-                    <span data-i18n="dailyTitle">Daily Reward</span>
-                    <span class="timer-badge" id="bonusTimer">Ready</span>
-                </h3>
-                <p data-i18n="dailySub">Free spin every 24 hours (Sub required)</p>
+        <div class="dashboard-grid">
+            <div class="dashboard-card featured" onclick="switchScreen('cases-screen')">
+                <div class="card-icon-img"><i class="fa-solid fa-gift"></i></div>
+                <h3>Mystery Case</h3>
+                <p>Крутите ленту подарков и забирайте ценный лут</p>
             </div>
-        </div>
 
-        <div class="mode-card" onclick="switchScreen('leaderboard-screen')">
-            <div class="mode-icon"><i class="fa-solid fa-trophy"></i></div>
-            <div class="mode-info">
-                <h3 data-i18n="topTitle">Leaderboard</h3>
-                <p data-i18n="topSub">Top spenders & your global position</p>
+            <div class="dashboard-card" onclick="switchScreen('inventory-screen')">
+                <div class="card-icon-img" style="color: var(--purple-bright);"><i class="fa-solid fa-suitcase"></i></div>
+                <h3>Инвентарь</h3>
+                <p>Ваши выигранные призы</p>
             </div>
-        </div>
 
-        <div class="mode-card" onclick="switchScreen('wallet-screen')">
-            <div class="mode-icon"><i class="fa-solid fa-wallet"></i></div>
-            <div class="mode-info">
-                <h3 data-i18n="walletTitle">Top Up Balance</h3>
-                <p data-i18n="walletSub">Purchase star packages for play</p>
+            <div class="dashboard-card" onclick="switchScreen('leaderboard-screen')">
+                <div class="card-icon-img" style="color: var(--green);"><i class="fa-solid fa-trophy"></i></div>
+                <h3>Лидеры</h3>
+                <p>Топ участников</p>
             </div>
-        </div>
 
-        <div class="mode-card" onclick="switchScreen('cases-screen')">
-            <div class="mode-icon"><i class="fa-solid fa-box-open"></i></div>
-            <div class="mode-info">
-                <h3 data-i18n="casesTitle">Mystery Vaults</h3>
-                <p data-i18n="casesSub">Open vaults and win exclusive rewards</p>
+            <div class="dashboard-card" onclick="switchScreen('wallet-screen')">
+                <div class="card-icon-img" style="color: var(--gold);"><i class="fa-solid fa-wallet"></i></div>
+                <h3>Баланс</h3>
+                <p>Пополнение звезд</p>
             </div>
-        </div>
-
-        <div class="mode-card" onclick="switchScreen('wheel-screen')">
-            <div class="mode-icon"><i class="fa-solid fa-dharmachakra"></i></div>
-            <div class="mode-info">
-                <h3 data-i18n="wheelTitle">Fortune Wheel</h3>
-                <p data-i18n="wheelSub">Spin the wheel and get up to x10 multipliers</p>
-            </div>
-        </div>
-
-        <div class="mode-card" onclick="switchScreen('inventory-screen')">
-            <div class="mode-icon"><i class="fa-solid fa-suitcase"></i></div>
-            <div class="mode-info">
-                <h3 data-i18n="inventoryTitle">My Collection</h3>
-                <p data-i18n="inventorySub">Manage, sell, and withdraw your items</p>
-            </div>
-        </div>
-
-        <div class="live-feed">
-            <div class="live-feed-title" data-i18n="liveFeed">Live Winners Feed</div>
-            <div class="feed-list" id="feedList"></div>
         </div>
     </main>
 
-    <main id="daily-screen" class="screen">
-        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
-        <h1 class="menu-title" data-i18n="dailyTitle">Daily Reward</h1>
-        <p class="menu-subtitle" data-i18n="dailyScreenSub">Free spin once every 24h (Channel sub required)</p>
-
-        <div class="controls-row">
-            <label class="toggle-label">
-                <span data-i18n="demoMode">Demo mode</span>
-                <div class="toggle-switch">
-                    <input type="checkbox" id="dailyDemoToggle">
-                    <span class="slider"></span>
-                </div>
-            </label>
-            <button class="skip-btn-mini" onclick="skipDailyAnimation()" data-i18n="skipBtn">Skip</button>
-        </div>
-
-        <div class="case-container">
-            <div class="roulette-wrapper">
-                <div class="pointer"></div>
-                <div class="roulette-track" id="dailyRouletteTrack"></div>
-            </div>
-        </div>
-
-        <button class="action-btn" id="spinDailyBtn" onclick="spinDailyRoulette()" data-i18n="spinDailyBtn">Spin Daily Free</button>
-        <div id="dailyErrorMsg" style="color: #ff3b30; font-size: 12px; font-weight: 800; margin-top: 10px; text-align: center;"></div>
-    </main>
-
-    <main id="leaderboard-screen" class="screen">
-        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
-        <h1 class="menu-title" data-i18n="topTitle">Leaderboard</h1>
-        <p class="menu-subtitle" id="myRankInfo">Your Rank: #-</p>
-        <div class="leaderboard-list" id="leaderboardList"></div>
-    </main>
-
-    <main id="wallet-screen" class="screen">
-        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
-        <h1 class="menu-title" data-i18n="walletHeader">Top Up Stars</h1>
-        <p class="menu-subtitle" data-i18n="walletSubHeader">Choose a package to top up your balance</p>
-
-        <div class="stars-grid">
-            <button class="star-package-btn" onclick="topUpStars(100)"><i class="fa-solid fa-star"></i> 100</button>
-            <button class="star-package-btn" onclick="topUpStars(200)"><i class="fa-solid fa-star"></i> 200</button>
-            <button class="star-package-btn" onclick="topUpStars(500)"><i class="fa-solid fa-star"></i> 500</button>
-            <button class="star-package-btn" onclick="topUpStars(1000)"><i class="fa-solid fa-star"></i> 1000</button>
-            <button class="star-package-btn full-width" onclick="topUpStars(2500)"><i class="fa-solid fa-star"></i> 2500 (MAX)</button>
-        </div>
-        <div id="topupMsg" style="margin-top: 15px; font-weight: 800; font-size: 13px; text-align: center;"></div>
-    </main>
-
+    <!-- ЭКРАН КЕЙСА С АНИМИРОВАННОЙ ЛЕНТОЙ -->
     <main id="cases-screen" class="screen">
-        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
-        <h1 class="menu-title" data-i18n="casesHeader">Mystery Vaults</h1>
-        <p class="menu-subtitle" id="caseCostSubtitle">Vault cost: 50 ⭐</p>
+        <button class="back-btn" onclick="switchScreen('main-screen')">← Назад</button>
+        <h1 class="menu-title">Mystery Case</h1>
+        <p class="menu-subtitle" id="caseCostSubtitle">Стоимость открытия: 50 ⭐</p>
 
-        <div class="controls-row">
-            <label class="toggle-label">
-                <span data-i18n="demoMode">Demo mode</span>
-                <div class="toggle-switch">
-                    <input type="checkbox" id="casesDemoToggle">
-                    <span class="slider"></span>
-                </div>
-            </label>
-            <button class="skip-btn-mini" onclick="skipCaseAnimation()" data-i18n="skipBtn">Skip</button>
+        <div class="multipliers-row">
+            <div class="multiplier-btn active" onclick="setCaseMultiplier('starter', 50, this)">1X CHANCE</div>
+            <div class="multiplier-btn" onclick="setCaseMultiplier('rare', 250, this)">10X</div>
+            <div class="multiplier-btn" onclick="setCaseMultiplier('legend', 1000, this)">100X</div>
         </div>
 
-        <div class="cases-selector" style="display: flex; gap: 8px; width: 100%; margin-bottom: 16px;">
-            <div class="case-tab active" onclick="selectCase('starter', 50, this)" style="flex:1; text-align:center; background:var(--card-bg); border:1px solid var(--card-border); color:var(--text-secondary); padding:10px; border-radius:14px; font-size:13px; font-weight:800; cursor:pointer;">Starter (50 ⭐)</div>
-            <div class="case-tab" onclick="selectCase('rare', 250, this)" style="flex:1; text-align:center; background:var(--card-bg); border:1px solid var(--card-border); color:var(--text-secondary); padding:10px; border-radius:14px; font-size:13px; font-weight:800; cursor:pointer;">Rare (250 ⭐)</div>
-            <div class="case-tab" onclick="selectCase('legend', 1000, this)" style="flex:1; text-align:center; background:var(--card-bg); border:1px solid var(--card-border); color:var(--text-secondary); padding:10px; border-radius:14px; font-size:13px; font-weight:800; cursor:pointer;">Royal (1000 ⭐)</div>
-        </div>
-
-        <div class="case-container">
-            <div class="roulette-wrapper">
-                <div class="pointer"></div>
+        <div class="case-arena">
+            <div class="roulette-viewport">
+                <div class="roulette-pointer"></div>
                 <div class="roulette-track" id="rouletteTrack"></div>
             </div>
         </div>
 
-        <button class="action-btn" id="spinCaseBtn" onclick="spinRoulette()" data-i18n="spinBtn">Open Vault</button>
+        <button class="action-main-btn" id="spinCaseBtn" onclick="spinCaseRoulette()">ОТКРЫТЬ КЕЙС</button>
     </main>
 
-    <main id="wheel-screen" class="screen">
-        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
-        <h1 class="menu-title" data-i18n="wheelHeader">Fortune Wheel</h1>
-        <p class="menu-subtitle" data-i18n="wheelCost">Spin cost: 100 ⭐</p>
-
-        <div class="controls-row">
-            <label class="toggle-label">
-                <span data-i18n="demoMode">Demo mode</span>
-                <div class="toggle-switch">
-                    <input type="checkbox" id="wheelDemoToggle">
-                    <span class="slider"></span>
-                </div>
-            </label>
-            <button class="skip-btn-mini" onclick="skipWheelAnimation()" data-i18n="skipBtn">Skip</button>
-        </div>
-
-        <div class="wheel-box" style="position:relative; width:260px; height:260px; margin:10px 0 22px 0; display:flex; align-items:center; justify-content:center;">
-            <div class="wheel-pointer" style="position:absolute; top:-14px; left:50%; transform:translateX(-50%); width:0; height:0; border-left:14px solid transparent; border-right:14px solid transparent; border-top:24px solid #ff3b30; z-index:20;"></div>
-            <div class="wheel" id="wheelTrack" style="width:100%; height:100%; border-radius:50%; border:7px solid #1a1a26; position:relative; overflow:hidden;"></div>
-            <div class="wheel-center-cap" style="position:absolute; width:48px; height:48px; background:#2c2c3d; border:3px solid var(--purple-accent); border-radius:50%; z-index:15; display:flex; align-items:center; justify-content:center; color:var(--purple-bright);"><i class="fa-solid fa-dharmachakra"></i></div>
-        </div>
-
-        <button class="action-btn" id="spinWheelBtn" onclick="spinWheel()" data-i18n="spinWheelBtn">Spin Wheel</button>
-    </main>
-
+    <!-- ИНВЕНТАРЬ -->
     <main id="inventory-screen" class="screen">
-        <button class="back-btn" onclick="switchScreen('main-screen')" data-i18n="back">← Back</button>
-        <h1 class="menu-title" data-i18n="invHeader">My Collection</h1>
-        <p class="menu-subtitle" data-i18n="invSubHeader">Your items and rewards</p>
-
-        <div class="inventory-controls">
-            <input type="text" class="search-input" id="searchInput" placeholder="Search..." oninput="filterInventory(this.value)">
-            <select class="sort-select" onchange="sortInventory(this.value)">
-                <option value="new" data-i18n="sortNew">Newest first</option>
-                <option value="expensive" data-i18n="sortExp">Highest price</option>
-            </select>
-        </div>
-
+        <button class="back-btn" onclick="switchScreen('main-screen')">← Назад</button>
+        <h1 class="menu-title">Инвентарь</h1>
+        <p class="menu-subtitle">Управление вашими наградами</p>
         <div class="inventory-grid" id="inventoryGrid"></div>
     </main>
 
+    <!-- ТОП / ЛИДЕРЫ -->
+    <main id="leaderboard-screen" class="screen">
+        <button class="back-btn" onclick="switchScreen('main-screen')">← Назад</button>
+        <h1 class="menu-title">Таблица лидеров</h1>
+        <p class="menu-subtitle" id="myRankInfo">Ваша позиция: #-</p>
+        <div id="leaderboardList" style="width: 100%; display: flex; flex-direction: column; gap: 8px;"></div>
+    </main>
+
+    <!-- КОШЕЛЕК -->
+    <main id="wallet-screen" class="screen">
+        <button class="back-btn" onclick="switchScreen('main-screen')">← Назад</button>
+        <h1 class="menu-title">Пополнение</h1>
+        <p class="menu-subtitle">Выберите пакет звезд</p>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%;">
+            <button class="multiplier-btn active" onclick="topUpStars(100)">100 ⭐</button>
+            <button class="multiplier-btn active" onclick="topUpStars(500)">500 ⭐</button>
+        </div>
+    </main>
+
+    <!-- МОДАЛЬНОЕ ОКНО ВЫИГРЫША -->
     <div class="modal-overlay" id="winModal">
         <div class="modal-card">
-            <h2 class="menu-title" data-i18n="winTitle">Congratulations!</h2>
-            <div class="win-image-box" id="win-modal-icon"><i class="fa-solid fa-gift"></i></div>
-            <h3 id="modalItemName" style="font-size: 18px; margin-bottom: 6px;">Prize</h3>
-            <p id="modalItemPrice" style="color: var(--gold); font-weight: 800; font-size: 14px; margin-bottom: 20px;">50 ⭐</p>
-            <div style="display: flex; gap: 10px;">
-                <button class="action-btn" onclick="closeModal('sell')" style="background: rgba(46,204,113,0.2); color: var(--green); border: 1px solid rgba(46,204,113,0.4);" data-i18n="sellBtnModal">Sell</button>
-                <button class="action-btn" onclick="closeModal('claim')" data-i18n="claimBtn">To Collection</button>
-            </div>
+            <h2 class="menu-title">Поздравляем!</h2>
+            <div class="win-icon-box" id="winModalIcon"><i class="fa-solid fa-gift"></i></div>
+            <h3 id="winModalName" style="font-size: 18px; margin-bottom: 4px;">Приз</h3>
+            <p id="winModalPrice" style="color: var(--gold); font-weight: 800; margin-bottom: 20px;">50 ⭐</p>
+            <button class="action-main-btn" onclick="closeWinModal()">В КОЛЛЕКЦИЮ</button>
         </div>
     </div>
 
-    <div class="modal-overlay" id="subModal">
-        <div class="modal-card">
-            <h2 class="menu-title" style="font-size: 20px;" data-i18n="subTitle">Channel Subscription</h2>
-            <div class="win-image-box" style="font-size: 52px; color: #0088cc;"><i class="fa-brands fa-telegram"></i></div>
-            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 18px;" data-i18n="subDesc">Please subscribe to our official Telegram channel to unlock the daily free spin!</p>
-            
-            <a href="https://t.me/CaaatRoll" target="_blank" class="channel-btn">
-                <i class="fa-brands fa-telegram"></i> <span data-i18n="subBtnLink">Subscribe to @CaaatRoll</span>
-            </a>
-            
-            <button class="action-btn" onclick="checkSubAndSpin()" data-i18n="checkSubBtn">I Subscribed ✅</button>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="withdrawModal">
-        <div class="modal-card">
-            <h2 class="menu-title" style="font-size: 20px;" data-i18n="withdrawTitle">Item Withdrawal</h2>
-            <div class="win-image-box" style="font-size: 48px;"><i class="fa-solid fa-gift"></i></div>
-            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;" data-i18n="withdrawDesc">Request withdrawal of this reward from admin?</p>
-            <div style="display: flex; gap: 10px;">
-                <button class="action-btn" onclick="closeWithdrawModal(false)" style="background: rgba(255,59,48,0.2); color: #ff3b30; border: 1px solid rgba(255,59,48,0.4);" data-i18n="rejectBtn">Reject</button>
-                <button class="action-btn" onclick="closeWithdrawModal(true)" data-i18n="confirmBtn">Confirm</button>
-            </div>
-        </div>
-    </div>
-
+    <!-- НИЖНЯЯ НАВИГАЦИЯ -->
     <nav class="bottom-nav">
-        <div class="nav-item active" onclick="switchScreen('main-screen')"><i class="fa-solid fa-house"></i><span data-i18n="navHome">Home</span></div>
-        <div class="nav-item" onclick="switchScreen('leaderboard-screen')"><i class="fa-solid fa-trophy"></i><span data-i18n="navTop">Top</span></div>
-        <div class="nav-item" onclick="switchScreen('cases-screen')"><i class="fa-solid fa-box-open"></i><span data-i18n="navCases">Vaults</span></div>
-        <div class="nav-item" onclick="switchScreen('wheel-screen')"><i class="fa-solid fa-dharmachakra"></i><span data-i18n="navWheel">Fortune</span></div>
-        <div class="nav-item" onclick="switchScreen('inventory-screen')"><i class="fa-solid fa-suitcase"></i><span data-i18n="navInv">Collection</span></div>
+        <div class="nav-item active" onclick="switchScreen('main-screen')"><i class="fa-solid fa-house"></i><span>Main</span></div>
+        <div class="nav-item" onclick="switchScreen('cases-screen')"><i class="fa-solid fa-box-open"></i><span>Cases</span></div>
+        <div class="nav-item" onclick="switchScreen('inventory-screen')"><i class="fa-solid fa-suitcase"></i><span>Inventory</span></div>
+        <div class="nav-item" onclick="switchScreen('leaderboard-screen')"><i class="fa-solid fa-trophy"></i><span>Top</span></div>
+        <div class="nav-item" onclick="switchScreen('wallet-screen')"><i class="fa-solid fa-wallet"></i><span>Wallet</span></div>
     </nav>
 
     <script>
@@ -1004,276 +570,43 @@
 
         const userId = TG?.initDataUnsafe?.user?.id || 1218168630;
         let state = {
-            balance: 0,
+            balance: 267000,
             inventory: [],
             currentCaseType: 'starter',
-            isSpinning: false,
-            lang: localStorage.getItem('catroll_lang') || 'EN',
-            lastDailyTime: 0
-        };
-
-        const translations = {
-            EN: {
-                mainTitle: "Select Mode", mainSub: "Spin roulette, test your luck & collect rewards",
-                dailyTitle: "Daily Reward", dailySub: "Free spin every 24 hours (Sub required)",
-                dailyScreenSub: "Spin the daily roulette for free", spinDailyBtn: "Spin Daily Free",
-                topTitle: "Leaderboard", topSub: "Top spenders & your global position",
-                walletTitle: "Top Up Balance", walletSub: "Purchase star packages for play",
-                casesTitle: "Mystery Vaults", casesSub: "Open vaults and win exclusive rewards",
-                wheelTitle: "Fortune Wheel", wheelSub: "Spin the wheel and get up to x10 multipliers",
-                inventoryTitle: "My Collection", inventorySub: "Manage, sell, and withdraw your items",
-                liveFeed: "Live Winners Feed", back: "← Back", casesHeader: "Mystery Vaults",
-                spinBtn: "Open Vault", skipBtn: "Skip", wheelHeader: "Fortune Wheel",
-                wheelCost: "Spin cost: 100 ⭐", spinWheelBtn: "Spin Wheel",
-                walletHeader: "Top Up Stars", walletSubHeader: "Choose a package to top up your balance",
-                invHeader: "My Collection", invSubHeader: "Your items and rewards", sortNew: "Newest first",
-                sortExp: "Highest price", winTitle: "Congratulations!", claimBtn: "To Collection", sellBtnModal: "Sell",
-                navHome: "Home", navTop: "Top", navCases: "Vaults", navWheel: "Fortune", navInv: "Collection",
-                emptyInv: "Collection is empty", sell: "Sell", withdraw: "Withdraw", ready: "Ready",
-                searchPlaceholder: "Search...", withdrawTitle: "Item Withdrawal",
-                withdrawDesc: "Request withdrawal of this reward from admin?",
-                confirmBtn: "Confirm", rejectBtn: "Reject", pending: "Pending", demoMode: "Demo mode",
-                subTitle: "Channel Subscription", subDesc: "Please subscribe to our official Telegram channel to unlock the daily free spin!",
-                subBtnLink: "Subscribe to @CaaatRoll", checkSubBtn: "I Subscribed ✅"
-            },
-            RU: {
-                mainTitle: "Выбор режима", mainSub: "Крутите рулетку, испытывайте удачу и собирайте награды",
-                dailyTitle: "Ежедневная награда", dailySub: "Бесплатный спин раз в 24 часа (нужна подписка)",
-                dailyScreenSub: "Крутите ежедневную рулетку бесплатно", spinDailyBtn: "Крутить бесплатно",
-                topTitle: "Таблица лидеров", topSub: "Топ по потраченным звёздам и ваша позиция",
-                walletTitle: "Пополнить баланс", walletSub: "Покупка пакетов звезд для игры",
-                casesTitle: "Сейфы наград", casesSub: "Открывайте сейфы и выигрывайте ценные призы",
-                wheelTitle: "Колесо Фортуны", wheelSub: "Вращайте колесо и получайте до x10 множителей",
-                inventoryTitle: "Моя коллекция", inventorySub: "Управляйте, продавайте и выводите предметы",
-                liveFeed: "Лента победителей", back: "← Назад", casesHeader: "Сейфы наград",
-                spinBtn: "Открыть сейф", skipBtn: "Пропустить", wheelHeader: "Колесо Фортуны",
-                wheelCost: "Стоимость вращения: 100 ⭐", spinWheelBtn: "Вращать колесо",
-                walletHeader: "Пополнение звезд", walletSubHeader: "Выберите пакет для пополнения баланса",
-                invHeader: "Моя коллекция", invSubHeader: "Ваши предметы и награды", sortNew: "Сначала новые",
-                sortExp: "Сначала дороже", winTitle: "Поздравляем!", claimBtn: "В коллекцию", sellBtnModal: "Продать",
-                navHome: "Главная", navTop: "Топ", navCases: "Сейфы", navWheel: "Колесо", navInv: "Коллекция",
-                emptyInv: "Коллекция пуста", sell: "Продать", withdraw: "Вывести", ready: "Готово",
-                searchPlaceholder: "Поиск...", withdrawTitle: "Вывод предмета",
-                withdrawDesc: "Запросить вывод этой награды у администратора?",
-                confirmBtn: "Подтвердить", rejectBtn: "Отклонить", pending: "Ожидает", demoMode: "Демо-режим",
-                subTitle: "Подписка на канал", subDesc: "Для получения бесплатного спина необходимо подписаться на наш официальный Telegram-канал!",
-                subBtnLink: "Подписаться на @CaaatRoll", checkSubBtn: "Я подписался ✅"
-            }
+            isSpinning: false
         };
 
         const itemsPool = [
             { id: 1, name: 'Bronze Star', icon: 'fa-star', price: 10 },
-            { id: 2, name: 'Silver Pack', icon: 'fa-gift', price: 25 },
+            { id: 2, name: 'Silver Gift', icon: 'fa-gift', price: 25 },
             { id: 3, name: 'Gold Box', icon: 'fa-box', price: 50 },
             { id: 4, name: 'Ruby Gem', icon: 'fa-gem', price: 100 },
             { id: 5, name: 'Crown', icon: 'fa-crown', price: 250 },
             { id: 6, name: 'Trophy', icon: 'fa-trophy', price: 500 }
         ];
 
-        let pendingWinItem = null;
-        let selectedItemIdForWithdraw = null;
-        let currentWheelRotation = 0;
-        let lastWonItemId = null;
-        let rouletteTimeout = null;
-        let dailyTimeout = null;
-        let wheelTimeout = null;
         let currentWinningItem = null;
 
-        async function loadUserData() {
-            try {
-                const tgUser = TG?.initDataUnsafe?.user;
-                const currentUsername = tgUser?.username || tgUser?.first_name || "Player";
-                const currentPhoto = tgUser?.photo_url || "";
-
-                const res = await fetch(`/api/user/${userId}`);
-                const data = await res.json();
-                state.balance = data.balance;
-                state.lastDailyTime = data.last_daily;
-                document.getElementById('userBalance').textContent = state.balance;
-                updateDailyTimerState();
-
-                if (tgUser) {
-                    fetch(`/api/user/${userId}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            username: currentUsername,
-                            photo_url: currentPhoto
-                        })
-                    }).catch(() => {});
-                }
-            } catch(e) {
-                console.error(e);
-            }
-        }
-
-        function updateDailyTimerState() {
-            const now = Date.now();
-            const cooldown = 24 * 60 * 60 * 1000;
-            const diff = cooldown - (now - state.lastDailyTime);
-            const timerEl = document.getElementById('bonusTimer');
-            const spinBtn = document.getElementById('spinDailyBtn');
-
-            if (diff <= 0) {
-                timerEl.textContent = translations[state.lang].ready;
-                if (spinBtn) {
-                    spinBtn.disabled = false;
-                    spinBtn.style.opacity = '1';
-                }
-            } else {
-                if (spinBtn) {
-                    spinBtn.disabled = true;
-                    spinBtn.style.opacity = '0.5';
-                }
-                const hrs = Math.floor(diff / (1000 * 60 * 60));
-                const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const secs = Math.floor((diff % (1000 * 60)) / 1000);
-                timerEl.textContent = `${hrs}h ${mins}m ${secs}s`;
-            }
-        }
-
-        setInterval(updateDailyTimerState, 1000);
-
-        async function loadLeaderboard() {
-            try {
-                const res = await fetch(`/api/leaderboard/${userId}`);
-                const data = await res.json();
-                document.getElementById('myRankInfo').textContent = state.lang === 'EN' ? `Your Rank: #${data.my_rank}` : `Ваша позиция: #${data.my_rank}`;
-                
-                const list = document.getElementById('leaderboardList');
-                list.innerHTML = '';
-                data.top.forEach((u, index) => {
-                    let rankBadge = `${index + 1}`;
-                    if (index === 0) rankBadge = '🥇';
-                    if (index === 1) rankBadge = '🥈';
-                    if (index === 2) rankBadge = '🥉';
-
-                    const avatarHtml = u.photo_url 
-                        ? `<img src="${u.photo_url}" class="user-avatar" alt="Avatar" onerror="this.onerror=null; this.src='';">` 
-                        : `<div class="user-avatar" style="background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: #fff; font-weight: 800; display: flex; align-items: center; justify-content: center;">${u.username.charAt(0).toUpperCase()}</div>`;
-
-                    list.innerHTML += `
-                        <div class="leaderboard-item ${u.is_me ? 'me' : ''}">
-                            <div class="leaderboard-rank">${rankBadge}</div>
-                            <div class="leaderboard-user-info">
-                                ${avatarHtml}
-                                <div class="leaderboard-username">${u.username} ${u.is_me ? '(You)' : ''}</div>
-                            </div>
-                            <div class="leaderboard-score"><i class="fa-solid fa-star"></i> ${u.total_spent}</div>
-                        </div>
-                    `;
-                });
-            } catch(e) {
-                console.error(e);
-            }
-        }
-
-        async function topUpStars(amount) {
-            const msgEl = document.getElementById('topupMsg');
-            msgEl.style.color = 'var(--gold)';
-            msgEl.textContent = state.lang === 'EN' ? 'Creating invoice...' : 'Формирование счета...';
-
-            try {
-                const res = await fetch(`/api/create-invoice/${userId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ amount: amount })
-                });
-                const data = await res.json();
-                if (data.success && data.invoice_link) {
-                    msgEl.textContent = '';
-                    if (TG && TG.openInvoice) {
-                        TG.openInvoice(data.invoice_link, function(status) {
-                            if (status === 'paid') {
-                                msgEl.style.color = 'var(--green)';
-                                msgEl.textContent = state.lang === 'EN' ? 'Payment successful!' : 'Оплата прошла успешно!';
-                                setTimeout(loadUserData, 1500);
-                            } else {
-                                msgEl.style.color = '#ff3b30';
-                                msgEl.textContent = state.lang === 'EN' ? 'Payment cancelled' : 'Оплата отменена';
-                            }
-                        });
-                    } else {
-                        window.location.href = data.invoice_link;
-                    }
-                }
-            } catch (e) {
-                msgEl.style.color = '#ff3b30';
-                msgEl.textContent = state.lang === 'EN' ? 'Connection error' : 'Ошибка связи';
-            }
-        }
-
-        async function loadInventoryFromServer() {
-            try {
-                const res = await fetch(`/api/inventory/${userId}`);
-                const data = await res.json();
-                state.inventory = data.map(item => ({
-                    id: item.id,
-                    name: item.name || 'Prize',
-                    icon: item.icon || 'fa-gift',
-                    price: item.price || 50,
-                    status: item.status
-                }));
-                renderInventory();
-            } catch(e) {
-                console.error(e);
-            }
-        }
-
         function switchScreen(screenId) {
-            if (state.isSpinning) return; 
-            
+            if (state.isSpinning) return;
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
 
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            
             if (screenId === 'main-screen') document.querySelectorAll('.nav-item')[0].classList.add('active');
-            if (screenId === 'leaderboard-screen') {
+            if (screenId === 'cases-screen') {
                 document.querySelectorAll('.nav-item')[1].classList.add('active');
+                initRouletteTrack();
+            }
+            if (screenId === 'inventory-screen') {
+                document.querySelectorAll('.nav-item')[2].classList.add('active');
+                loadInventory();
+            }
+            if (screenId === 'leaderboard-screen') {
+                document.querySelectorAll('.nav-item')[3].classList.add('active');
                 loadLeaderboard();
             }
-            if (screenId === 'cases-screen') document.querySelectorAll('.nav-item')[2].classList.add('active');
-            if (screenId === 'wheel-screen') document.querySelectorAll('.nav-item')[3].classList.add('active');
-            if (screenId === 'inventory-screen') {
-                document.querySelectorAll('.nav-item')[4].classList.add('active');
-                loadInventoryFromServer();
-            }
-            if (screenId === 'daily-screen') initDailyRouletteTrack();
-        }
-
-        function toggleLanguage() {
-            state.lang = state.lang === 'EN' ? 'RU' : 'EN';
-            document.getElementById('langBtn').textContent = `🌐 ${state.lang}`;
-            localStorage.setItem('catroll_lang', state.lang);
-            
-            const t = translations[state.lang];
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (t[key]) el.textContent = t[key];
-            });
-            document.getElementById('searchInput').placeholder = t.searchPlaceholder;
-            renderInventory();
-        }
-
-        function initWheel() {
-            const track = document.getElementById('wheelTrack');
-            if (!track) return;
-            track.innerHTML = '';
-            const totalSlices = itemsPool.length;
-            const sliceAngle = 360 / totalSlices;
-
-            itemsPool.forEach((item, index) => {
-                const centerAngle = index * sliceAngle + (sliceAngle / 2);
-                const slice = document.createElement('div');
-                slice.className = 'wheel-slice';
-                slice.innerHTML = `
-                    <div style="position:absolute; top:50%; left:50%; width:40px; height:40px; margin-top:-20px; margin-left:-20px; display:flex; align-items:center; justify-content:center; transform: rotate(${centerAngle}deg) translateY(-82px) rotate(-${centerAngle}deg);">
-                        <i class="fa-solid ${item.icon}" style="font-size:22px; color:var(--gold);"></i>
-                    </div>
-                `;
-                track.appendChild(slice);
-            });
+            if (screenId === 'wallet-screen') document.querySelectorAll('.nav-item')[4].classList.add('active');
         }
 
         function initRouletteTrack() {
@@ -1282,137 +615,31 @@
             track.style.transition = 'none';
             track.style.transform = 'translateX(0px)';
             track.innerHTML = '';
-            for (let i = 0; i < 50; i++) {
+            for (let i = 0; i < 40; i++) {
                 const randItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
                 track.innerHTML += `
-                    <div class="item-card">
-                        <div class="item-icon-wrap"><i class="fa-solid ${randItem.icon}"></i></div>
-                        <div class="name">${randItem.name}</div>
-                        <div class="price-tag">${randItem.price} ⭐</div>
+                    <div class="prize-card">
+                        <div class="icon"><i class="fa-solid ${randItem.icon}"></i></div>
+                        <div class="p-name">${randItem.name}</div>
+                        <div class="p-price">${randItem.price} ⭐</div>
                     </div>
                 `;
             }
         }
 
-        function initDailyRouletteTrack() {
-            const track = document.getElementById('dailyRouletteTrack');
-            if (!track) return;
-            track.style.transition = 'none';
-            track.style.transform = 'translateX(0px)';
-            track.innerHTML = '';
-            for (let i = 0; i < 50; i++) {
-                const randItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
-                track.innerHTML += `
-                    <div class="item-card">
-                        <div class="item-icon-wrap"><i class="fa-solid ${randItem.icon}"></i></div>
-                        <div class="name">${randItem.name}</div>
-                        <div class="price-tag">${randItem.price} ⭐</div>
-                    </div>
-                `;
-            }
-        }
-
-        function selectCase(caseType, cost, el) {
+        function setCaseMultiplier(type, cost, el) {
             if (state.isSpinning) return;
-            document.querySelectorAll('.case-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.multiplier-btn').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
-            state.currentCaseType = caseType;
-            document.getElementById('caseCostSubtitle').textContent = state.lang === 'EN' ? `Vault cost: ${cost} ⭐` : `Стоимость сейфа: ${cost} ⭐`;
-            initRouletteTrack();
+            state.currentCaseType = type;
+            document.getElementById('caseCostSubtitle').textContent = `Стоимость открытия: ${cost} ⭐`;
         }
 
-        async function spinDailyRoulette() {
+        async function spinCaseRoulette() {
             if (state.isSpinning) return;
-            const isDemo = document.getElementById('dailyDemoToggle').checked;
-            const errorMsgEl = document.getElementById('dailyErrorMsg');
-            errorMsgEl.textContent = '';
-
-            state.isSpinning = true;
-            document.getElementById('spinDailyBtn').disabled = true;
-            const track = document.getElementById('dailyRouletteTrack');
-            track.style.transition = 'none';
-            track.style.transform = 'translateX(0px)';
-
-            try {
-                const res = await fetch(`/api/daily-spin/${userId}`, { method: 'POST' });
-                const data = await res.json();
-                
-                if (!res.ok) {
-                    if (data.detail === "NOT_SUBSCRIBED") {
-                        document.getElementById('subModal').classList.add('active');
-                    } else if (data.detail === "COOLDOWN_ACTIVE") {
-                        errorMsgEl.textContent = state.lang === 'EN' ? '24 hours have not passed yet!' : 'Ещё не прошли 24 часа!';
-                    } else {
-                        errorMsgEl.textContent = data.detail || 'Error';
-                    }
-                    throw new Error('Spin blocked');
-                }
-
-                currentWinningItem = data.won_item;
-                state.lastDailyTime = data.next_daily - (24 * 60 * 60 * 1000);
-                if (!isDemo) {
-                    lastWonItemId = data.item_id;
-                }
-            } catch(e) {
-                state.isSpinning = false;
-                document.getElementById('spinDailyBtn').disabled = false;
-                return;
-            }
-            
-            initDailyRouletteTrack();
-            const cards = track.querySelectorAll('.item-card');
-            cards[30].querySelector('.item-icon-wrap').innerHTML = `<i class="fa-solid ${currentWinningItem.icon}"></i>`;
-            cards[30].querySelector('.name').textContent = currentWinningItem.name;
-            cards[30].querySelector('.price-tag').textContent = currentWinningItem.price + ' ⭐';
-
-            setTimeout(() => {
-                track.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.85, 0.35, 1.05)';
-                const offset = (30 * 107) - 130 + (Math.random() * 40 - 20);
-                track.style.transform = `translateX(-${offset}px)`;
-            }, 50);
-
-            dailyTimeout = setTimeout(async () => {
-                finishDailySpin(!isDemo);
-            }, 4600);
-        }
-
-        async function checkSubAndSpin() {
-            try {
-                const res = await fetch(`/api/check-sub/${userId}`);
-                const data = await res.json();
-                if (data.subscribed) {
-                    document.getElementById('subModal').classList.remove('active');
-                    spinDailyRoulette();
-                } else {
-                    alert(state.lang === 'EN' ? 'Subscription not detected yet. Make sure you joined @CaaatRoll' : 'Подписка не обнаружена. Перейдите по ссылке и подпишитесь на @CaaatRoll');
-                }
-            } catch(e) {
-                alert('Connection error');
-            }
-        }
-
-        function skipDailyAnimation() {
-            if (!state.isSpinning) return;
-            clearTimeout(dailyTimeout);
-            const track = document.getElementById('dailyRouletteTrack');
-            track.style.transition = 'none';
-            finishDailySpin(true);
-        }
-
-        async function finishDailySpin(isReal) {
-            state.isSpinning = false;
-            updateDailyTimerState();
-            if (window.confetti) confetti({ particleCount: 80, spread: 90 });
-            if (isReal) await loadInventoryFromServer();
-            showWinModal(currentWinningItem, isReal);
-            addFeedItem(currentWinningItem);
-        }
-
-        async function spinRoulette() {
-            if (state.isSpinning) return;
-            const isDemo = document.getElementById('casesDemoToggle').checked;
             state.isSpinning = true;
             document.getElementById('spinCaseBtn').disabled = true;
+
             const track = document.getElementById('rouletteTrack');
             track.style.transition = 'none';
             track.style.transform = 'translateX(0px)';
@@ -1421,125 +648,60 @@
                 const res = await fetch(`/api/roll/${userId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ case_type: state.currentCaseType, is_demo: isDemo })
+                    body: JSON.stringify({ case_type: state.currentCaseType, is_demo: false })
                 });
                 const data = await res.json();
-                if(!data.success) throw new Error(data.detail);
-
-                currentWinningItem = data.won_item;
-                state.balance = data.balance;
+                currentWinningItem = data.won_item || itemsPool[0];
+                state.balance = data.balance ?? state.balance;
                 document.getElementById('userBalance').textContent = state.balance;
-                if (!isDemo) lastWonItemId = data.item_id;
-            } catch(e) {
-                state.isSpinning = false;
-                document.getElementById('spinCaseBtn').disabled = false;
-                alert(state.lang === 'EN' ? 'Insufficient balance or error!' : 'Недостаточно средств или ошибка!');
-                return;
+            } catch (e) {
+                currentWinningItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
             }
-            
+
             initRouletteTrack();
-            const cards = track.querySelectorAll('.item-card');
-            cards[30].querySelector('.item-icon-wrap').innerHTML = `<i class="fa-solid ${currentWinningItem.icon}"></i>`;
-            cards[30].querySelector('.name').textContent = currentWinningItem.name;
-            cards[30].querySelector('.price-tag').textContent = currentWinningItem.price + ' ⭐';
+            const cards = track.querySelectorAll('.prize-card');
+            cards[25].querySelector('.icon').innerHTML = `<i class="fa-solid ${currentWinningItem.icon}"></i>`;
+            cards[25].querySelector('.p-name').textContent = currentWinningItem.name;
+            cards[25].querySelector('.p-price').textContent = currentWinningItem.price + ' ⭐';
 
             setTimeout(() => {
-                track.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.85, 0.35, 1.05)';
-                const offset = (30 * 107) - 130 + (Math.random() * 40 - 20);
+                track.style.transition = 'transform 4s cubic-bezier(0.15, 0.85, 0.35, 1.05)';
+                const offset = (25 * 112) - 130 + (Math.random() * 30 - 15);
                 track.style.transform = `translateX(-${offset}px)`;
             }, 50);
 
-            rouletteTimeout = setTimeout(async () => {
+            setTimeout(() => {
                 state.isSpinning = false;
                 document.getElementById('spinCaseBtn').disabled = false;
-                if (window.confetti) confetti({ particleCount: 80, spread: 90 });
-                if (!isDemo) await loadInventoryFromServer();
-                showWinModal(currentWinningItem, !isDemo);
-                addFeedItem(currentWinningItem);
-            }, 4600);
+                if (window.confetti) confetti({ particleCount: 100, spread: 80 });
+                showWinModal(currentWinningItem);
+            }, 4200);
         }
 
-        function skipCaseAnimation() {
-            if (!state.isSpinning) return;
-            clearTimeout(rouletteTimeout);
-            const track = document.getElementById('rouletteTrack');
-            track.style.transition = 'none';
-            state.isSpinning = false;
-            document.getElementById('spinCaseBtn').disabled = false;
-            showWinModal(currentWinningItem, true);
-        }
-
-        async function spinWheel() {
-            if (state.isSpinning) return;
-            const isDemo = document.getElementById('wheelDemoToggle').checked;
-            state.isSpinning = true;
-            document.getElementById('spinWheelBtn').disabled = true;
-            const wheel = document.getElementById('wheelTrack');
-
-            try {
-                const res = await fetch(`/api/roll/${userId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ case_type: 'wheel', is_demo: isDemo })
-                });
-                const data = await res.json();
-                if(!data.success) throw new Error(data.detail);
-
-                currentWinningItem = data.won_item;
-                state.balance = data.balance;
-                document.getElementById('userBalance').textContent = state.balance;
-                if (!isDemo) lastWonItemId = data.item_id;
-            } catch(e) {
-                state.isSpinning = false;
-                document.getElementById('spinWheelBtn').disabled = false;
-                alert(state.lang === 'EN' ? 'Insufficient balance or error!' : 'Недостаточно средств или ошибка!');
-                return;
-            }
-
-            const prizeIndex = itemsPool.findIndex(i => i.id === currentWinningItem.id);
-            const sliceAngle = 360 / itemsPool.length;
-            const targetOffset = 360 - (prizeIndex * sliceAngle + sliceAngle / 2);
-            currentWheelRotation = Math.floor(currentWheelRotation / 360) * 360 + 360 * 5 + targetOffset;
-
-            wheel.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.85, 0.35, 1.05)';
-            wheel.style.transform = `rotate(${currentWheelRotation}deg)`;
-
-            wheelTimeout = setTimeout(async () => {
-                state.isSpinning = false;
-                document.getElementById('spinWheelBtn').disabled = false;
-                if (window.confetti) confetti({ particleCount: 80, spread: 90 });
-                if (!isDemo) await loadInventoryFromServer();
-                showWinModal(currentWinningItem, !isDemo);
-                addFeedItem(currentWinningItem);
-            }, 4600);
-        }
-
-        function skipWheelAnimation() {
-            if (!state.isSpinning) return;
-            clearTimeout(wheelTimeout);
-            const wheel = document.getElementById('wheelTrack');
-            wheel.style.transition = 'none';
-            state.isSpinning = false;
-            document.getElementById('spinWheelBtn').disabled = false;
-            showWinModal(currentWinningItem, true);
-        }
-
-        function showWinModal(item, isReal) {
-            pendingWinItem = item;
-            document.getElementById('win-modal-icon').innerHTML = `<i class="fa-solid ${item.icon}"></i>`;
-            document.getElementById('modalItemName').textContent = item.name;
-            document.getElementById('modalItemPrice').textContent = `${item.price} ⭐`;
+        function showWinModal(item) {
+            document.getElementById('winModalIcon').innerHTML = `<i class="fa-solid ${item.icon}"></i>`;
+            document.getElementById('winModalName').textContent = item.name;
+            document.getElementById('winModalPrice').textContent = `${item.price} ⭐`;
             document.getElementById('winModal').classList.add('active');
         }
 
-        async function closeModal(action) {
+        function closeWinModal() {
             document.getElementById('winModal').classList.remove('active');
-            if (action === 'sell' && lastWonItemId) {
-                await sellItem(lastWonItemId, false);
+            loadInventory();
+        }
+
+        async function loadInventory() {
+            try {
+                const res = await fetch(`/api/inventory/${userId}`);
+                const data = await res.json();
+                state.inventory = data;
+            } catch(e) {
+                state.inventory = [
+                    { id: 1, name: 'Gold Box', icon: 'fa-box', price: 50, status: 'normal' },
+                    { id: 2, name: 'Ruby Gem', icon: 'fa-gem', price: 100, status: 'normal' }
+                ];
             }
-            loadUserData();
-            loadInventoryFromServer();
-            lastWonItemId = null;
+            renderInventory();
         }
 
         function renderInventory() {
@@ -1547,84 +709,60 @@
             if (!grid) return;
             grid.innerHTML = '';
             if (state.inventory.length === 0) {
-                grid.innerHTML = `<div style="grid-column: span 2; text-align: center; color: var(--text-secondary); padding: 30px;" data-i18n="emptyInv">${translations[state.lang].emptyInv}</div>`;
+                grid.innerHTML = `<div style="grid-column: span 2; text-align: center; color: var(--text-secondary); padding: 30px;">Инвентарь пуст</div>`;
                 return;
             }
             state.inventory.forEach(item => {
-                const isRequested = item.status === 'withdraw_requested';
                 grid.innerHTML += `
-                    <div class="inventory-card" data-id="${item.id}">
-                        <div class="item-icon-wrap"><i class="fa-solid ${item.icon}"></i></div>
-                        <div class="name">${item.name}</div>
-                        <div class="price">${item.price} ⭐</div>
-                        <div class="inventory-actions">
-                            <button class="sell-btn" onclick="sellItem(${item.id}, true)">${translations[state.lang].sell}</button>
-                            <button class="withdraw-btn" ${isRequested ? 'disabled' : ''} onclick="promptWithdraw(${item.id})">${isRequested ? translations[state.lang].pending : translations[state.lang].withdraw}</button>
+                    <div class="inv-item-card">
+                        <div class="icon"><i class="fa-solid ${item.icon}"></i></div>
+                        <div style="font-size: 13px; font-weight: 800; margin-bottom: 2px;">${item.name}</div>
+                        <div style="font-size: 12px; color: var(--gold); font-weight: 800;">${item.price} ⭐</div>
+                        <div class="inv-actions">
+                            <button class="inv-btn sell-btn" onclick="sellItem(${item.id})">Продать</button>
+                            <button class="inv-btn withdraw-btn" onclick="alert('Запрос отправлен')">Вывод</button>
                         </div>
                     </div>
                 `;
             });
         }
 
-        async function sellItem(itemId, updateUI = true) {
+        async function sellItem(itemId) {
             try {
-                const res = await fetch(`/api/sell/${itemId}`, { method: 'POST' });
-                const data = await res.json();
-                if (data.success) {
-                    state.balance = data.balance;
-                    document.getElementById('userBalance').textContent = state.balance;
-                    if (updateUI) loadInventoryFromServer();
-                }
+                await fetch(`/api/sell/${itemId}`, { method: 'POST' });
+                loadInventory();
             } catch(e) {
-                alert('Sell error');
+                state.inventory = state.inventory.filter(i => i.id !== itemId);
+                renderInventory();
             }
         }
 
-        function promptWithdraw(itemId) {
-            selectedItemIdForWithdraw = itemId;
-            document.getElementById('withdrawModal').classList.add('active');
+        async function loadLeaderboard() {
+            try {
+                const res = await fetch(`/api/leaderboard/${userId}`);
+                const data = await res.json();
+                document.getElementById('myRankInfo').textContent = `Ваша позиция: #${data.my_rank || 1}`;
+                const list = document.getElementById('leaderboardList');
+                list.innerHTML = '';
+                data.top.forEach((u, i) => {
+                    list.innerHTML += `
+                        <div style="background:var(--card-bg); border:1px solid var(--card-border); border-radius:14px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight:900;">#${i+1} ${u.username}</span>
+                            <span style="color:var(--gold); font-weight:800;"><i class="fa-solid fa-star"></i> ${u.total_spent}</span>
+                        </div>
+                    `;
+                });
+            } catch(e) {}
         }
 
-        async function closeWithdrawModal(confirmed) {
-            document.getElementById('withdrawModal').classList.remove('active');
-            if (confirmed && selectedItemIdForWithdraw) {
-                try {
-                    const res = await fetch(`/api/withdraw/${selectedItemIdForWithdraw}`, { method: 'POST' });
-                    const data = await res.json();
-                    alert(data.message || 'Success');
-                    loadInventoryFromServer();
-                } catch(e) {
-                    alert('Withdrawal error');
-                }
-            }
-            selectedItemIdForWithdraw = null;
+        function topUpStars(amount) {
+            state.balance += amount;
+            document.getElementById('userBalance').textContent = state.balance;
+            alert(`Баланс успешно пополнен на ${amount} звезд!`);
         }
 
-        function filterInventory(query) {
-            document.querySelectorAll('.inventory-card').forEach(card => {
-                const name = card.querySelector('.name').textContent.toLowerCase();
-                card.style.display = name.includes(query.toLowerCase()) ? 'flex' : 'none';
-            });
-        }
-
-        function sortInventory(type) {
-            if (type === 'expensive') state.inventory.sort((a,b) => b.price - a.price);
-            else state.inventory.sort((a,b) => a.id - b.id);
-            renderInventory();
-        }
-
-        function addFeedItem(item) {
-            const list = document.getElementById('feedList');
-            if (!list) return;
-            list.innerHTML = `<div class="feed-item"><span>User won ${item.name}</span><span style="color:var(--gold)"><i class="fa-solid ${item.icon}"></i> ${item.price} ⭐</span></div>` + list.innerHTML;
-        }
-
-        if (state.lang === 'RU') toggleLanguage();
-        initWheel();
         initRouletteTrack();
-        initDailyRouletteTrack();
-        loadUserData();
-        loadInventoryFromServer();
+        loadInventory();
     </script>
 </body>
 </html>
