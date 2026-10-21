@@ -53,13 +53,14 @@ def init_db():
 
 init_db()
 
+# Защищенный пул предметов с четкими серверными весами (шансами)
 ITEMS_POOL = [
-    {"id": 1, "name": "Bronze Star", "icon": "fa-star", "price": 10, "weight": 50},
-    {"id": 2, "name": "Silver Pack", "icon": "fa-gift", "price": 25, "weight": 30},
-    {"id": 3, "name": "Gold Box", "icon": "fa-box", "price": 50, "weight": 12},
-    {"id": 4, "name": "Ruby Gem", "icon": "fa-gem", "price": 100, "weight": 5},
-    {"id": 5, "name": "Crown", "icon": "fa-crown", "price": 250, "weight": 2},
-    {"id": 6, "name": "Trophy", "icon": "fa-trophy", "price": 500, "weight": 1}
+    {"id": 1, "name": "Bronze Star", "icon": "fa-star", "price": 10, "weight": 55},
+    {"id": 2, "name": "Silver Pack", "icon": "fa-gift", "price": 25, "weight": 28},
+    {"id": 3, "name": "Gold Box", "icon": "fa-box", "price": 50, "weight": 11},
+    {"id": 4, "name": "Ruby Gem", "icon": "fa-gem", "price": 100, "weight": 4},
+    {"id": 5, "name": "Crown", "icon": "fa-crown", "price": 250, "weight": 1.5},
+    {"id": 6, "name": "Trophy", "icon": "fa-trophy", "price": 500, "weight": 0.5}
 ]
 
 def pick_random_item():
@@ -174,6 +175,7 @@ async def roll(user_id: int, req: RollRequest):
         conn.close()
         raise HTTPException(status_code=400, detail="INSUFFICIENT_FUNDS")
 
+    # Выбор награды строго на сервере (клиент никак не может повлиять на результат)
     won_item = pick_random_item()
     item_id = None
 

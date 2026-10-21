@@ -327,38 +327,12 @@
         .roulette-viewport {
             position: relative;
             width: 100%;
-            height: 125px;
+            height: 135px;
             overflow: hidden;
             border-radius: 16px;
             background: #06020c;
             border: 1px solid rgba(184, 155, 255, 0.25);
             box-shadow: inset 0 0 15px rgba(0,0,0,0.9);
-        }
-
-        .preview-viewport {
-            position: relative;
-            width: 100%;
-            height: 85px;
-            overflow: hidden;
-            border-radius: 14px;
-            background: rgba(6, 2, 12, 0.6);
-            border: 1px dashed rgba(184, 155, 255, 0.2);
-            margin-bottom: 16px;
-        }
-
-        .preview-track-infinite {
-            display: flex;
-            align-items: center;
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            animation: continuousScroll 20s linear infinite;
-        }
-
-        @keyframes continuousScroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
         }
 
         .roulette-pointer {
@@ -396,7 +370,7 @@
 
         .prize-card {
             min-width: 95px;
-            height: 105px;
+            height: 115px;
             margin: 0 6px;
             background: linear-gradient(145deg, #281447, #130724);
             border-radius: 16px;
@@ -408,21 +382,11 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
-        .prize-card.mini {
-            min-width: 75px;
-            height: 75px;
-            margin: 0 4px;
-        }
-
         .prize-card .icon {
             font-size: 34px;
             color: var(--gold);
             margin-bottom: 4px;
             filter: drop-shadow(0 2px 6px rgba(255,193,7,0.3));
-        }
-
-        .prize-card.mini .icon {
-            font-size: 24px;
         }
 
         .prize-card .p-name {
@@ -829,12 +793,7 @@
         </div>
 
         <div class="case-arena">
-            <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">📦 Vault Prizes Pool (Preview)</div>
-            <div class="preview-viewport">
-                <div class="preview-track-infinite" id="casePreviewTrack"></div>
-            </div>
-
-            <div style="font-size: 11px; font-weight: 800; color: var(--gold); text-transform: uppercase; margin-bottom: 6px;">🎯 Opening Roulette</div>
+            <div style="font-size: 11px; font-weight: 800; color: var(--gold); text-transform: uppercase; margin-bottom: 8px;" data-i18n="rouletteTitle">🎯 Mystery Vault Opening</div>
             <div class="roulette-viewport">
                 <div class="roulette-pointer"></div>
                 <div class="roulette-track" id="rouletteTrack"></div>
@@ -1072,7 +1031,8 @@
                 withdrawDesc: "Request withdrawal of this reward from admin?",
                 confirmBtn: "Confirm", rejectBtn: "Reject", pending: "Pending", demoMode: "Demo mode",
                 subTitle: "Channel Subscription", subDesc: "Please subscribe to our official Telegram channel to unlock the daily free spin!",
-                subBtnLink: "Subscribe to @CaaatRoll", checkSubBtn: "I Subscribed ✅"
+                subBtnLink: "Subscribe to @CaaatRoll", checkSubBtn: "I Subscribed ✅",
+                rouletteTitle: "🎯 Mystery Vault Opening"
             },
             RU: {
                 mainTitle: "Выбор режима", mainSub: "Крутите рулетку, испытывайте удачу и собирайте награды",
@@ -1095,7 +1055,8 @@
                 withdrawDesc: "Запросить вывод этой награды у администратора?",
                 confirmBtn: "Подтвердить", rejectBtn: "Отклонить", pending: "Ожидает", demoMode: "Демо-режим",
                 subTitle: "Подписка на канал", subDesc: "Для получения бесплатного спина необходимо подписаться на наш официальный Telegram-канал!",
-                subBtnLink: "Подписаться на @CaaatRoll", checkSubBtn: "Я подписался ✅"
+                subBtnLink: "Подписаться на @CaaatRoll", checkSubBtn: "Я подписался ✅",
+                rouletteTitle: "🎯 Открытие сейфа"
             }
         };
 
@@ -1264,7 +1225,6 @@
             if (screenId === 'cases-screen') {
                 document.querySelectorAll('.nav-item')[1].classList.add('active');
                 initRouletteTrack();
-                initPreviewTrack();
             }
             if (screenId === 'wheel-screen') {
                 document.querySelectorAll('.nav-item')[2].classList.add('active');
@@ -1325,7 +1285,7 @@
             track.style.transition = 'none';
             track.style.transform = 'translateX(0px)';
             track.innerHTML = '';
-            for (let i = 0; i < 50; i++) {
+            for (let i = 0; i < 60; i++) {
                 const randItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
                 track.innerHTML += `
                     <div class="prize-card">
@@ -1337,29 +1297,13 @@
             }
         }
 
-        function initPreviewTrack() {
-            const track = document.getElementById('casePreviewTrack');
-            if (!track) return;
-            track.innerHTML = '';
-            const doublePool = [...itemsPool, ...itemsPool, ...itemsPool, ...itemsPool];
-            doublePool.forEach(item => {
-                track.innerHTML += `
-                    <div class="prize-card mini">
-                        <div class="icon"><i class="fa-solid ${item.icon}"></i></div>
-                        <div class="p-name">${item.name}</div>
-                        <div class="p-price">${item.price} ⭐</div>
-                    </div>
-                `;
-            });
-        }
-
         function initDailyRouletteTrack() {
             const track = document.getElementById('dailyRouletteTrack');
             if (!track) return;
             track.style.transition = 'none';
             track.style.transform = 'translateX(0px)';
             track.innerHTML = '';
-            for (let i = 0; i < 50; i++) {
+            for (let i = 0; i < 60; i++) {
                 const randItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
                 track.innerHTML += `
                     <div class="prize-card">
@@ -1434,21 +1378,25 @@
             
             initDailyRouletteTrack();
             const cards = track.querySelectorAll('.prize-card');
-            cards[30].querySelector('.icon').innerHTML = `<i class="fa-solid ${currentWinningItem.icon}"></i>`;
-            cards[30].querySelector('.p-name').textContent = currentWinningItem.name;
-            cards[30].querySelector('.p-price').textContent = currentWinningItem.price + ' ⭐';
+            if (cards.length > 35) {
+                cards[35].querySelector('.icon').innerHTML = `<i class="fa-solid ${currentWinningItem.icon}"></i>`;
+                cards[35].querySelector('.p-name').textContent = currentWinningItem.name;
+                cards[35].querySelector('.p-price').textContent = currentWinningItem.price + ' ⭐';
+            }
 
-            playTickLoop(4500);
+            playTickLoop(4800);
 
             setTimeout(() => {
-                track.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.85, 0.35, 1.05)';
-                const offset = (30 * 107) - 130 + (Math.random() * 40 - 20);
+                track.style.transition = 'transform 4.8s cubic-bezier(0.12, 0.82, 0.38, 1.02)';
+                const cardWidth = 107;
+                const centerOffset = 200;
+                const offset = (35 * cardWidth) - centerOffset + (Math.random() * 20 - 10);
                 track.style.transform = `translateX(-${offset}px)`;
             }, 50);
 
             dailyTimeout = setTimeout(async () => {
                 finishDailySpin(!isDemo);
-            }, 4600);
+            }, 4900);
         }
 
         async function checkSubAndSpin() {
@@ -1490,8 +1438,6 @@
             state.isSpinning = true;
             document.getElementById('spinCaseBtn').disabled = true;
             const track = document.getElementById('rouletteTrack');
-            track.style.transition = 'none';
-            track.style.transform = 'translateX(0px)';
 
             try {
                 const res = await fetch(`/api/roll/${userId}`, {
@@ -1514,17 +1460,23 @@
             }
             
             initRouletteTrack();
+            // Гарантируем выпадение именно того приза, который честно определил сервер, 
+            // вне зависимости от того, с какого момента визуальной ленты началось вращение
             const cards = track.querySelectorAll('.prize-card');
-            cards[30].querySelector('.icon').innerHTML = `<i class="fa-solid ${currentWinningItem.icon}"></i>`;
-            cards[30].querySelector('.p-name').textContent = currentWinningItem.name;
-            cards[30].querySelector('.p-price').textContent = currentWinningItem.price + ' ⭐';
+            if (cards.length > 35) {
+                cards[35].querySelector('.icon').innerHTML = `<i class="fa-solid ${currentWinningItem.icon}"></i>`;
+                cards[35].querySelector('.p-name').textContent = currentWinningItem.name;
+                cards[35].querySelector('.p-price').textContent = currentWinningItem.price + ' ⭐';
+            }
 
-            playTickLoop(4500);
+            playTickLoop(4800);
 
             setTimeout(() => {
-                track.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.85, 0.35, 1.05)';
-                const offset = (30 * 107) - 130 + (Math.random() * 40 - 20);
-                track.style.transform = `translateX(-${offset}px)`;
+                track.style.transition = 'transform 4.8s cubic-bezier(0.12, 0.82, 0.38, 1.02)';
+                const cardWidth = 107;
+                const centerOffset = 200;
+                const targetOffset = (35 * cardWidth) - centerOffset + (Math.random() * 20 - 10);
+                track.style.transform = `translateX(-${targetOffset}px)`;
             }, 50);
 
             rouletteTimeout = setTimeout(async () => {
@@ -1536,7 +1488,7 @@
                 if (!isDemo) await loadInventoryFromServer();
                 showWinModal(currentWinningItem);
                 addFeedItem(currentWinningItem);
-            }, 4600);
+            }, 4900);
         }
 
         function skipCaseAnimation() {
@@ -1581,9 +1533,9 @@
             const targetOffset = 360 - (prizeIndex * sliceAngle + sliceAngle / 2);
             currentWheelRotation = Math.floor(currentWheelRotation / 360) * 360 + 360 * 5 + targetOffset;
 
-            playTickLoop(4500);
+            playTickLoop(4800);
 
-            wheel.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.85, 0.35, 1.05)';
+            wheel.style.transition = 'transform 4.8s cubic-bezier(0.12, 0.82, 0.38, 1.02)';
             wheel.style.transform = `rotate(${currentWheelRotation}deg)`;
 
             wheelTimeout = setTimeout(async () => {
@@ -1595,7 +1547,7 @@
                 if (!isDemo) await loadInventoryFromServer();
                 showWinModal(currentWinningItem);
                 addFeedItem(currentWinningItem);
-            }, 4600);
+            }, 4900);
         }
 
         function skipWheelAnimation() {
@@ -1709,7 +1661,6 @@
         if (state.lang === 'RU') toggleLanguage();
         initWheel();
         initRouletteTrack();
-        initPreviewTrack();
         initDailyRouletteTrack();
         loadUserData();
         loadInventoryFromServer();
